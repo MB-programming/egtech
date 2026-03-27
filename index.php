@@ -4,38 +4,86 @@ $page_desc  = 'DGTEC delivers advanced Technical Recruitment, Scalable Outsourci
 include 'includes/header.php';
 ?>
 
-<!-- ======= HERO SECTION ======= -->
+<!-- ======= HERO SLIDER ======= -->
 <section class="hero-section" id="home">
-  <div class="hero-bg"></div>
-  <div class="hero-overlay"></div>
-  <div class="container hero-content">
-    <div class="hero-text">
-      <span class="hero-label">Saudi Vision 2030 Aligned</span>
-      <h1 class="hero-title">
-        Technological<br>
-        transformation in<br>
-        <span>The Kingdom</span>
-      </h1>
-      <p class="hero-desc">
-        We deliver advanced integrated solutions — from Technical Recruitment and Outsourcing to AI-driven Digital Transformation.
-      </p>
-      <div class="hero-btns">
-        <a href="contact.php" class="btn btn-white">See More</a>
-        <a href="about.php" class="btn btn-outline" style="color:#fff; border-color:rgba(255,255,255,.5);">About Us</a>
+  <div class="hero-slider-wrapper">
+
+    <!-- Slide 1 -->
+    <div class="hero-slide active" style="--slide-bg:url('assets/images/hero-slider.webp')">
+      <div class="hero-slide-bg"></div>
+      <div class="hero-slide-overlay" style="background:linear-gradient(105deg,rgba(24,63,150,.86)40%,rgba(24,63,150,.42)100%)"></div>
+      <div class="container hero-content">
+        <div class="hero-text">
+          <span class="hero-label">Saudi Vision 2030 Aligned</span>
+          <h1 class="hero-title">Technological<br>transformation in<br><span>The Kingdom</span></h1>
+          <p class="hero-desc">We deliver advanced integrated solutions — from Technical Recruitment and Outsourcing to AI-driven Digital Transformation.</p>
+          <div class="hero-btns">
+            <a href="contact.php" class="btn btn-white">Get Started</a>
+            <a href="about.php" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.5)">About Us</a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="hero-scroll">
-    <div class="scroll-dot"></div>
-    <span>SCROLL</span>
+
+    <!-- Slide 2 -->
+    <div class="hero-slide" style="--slide-bg:url('assets/images/hero-bg.png')">
+      <div class="hero-slide-bg"></div>
+      <div class="hero-slide-overlay" style="background:linear-gradient(105deg,rgba(3,50,80,.88)40%,rgba(3,100,120,.48)100%)"></div>
+      <div class="container hero-content">
+        <div class="hero-text">
+          <span class="hero-label">Expert Talent Acquisition</span>
+          <h1 class="hero-title">The Right Talent,<br>Right Now, Right<br><span>Here</span></h1>
+          <p class="hero-desc">Hire top-tier technical, managerial and engineering professionals to drive innovation and business success across The Kingdom.</p>
+          <div class="hero-btns">
+            <a href="contact.php" class="btn btn-white">Hire Now</a>
+            <a href="#services" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.5)">Our Services</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="hero-slide" style="--slide-bg:url('assets/images/hero-slider.webp')">
+      <div class="hero-slide-bg"></div>
+      <div class="hero-slide-overlay" style="background:linear-gradient(135deg,rgba(3,134,158,.88)0%,rgba(24,63,150,.88)100%)"></div>
+      <div class="container hero-content">
+        <div class="hero-text">
+          <span class="hero-label">AI-Powered Digital Growth</span>
+          <h1 class="hero-title">Automate, Scale,<br>and Lead in the<br><span>Digital Era</span></h1>
+          <p class="hero-desc">Transform your enterprise with AI-driven automation, smart digital workflows and cutting-edge technology solutions built for tomorrow.</p>
+          <div class="hero-btns">
+            <a href="contact.php" class="btn btn-white">Transform Now</a>
+            <a href="#solutions" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.5)">Our Solutions</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.hero-slider-wrapper -->
+
+  <!-- Slider Controls -->
+  <div class="hero-slider-nav">
+    <button class="hero-nav-btn hero-prev" aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
+    <div class="hero-dots">
+      <span class="hero-dot active"></span>
+      <span class="hero-dot"></span>
+      <span class="hero-dot"></span>
+    </div>
+    <button class="hero-nav-btn hero-next" aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
   </div>
 </section>
+
 
 <!-- ======= SERVICES SECTION ======= -->
 <section class="services-section" id="services">
   <div class="container">
-    <span class="section-label">What We Do</span>
-    <h2 class="section-title">Explore Our Services</h2>
+    <div class="services-header">
+      <div>
+        <span class="section-label">What We Do</span>
+        <h2 class="section-title">Explore Our Services</h2>
+      </div>
+      <p class="section-desc">A full spectrum of technology and talent services to power your business in a rapidly evolving market.</p>
+    </div>
     <div class="services-grid">
 
       <div class="service-card">
@@ -43,7 +91,7 @@ include 'includes/header.php';
           <img src="assets/icons/icon-recruitment.png" alt="Recruitment" />
         </div>
         <h3>Expert Technical Recruitment</h3>
-        <p>Hire Top-Tier talents across Technical, Managerial, and Engineering fields to drive innovation and success.</p>
+        <p>Hire Top-Tier talents across Technical, Managerial, and Engineering fields to drive innovation and success across your organisation.</p>
         <a href="#" class="service-link">Hire Now <i class="fas fa-arrow-right"></i></a>
       </div>
 
@@ -52,7 +100,7 @@ include 'includes/header.php';
           <img src="assets/icons/icon-outsourcing.png" alt="Outsourcing" />
         </div>
         <h3>Scalable Outsourcing Solutions</h3>
-        <p>Get the Talent you search for and reduce Up to 55% operational cost and Hiring Risks.</p>
+        <p>Get the Talent you need and reduce up to 55% operational cost and Hiring Risks with our flexible outsourcing model.</p>
         <a href="#" class="service-link">Access the Right Talent <i class="fas fa-arrow-right"></i></a>
       </div>
 
@@ -61,13 +109,32 @@ include 'includes/header.php';
           <img src="assets/icons/icon-digital.png" alt="Digital Transformation" />
         </div>
         <h3>Enterprise Digital Transformation</h3>
-        <p>Empower transformation with Zenoo and Newgen through smart automation and AI-driven growth.</p>
+        <p>Empower transformation with Zenoo and Newgen through smart automation, AI-driven growth and end-to-end digitisation.</p>
         <a href="#" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">
+          <img src="assets/icons/icon-squad.png" alt="Tech Squad" />
+        </div>
+        <h3>Tech Squad-as-a-Service</h3>
+        <p>Deploy a dedicated, fully managed technical team on demand — the agile way to scale engineering capacity without the overhead.</p>
+        <a href="#" class="service-link">Build Your Squad <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">
+          <img src="assets/icons/icon-data.png" alt="Data Handling" />
+        </div>
+        <h3>Data Handling Solutions</h3>
+        <p>Harness the power of your data — from collection and cleansing to governance, analytics and AI-ready pipelines at scale.</p>
+        <a href="#" class="service-link">Explore Data Services <i class="fas fa-arrow-right"></i></a>
       </div>
 
     </div>
   </div>
 </section>
+
 
 <!-- ======= SOLUTIONS SECTION ======= -->
 <section class="solutions-section" id="solutions">
@@ -113,7 +180,6 @@ include 'includes/header.php';
 
         </div>
       </div>
-
       <div class="solutions-image">
         <img src="assets/images/our-soul.webp" alt="Our Solutions" loading="lazy" />
       </div>
@@ -121,102 +187,119 @@ include 'includes/header.php';
   </div>
 </section>
 
+
 <!-- ======= BUSINESS PROCESS ROAD ======= -->
 <section class="process-section" id="process">
   <div class="container">
     <div class="process-header">
       <span class="section-label">How We Work</span>
-      <h2 class="section-title">Our business process road</h2>
+      <h2 class="section-title">Our Business Process Road</h2>
       <p class="section-desc">
-        We provide a comprehensive suite of AI-powered solutions designed to enhance efficiency, optimize operations, and accelerate decision-making across modern businesses.
+        From the first conversation to long-term digital success — here's the clear, proven path we walk with every client to deliver measurable results.
       </p>
     </div>
     <div class="process-grid">
 
       <div class="process-step">
         <div class="step-number">01</div>
-        <div class="step-icon"><i class="fas fa-robot"></i></div>
-        <h4>Automation</h4>
-        <p>We build smart automation solutions that eliminate repetitive tasks and accelerate workflows.</p>
+        <div class="step-icon"><i class="fas fa-magnifying-glass-chart"></i></div>
+        <h4>Discovery &amp; Assessment</h4>
+        <p>We start by deeply understanding your business goals, current challenges, and technology landscape to build a clear picture of your needs.</p>
       </div>
 
       <div class="process-step">
         <div class="step-number">02</div>
-        <div class="step-icon"><i class="fas fa-database"></i></div>
-        <h4>Data Services</h4>
-        <p>We harness data power to extract actionable insights and drive smarter decision-making.</p>
+        <div class="step-icon"><i class="fas fa-pencil-ruler"></i></div>
+        <h4>Strategy &amp; Design</h4>
+        <p>Our experts craft a tailored digital roadmap and solution architecture that aligns with your Vision 2030 objectives and growth ambitions.</p>
       </div>
 
       <div class="process-step">
         <div class="step-number">03</div>
-        <div class="step-icon"><i class="fas fa-brain"></i></div>
-        <h4>AI Solutions</h4>
-        <p>We integrate cutting-edge AI technologies tailored to your business needs and goals.</p>
+        <div class="step-icon"><i class="fas fa-robot"></i></div>
+        <h4>Build &amp; Automate</h4>
+        <p>We implement smart automation, AI-driven workflows and enterprise systems — deploying efficiently with minimal disruption to daily operations.</p>
       </div>
 
       <div class="process-step">
         <div class="step-number">04</div>
         <div class="step-icon"><i class="fas fa-chart-line"></i></div>
-        <h4>Digital Growth</h4>
-        <p>We partner with you for continuous improvement, scaling digital capabilities for long-term success.</p>
+        <h4>Scale &amp; Grow</h4>
+        <p>We stay with you post-launch — monitoring, optimising and scaling your digital capabilities for sustainable long-term success.</p>
       </div>
 
+    </div>
+
+    <div class="process-footer">
+      <div class="process-footer-inner">
+        <i class="fas fa-circle-check"></i>
+        <p>Every step is backed by <strong>dedicated support</strong>, transparent reporting and a team fully committed to your success.</p>
+        <a href="contact.php" class="btn btn-primary">Start Your Journey</a>
+      </div>
     </div>
   </div>
 </section>
 
+
 <!-- ======= ACHIEVEMENTS ======= -->
 <section class="achievements-section" id="achievements">
   <div class="container">
+    <div class="achievements-header">
+      <span class="section-label" style="color:var(--accent)">Our Track Record</span>
+      <h2 class="section-title" style="color:#fff">Our Achievements</h2>
+      <p class="section-desc" style="color:rgba(255,255,255,.7);margin:0 auto">
+        Numbers that reflect the trust our clients place in us and the results we consistently deliver across The Kingdom and beyond.
+      </p>
+    </div>
     <div class="achievements-grid">
 
       <div class="achievement-item">
+        <div class="achievement-icon"><i class="fas fa-check-circle"></i></div>
         <div class="achievement-number">
-          <span class="counter" data-target="250">0</span>
-          <span class="plus">+</span>
+          <span class="counter" data-target="250">0</span><span class="plus">+</span>
         </div>
         <p class="achievement-label">Completed Tasks</p>
       </div>
 
       <div class="achievement-item">
+        <div class="achievement-icon"><i class="fas fa-folder-open"></i></div>
         <div class="achievement-number">
-          <span class="counter" data-target="120">0</span>
-          <span class="plus">+</span>
+          <span class="counter" data-target="120">0</span><span class="plus">+</span>
         </div>
         <p class="achievement-label">Successful Projects</p>
       </div>
 
       <div class="achievement-item">
+        <div class="achievement-icon"><i class="fas fa-rocket"></i></div>
         <div class="achievement-number">
-          <span class="counter" data-target="85">0</span>
-          <span class="plus">+</span>
+          <span class="counter" data-target="85">0</span><span class="plus">+</span>
         </div>
         <p class="achievement-label">Delivered Projects</p>
       </div>
 
       <div class="achievement-item">
+        <div class="achievement-icon"><i class="fas fa-handshake"></i></div>
         <div class="achievement-number">
-          <span class="counter" data-target="60">0</span>
-          <span class="plus">+</span>
+          <span class="counter" data-target="60">0</span><span class="plus">+</span>
         </div>
-        <p class="achievement-label">Customers</p>
+        <p class="achievement-label">Happy Clients</p>
       </div>
 
     </div>
   </div>
 </section>
+
 
 <!-- ======= OUR CLIENTS / PARTNERS MARQUEE ======= -->
 <section class="clients-section" id="clients">
   <div class="container">
     <div class="clients-header">
       <span class="section-label">Our Partners</span>
-      <h2 class="section-title">Our Clients</h2>
+      <h2 class="section-title">Trusted By Leading Brands</h2>
     </div>
   </div>
   <div class="marquee-wrapper">
     <div class="marquee-track">
-      <!-- First set -->
       <div class="partner-logo"><img src="assets/images/partner-1.jpg" alt="Partner 1" loading="lazy" /></div>
       <div class="partner-logo"><img src="assets/images/partner-2.jpg" alt="Partner 2" loading="lazy" /></div>
       <div class="partner-logo"><img src="assets/images/partner-3.jpg" alt="Partner 3" loading="lazy" /></div>
@@ -234,18 +317,136 @@ include 'includes/header.php';
   </div>
 </section>
 
-<!-- ======= CTA SECTION ======= -->
-<section class="cta-section">
+
+<!-- ======= TESTIMONIALS — Our Clients Says ======= -->
+<section class="testimonials-section" id="testimonials">
   <div class="container">
-    <div class="cta-content">
-      <h2>Ready? Start your own business</h2>
-      <p>Let's build something amazing together. Our team is ready to help you transform your business.</p>
-      <div class="cta-btns">
-        <a href="contact.php" class="btn btn-white">Free Consultation</a>
-        <a href="about.php" class="btn btn-outline" style="color:#fff; border-color:rgba(255,255,255,.6);">Learn More</a>
+    <div class="testimonials-header">
+      <span class="section-label">Client Feedback</span>
+      <h2 class="section-title">Our Clients Says</h2>
+      <p class="section-desc" style="margin:0 auto;text-align:center">
+        Real results, real relationships. Here's what our clients say about working with DGTEC.
+      </p>
+    </div>
+    <div class="testimonials-grid">
+
+      <div class="testimonial-card">
+        <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
+        <p class="testimonial-text">"DGTEC transformed our HR and recruitment process entirely. Their team understood our needs from day one and delivered a talent pipeline that exceeded every expectation. We now operate with a level of efficiency we didn't think was possible."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">A</div>
+          <div class="testimonial-info">
+            <h5>Ahmed Al-Rashidi</h5>
+            <span>HR Director, National Tech Co.</span>
+          </div>
+          <div class="testimonial-stars">★★★★★</div>
+        </div>
       </div>
+
+      <div class="testimonial-card">
+        <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
+        <p class="testimonial-text">"The digital transformation roadmap DGTEC delivered was exactly what our organisation needed. Their expertise in process automation and AI integration helped us cut operational costs significantly and accelerate our Vision 2030 alignment."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">S</div>
+          <div class="testimonial-info">
+            <h5>Sara Al-Otaibi</h5>
+            <span>CEO, GreenPath Solutions KSA</span>
+          </div>
+          <div class="testimonial-stars">★★★★★</div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
+        <p class="testimonial-text">"We engaged DGTEC's Tech Squad-as-a-Service and the results were outstanding. A dedicated, highly skilled team deployed within days — no overhead, no delays. Their agile approach made scaling our product development seamless and cost-effective."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">K</div>
+          <div class="testimonial-info">
+            <h5>Khalid Mansour</h5>
+            <span>CTO, Horizons Digital Group</span>
+          </div>
+          <div class="testimonial-stars">★★★★★</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
+
+
+<!-- ======= CONTACT FORM SECTION ======= -->
+<section class="home-contact-section" id="home-contact">
+  <div class="container">
+    <div class="home-contact-inner">
+
+      <div class="home-contact-text">
+        <span class="section-label">Get In Touch</span>
+        <h2 class="section-title" style="color:#fff">Let's Start Your<br>Digital Journey</h2>
+        <p class="section-desc" style="color:rgba(255,255,255,.75)">
+          Ready to transform your business? Fill in the form and our team will get back to you within 24 hours.
+        </p>
+        <div class="home-contact-info">
+          <div class="home-contact-info-item">
+            <div class="hci-icon"><i class="fas fa-phone"></i></div>
+            <span>+966 11 000 0000</span>
+          </div>
+          <div class="home-contact-info-item">
+            <div class="hci-icon"><i class="fas fa-envelope"></i></div>
+            <span>info@dgtec.com.sa</span>
+          </div>
+          <div class="home-contact-info-item">
+            <div class="hci-icon"><i class="fas fa-location-dot"></i></div>
+            <span>Riyadh, Saudi Arabia</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-contact-form-wrap">
+        <h3>Send Us a Message</h3>
+        <p>We'll respond within 24 hours.</p>
+        <form id="home-contact-form" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="hc-name">Full Name</label>
+              <input type="text" id="hc-name" name="name" placeholder="Your full name" required />
+            </div>
+            <div class="form-group">
+              <label for="hc-email">Email Address</label>
+              <input type="email" id="hc-email" name="email" placeholder="your@email.com" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="hc-mobile">Phone Number</label>
+              <input type="tel" id="hc-mobile" name="mobile" placeholder="+966 5x xxx xxxx" />
+            </div>
+            <div class="form-group">
+              <label for="hc-service">Service Interested In</label>
+              <select id="hc-service" name="service">
+                <option value="">Select a service…</option>
+                <option>Expert Technical Recruitment</option>
+                <option>Scalable Outsourcing Solutions</option>
+                <option>Enterprise Digital Transformation</option>
+                <option>Tech Squad-as-a-Service</option>
+                <option>Data Handling Solutions</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="hc-message">Message</label>
+            <textarea id="hc-message" name="message" rows="4" placeholder="Tell us about your project…"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary form-submit">
+            Send Message <i class="fas fa-paper-plane"></i>
+          </button>
+          <div id="home-form-message" class="form-message"></div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 
 <?php include 'includes/footer.php'; ?>
