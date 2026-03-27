@@ -1816,6 +1816,34 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .sidebar-tag:hover { background: var(--primary); color: var(--white); }
 
 /* ========================================
+   SCROLL REVEAL — IntersectionObserver driven
+   Classes added by JS at runtime.
+   If JS is unavailable → elements are always fully visible (no opacity:0 in CSS).
+   ======================================== */
+.scroll-reveal { will-change: opacity, transform; }
+
+.scroll-reveal.r-up {
+  opacity: 0;
+  transform: translateY(38px);
+  transition: opacity .58s ease, transform .58s ease;
+}
+.scroll-reveal.r-left {
+  opacity: 0;
+  transform: translateX(-46px);
+  transition: opacity .65s ease, transform .65s ease;
+}
+.scroll-reveal.r-right {
+  opacity: 0;
+  transform: translateX(46px);
+  transition: opacity .65s ease, transform .65s ease;
+}
+/* Revealed — force override any residual inline styles */
+.scroll-reveal.scroll-visible {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ========================================
    ANIMATIONS & UTILITIES
    ======================================== */
 .fade-up { opacity: 0; transform: translateY(40px); }

@@ -1,6 +1,6 @@
 /* ========================================
    DGTEC Website — main.js
-   jQuery + GSAP animations
+   jQuery + GSAP (hero only) + IntersectionObserver (scroll reveals)
    ======================================== */
 $(function () {
 
@@ -74,11 +74,9 @@ $(function () {
     var autoTimer = null;
 
     function showSlide(n) {
-      // remove active from current
       $slides.eq(current).removeClass('active');
       $dots.eq(current).removeClass('active');
 
-      // switch
       current = ((n % total) + total) % total;
 
       $slides.eq(current).addClass('active');
@@ -98,35 +96,11 @@ $(function () {
   }
 
   /* ================================================================
-     GSAP SCROLL ANIMATIONS
-     Key rules applied to every animation:
-       • immediateRender: false  → GSAP does NOT set opacity:0 until trigger fires
-       • clearProps: 'all'       → removes all inline styles after animation ends
-       • once: true              → plays once, does not reverse on scroll up
-       • Existence check         → only animate if the selector exists on this page
+     GSAP — hero text entrance ONLY (no ScrollTrigger)
   ================================================================ */
-
   if (typeof gsap !== 'undefined') {
-
     try {
-
-      gsap.registerPlugin(ScrollTrigger);
-
-      /* Helper — only animates if at least one element matches */
-      function anim(selector, fromVars, triggerEl, startPos) {
-        if (!document.querySelector(selector)) return;
-        fromVars.immediateRender = false;
-        fromVars.clearProps      = 'all';
-        fromVars.scrollTrigger  = {
-          trigger     : triggerEl || selector,
-          start       : startPos  || 'top 88%',
-          once        : true,
-          toggleActions: 'play none none none'
-        };
-        gsap.from(selector, fromVars);
-      }
-
-      /* ---- Hero text entrance (no scroll trigger — fires on load) ---- */
+      /* Hero slider text entrance */
       if (document.querySelector('.hero-slide')) {
         gsap.fromTo(
           '.hero-slide.active .hero-text > *',
@@ -136,7 +110,7 @@ $(function () {
         );
       }
 
-      /* ---- Page hero (about / contact / inner pages) ---- */
+      /* Page hero (about / contact / inner pages) */
       if (document.querySelector('.page-hero-content')) {
         gsap.fromTo(
           '.page-hero-content',
@@ -145,47 +119,108 @@ $(function () {
             delay: 0.3, clearProps: 'all' }
         );
       }
-
-      /* ---- Homepage sections ---- */
-      anim('.service-card',       { y: 50, opacity: 0, duration: 0.55, stagger: 0.12, ease: 'power3.out' }, '.services-section');
-      anim('.solutions-content',  { x: -50, opacity: 0, duration: 0.7,  ease: 'power3.out' }, '.solutions-section');
-      anim('.solutions-image',    { x:  50, opacity: 0, duration: 0.7,  ease: 'power3.out' }, '.solutions-section');
-      anim('.process-step',       { y: 55, opacity: 0, duration: 0.5, stagger: 0.12, ease: 'power3.out' }, '.process-section');
-      anim('.process-footer-inner', { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out' }, '.process-footer');
-      anim('.achievements-header',  { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out' }, '.achievements-section');
-      anim('.testimonial-card',     { y: 50, opacity: 0, duration: 0.55, stagger: 0.15, ease: 'power3.out' }, '.testimonials-section');
-      anim('.home-contact-text',      { x: -40, opacity: 0, duration: 0.8, ease: 'power3.out' }, '.home-contact-section');
-      anim('.home-contact-form-wrap', { x:  40, opacity: 0, duration: 0.8, ease: 'power3.out' }, '.home-contact-section');
-
-      /* ---- Listing pages (solutions.php / services.php) ---- */
-      anim('.listing-card', { y: 60, opacity: 0, duration: 0.65, stagger: 0.18, ease: 'power3.out' }, '.listing-cards');
-
-      /* ---- Inner detail pages ---- */
-      anim('.inner-overview-text',  { x: -50, opacity: 0, duration: 0.8, ease: 'power3.out' }, '.inner-overview');
-      anim('.inner-overview-image', { x:  50, opacity: 0, duration: 0.8, ease: 'power3.out' }, '.inner-overview');
-      anim('.inner-feature-card',   { y: 50, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out' }, '.inner-features');
-      anim('.inner-highlight-item', { y: 30, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out' }, '.inner-highlights-grid');
-
-      /* ---- Blog pages ---- */
-      anim('.blog-card',    { y: 50, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out' }, '.blog-grid');
-      anim('.post-content', { y: 40, opacity: 0, duration: 0.7, ease: 'power3.out' }, '.post-section');
-      anim('.post-sidebar', { x: 40, opacity: 0, duration: 0.7, ease: 'power3.out' }, '.post-section');
-
-      /* ---- About page ---- */
-      anim('.why-card',        { y: 50, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out' }, '.why-choose-section');
-      anim('.about-image-wrap',{ scale: 0.95, opacity: 0, duration: 0.8, ease: 'power3.out' }, '.about-intro');
-      anim('.about-text',      { x: 40, opacity: 0, duration: 0.8, ease: 'power3.out' }, '.about-intro');
-
-      /* ---- Contact page ---- */
-      anim('.contact-card',     { x: -40, opacity: 0, duration: 0.5, stagger: 0.15, ease: 'power3.out' }, '.contact-section');
-      anim('.contact-form-wrap',{ x:  40, opacity: 0, duration: 0.7, ease: 'power3.out' }, '.contact-section');
-
     } catch (err) {
-      /* If GSAP fails for any reason, elements stay visible (no opacity:0 applied) */
       console.warn('GSAP init error:', err);
     }
+  }
 
-  } // end gsap block
+  /* ================================================================
+     SCROLL REVEAL — IntersectionObserver driven
+     Each entry: [ selector, direction, staggerDelay ]
+       direction: 'up' | 'left' | 'right'
+       staggerDelay: seconds between sibling items (0 = no stagger)
+  ================================================================ */
+
+  var REVEAL_MAP = [
+    /* Homepage */
+    ['.service-card',           'up',    0.10],
+    ['.solutions-content',      'left',  0   ],
+    ['.solutions-image',        'right', 0   ],
+    ['.process-step',           'up',    0.12],
+    ['.process-footer-inner',   'up',    0   ],
+    ['.achievements-header',    'up',    0   ],
+    ['.testimonial-card',       'up',    0.12],
+    ['.home-contact-text',      'left',  0   ],
+    ['.home-contact-form-wrap', 'right', 0   ],
+    /* Listing pages */
+    ['.listing-card',           'up',    0   ],
+    /* Inner detail pages */
+    ['.inner-overview-text',    'left',  0   ],
+    ['.inner-overview-image',   'right', 0   ],
+    ['.inner-feature-card',     'up',    0.10],
+    ['.inner-highlight-item',   'up',    0.10],
+    /* Blog */
+    ['.blog-card',              'up',    0.10],
+    ['.post-content',           'up',    0   ],
+    ['.post-sidebar',           'right', 0   ],
+    /* About */
+    ['.why-card',               'up',    0.10],
+    ['.about-image-wrap',       'left',  0   ],
+    ['.about-text',             'right', 0   ],
+    /* Contact */
+    ['.contact-card',           'left',  0.10],
+    ['.contact-form-wrap',      'right', 0   ],
+  ];
+
+  /* Group siblings so stagger is calculated per-group */
+  function applyRevealClasses() {
+    REVEAL_MAP.forEach(function (entry) {
+      var selector    = entry[0];
+      var dir         = entry[1];
+      var staggerStep = entry[2];
+      var dirClass    = dir === 'left' ? 'r-left' : dir === 'right' ? 'r-right' : 'r-up';
+
+      /* Group by parent so stagger resets for each separate group */
+      var elements = document.querySelectorAll(selector);
+      if (!elements.length) return;
+
+      var groups = {};
+      elements.forEach(function (el) {
+        var parentKey = el.parentElement ? el.parentElement.dataset.revealGroup || (function () {
+          var id = 'rg-' + Math.random().toString(36).slice(2);
+          el.parentElement.dataset.revealGroup = id;
+          return id;
+        })() : '__root__';
+        if (!groups[parentKey]) groups[parentKey] = [];
+        groups[parentKey].push(el);
+      });
+
+      Object.values(groups).forEach(function (groupEls) {
+        groupEls.forEach(function (el, i) {
+          el.classList.add('scroll-reveal', dirClass);
+          if (staggerStep > 0) {
+            el.style.transitionDelay = (i * staggerStep) + 's';
+          }
+        });
+      });
+    });
+  }
+
+  applyRevealClasses();
+
+  /* Create observer */
+  if ('IntersectionObserver' in window) {
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('scroll-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.12,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    document.querySelectorAll('.scroll-reveal').forEach(function (el) {
+      revealObserver.observe(el);
+    });
+  } else {
+    /* Fallback: show everything immediately if IntersectionObserver unsupported */
+    document.querySelectorAll('.scroll-reveal').forEach(function (el) {
+      el.classList.add('scroll-visible');
+    });
+  }
 
 
   /* ================================================================
