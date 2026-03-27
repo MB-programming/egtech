@@ -4,14 +4,16 @@
    ======================================== */
 $(function () {
 
-  /* ---- Sticky Header ---- */
-  $(window).on('scroll', function () {
-    if ($(this).scrollTop() > 60) {
+  /* ---- Sticky / Floating Header ---- */
+  function updateHeader() {
+    if ($(window).scrollTop() > 60) {
       $('.site-header').addClass('scrolled');
     } else {
       $('.site-header').removeClass('scrolled');
     }
-  });
+  }
+  $(window).on('scroll', updateHeader);
+  updateHeader(); // run on load
 
   /* ---- Mobile Hamburger ---- */
   $('.hamburger').on('click', function () {
@@ -63,18 +65,58 @@ $(function () {
     }
   });
 
-  /* ---- GSAP Hero Animations ---- */
+  /* ---- Hero Slider ---- */
+  var currentSlide = 0;
+  var $slides = $('.hero-slide');
+  var $dots = $('.hero-dot');
+  var totalSlides = $slides.length;
+  var slideTimer;
+
+  function animateSlideIn($slide) {
+    if (typeof gsap !== 'undefined') {
+      gsap.fromTo(
+        $slide.find('.hero-label, .hero-title, .hero-desc, .hero-btns'),
+        { y: 36, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.65, stagger: 0.12, ease: 'power3.out', clearProps: 'all' }
+      );
+    }
+  }
+
+  function goToSlide(n) {
+    $slides.removeClass('active');
+    $dots.removeClass('active');
+    currentSlide = ((n % totalSlides) + totalSlides) % totalSlides;
+    var $active = $slides.eq(currentSlide);
+    $active.addClass('active');
+    $dots.eq(currentSlide).addClass('active');
+    animateSlideIn($active);
+  }
+
+  function nextSlide() { goToSlide(currentSlide + 1); }
+  function prevSlide() { goToSlide(currentSlide - 1); }
+
+  function startAutoplay() {
+    slideTimer = setInterval(nextSlide, 5500);
+  }
+  function resetAutoplay() {
+    clearInterval(slideTimer);
+    startAutoplay();
+  }
+
+  $('.hero-next').on('click', function () { nextSlide(); resetAutoplay(); });
+  $('.hero-prev').on('click', function () { prevSlide(); resetAutoplay(); });
+  $('.hero-dot').on('click', function () { goToSlide($(this).index()); resetAutoplay(); });
+
+  // Kick off
+  if (totalSlides > 0) {
+    // First slide already has .active in HTML; just animate + start timer
+    setTimeout(function () { animateSlideIn($slides.eq(0)); }, 300);
+    startAutoplay();
+  }
+
+  /* ---- GSAP Scroll Animations ---- */
   if (typeof gsap !== 'undefined') {
     gsap.registerPlugin(ScrollTrigger);
-
-    // Hero entrance
-    const heroTl = gsap.timeline({ delay: 0.2 });
-    heroTl
-      .from('.hero-label',   { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out' })
-      .from('.hero-title',   { y: 40, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.3')
-      .from('.hero-desc',    { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.4')
-      .from('.hero-btns',    { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.4')
-      .from('.hero-scroll',  { opacity: 0, duration: 0.5 }, '-=0.2');
 
     // Services cards - stagger on scroll
     gsap.from('.service-card', {
@@ -112,6 +154,34 @@ $(function () {
     gsap.from('.contact-form-wrap', {
       scrollTrigger: { trigger: '.contact-section', start: 'top 75%' },
       x: 40, opacity: 0, duration: 0.7, ease: 'power3.out'
+    });
+
+    // Testimonials
+    gsap.from('.testimonial-card', {
+      scrollTrigger: { trigger: '.testimonials-section', start: 'top 75%' },
+      y: 50, opacity: 0, duration: 0.55, stagger: 0.15, ease: 'power3.out'
+    });
+
+    // Home contact form
+    gsap.from('.home-contact-text', {
+      scrollTrigger: { trigger: '.home-contact-section', start: 'top 70%' },
+      x: -40, opacity: 0, duration: 0.8, ease: 'power3.out'
+    });
+    gsap.from('.home-contact-form-wrap', {
+      scrollTrigger: { trigger: '.home-contact-section', start: 'top 70%' },
+      x: 40, opacity: 0, duration: 0.8, ease: 'power3.out'
+    });
+
+    // Process footer banner
+    gsap.from('.process-footer-inner', {
+      scrollTrigger: { trigger: '.process-footer', start: 'top 85%' },
+      y: 30, opacity: 0, duration: 0.6, ease: 'power3.out'
+    });
+
+    // Achievements header
+    gsap.from('.achievements-header', {
+      scrollTrigger: { trigger: '.achievements-section', start: 'top 75%' },
+      y: 30, opacity: 0, duration: 0.6, ease: 'power3.out'
     });
 
     // Page hero
@@ -213,10 +283,37 @@ $(function () {
     $(this).css('animation-play-state', 'running');
   });
 
-  /* ---- Hero parallax ---- */
-  $(window).on('scroll', function () {
-    const scrolled = $(this).scrollTop();
-    $('.hero-bg').css('transform', `translateY(${scrolled * 0.35}px)`);
+  /* ---- Home Contact Form Submit ---- */
+  $('#home-contact-form').on('submit', function (e) {
+    e.preventDefault();
+    const $form = $(this);
+    const $btn = $form.find('.form-submit');
+    const $msg = $('#home-form-message');
+
+    $btn.prop('disabled', true).html('<span class="spinner"></span> Sending...');
+    $msg.hide().removeClass('success error');
+
+    $.ajax({
+      url: 'php/contact-process.php',
+      type: 'POST',
+      data: $form.serialize(),
+      dataType: 'json',
+      success: function (res) {
+        $msg.text(res.message).addClass(res.success ? 'success' : 'error').show();
+        if (res.success) {
+          $form[0].reset();
+          if (typeof gsap !== 'undefined') {
+            gsap.from($msg[0], { scale: 0.9, opacity: 0, duration: 0.4, ease: 'back.out(2)' });
+          }
+        }
+      },
+      error: function () {
+        $msg.text('Network error. Please try again.').addClass('error').show();
+      },
+      complete: function () {
+        $btn.prop('disabled', false).html('Send Message <i class="fas fa-paper-plane"></i>');
+      }
+    });
   });
 
 });

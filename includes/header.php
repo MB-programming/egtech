@@ -67,14 +67,14 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li class="nav-item">
           <a href="contact.php" class="nav-link <?= $current_page === 'contact' ? 'active' : '' ?>">Contact</a>
         </li>
-        <!-- CTA inside mobile menu -->
-        <li class="nav-item nav-cta">
+        <!-- CTA inside mobile menu only -->
+        <li class="nav-item nav-cta-mobile">
           <a href="contact.php" class="btn btn-primary">Free Consultation</a>
         </li>
       </ul>
 
-      <!-- Desktop CTA -->
-      <a href="contact.php" class="btn btn-primary nav-cta">Free Consultation</a>
+      <!-- Desktop CTA (hidden on mobile via CSS) -->
+      <a href="contact.php" class="btn btn-primary nav-cta-desktop">Free Consultation</a>
 
       <!-- Hamburger -->
       <button class="hamburger" aria-label="Toggle menu">
