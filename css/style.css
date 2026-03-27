@@ -316,7 +316,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .hero-slide-bg {
   position: absolute;
   inset: 0;
-  background-image: var(--slide-bg);
+  /* background-image is set via inline style on each slide */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
