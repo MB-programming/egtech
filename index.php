@@ -9,9 +9,9 @@ include 'includes/header.php';
   <div class="hero-slider-wrapper">
 
     <!-- Slide 1 -->
-    <div class="hero-slide active" style="--slide-bg:url('assets/images/hero-slider.webp')">
-      <div class="hero-slide-bg"></div>
-      <div class="hero-slide-overlay" style="background:linear-gradient(105deg,rgba(24,63,150,.86)40%,rgba(24,63,150,.42)100%)"></div>
+    <div class="hero-slide active">
+      <div class="hero-slide-bg" style="background-image:url('assets/images/hero-slider.webp')"></div>
+      <div class="hero-slide-overlay" style="background:linear-gradient(105deg,rgba(24,63,150,.84)0%,rgba(24,63,150,.45)100%)"></div>
       <div class="container hero-content">
         <div class="hero-text">
           <span class="hero-label">Saudi Vision 2030 Aligned</span>
@@ -26,9 +26,9 @@ include 'includes/header.php';
     </div>
 
     <!-- Slide 2 -->
-    <div class="hero-slide" style="--slide-bg:url('assets/images/hero-bg.png')">
-      <div class="hero-slide-bg"></div>
-      <div class="hero-slide-overlay" style="background:linear-gradient(105deg,rgba(3,50,80,.88)40%,rgba(3,100,120,.48)100%)"></div>
+    <div class="hero-slide">
+      <div class="hero-slide-bg" style="background-image:url('assets/images/hero-bg.png')"></div>
+      <div class="hero-slide-overlay" style="background:linear-gradient(105deg,rgba(3,50,80,.88)0%,rgba(3,100,120,.50)100%)"></div>
       <div class="container hero-content">
         <div class="hero-text">
           <span class="hero-label">Expert Talent Acquisition</span>
@@ -43,9 +43,9 @@ include 'includes/header.php';
     </div>
 
     <!-- Slide 3 -->
-    <div class="hero-slide" style="--slide-bg:url('assets/images/hero-slider.webp')">
-      <div class="hero-slide-bg"></div>
-      <div class="hero-slide-overlay" style="background:linear-gradient(135deg,rgba(3,134,158,.88)0%,rgba(24,63,150,.88)100%)"></div>
+    <div class="hero-slide">
+      <div class="hero-slide-bg" style="background-image:url('assets/images/hero-slider.webp')"></div>
+      <div class="hero-slide-overlay" style="background:linear-gradient(135deg,rgba(3,134,158,.86)0%,rgba(24,63,150,.90)100%)"></div>
       <div class="container hero-content">
         <div class="hero-text">
           <span class="hero-label">AI-Powered Digital Growth</span>
