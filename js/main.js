@@ -156,6 +156,12 @@ $(function () {
       x: 40, opacity: 0, duration: 0.7, ease: 'power3.out'
     });
 
+    // Listing cards (solutions.php / services.php)
+    gsap.from('.listing-card', {
+      scrollTrigger: { trigger: '.listing-cards', start: 'top 75%' },
+      y: 60, opacity: 0, duration: 0.65, stagger: 0.18, ease: 'power3.out'
+    });
+
     // Inner page overview
     gsap.from('.inner-overview-text', {
       scrollTrigger: { trigger: '.inner-overview', start: 'top 70%' },

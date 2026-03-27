@@ -44,16 +44,20 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
           <a href="about.php" class="nav-link <?= $current_page === 'about' ? 'active' : '' ?>">About</a>
         </li>
         <li class="nav-item has-dropdown">
-          <a href="#" class="nav-link">Our Solutions <i class="fas fa-chevron-down"></i></a>
+          <a href="solutions.php" class="nav-link <?= $current_page === 'solutions' ? 'active' : '' ?>">Our Solutions <i class="fas fa-chevron-down"></i></a>
           <ul class="dropdown">
+            <li><a href="solutions.php"><i class="fas fa-th-large" style="width:16px;color:var(--accent);margin-right:4px;font-size:12px;"></i> All Solutions</a></li>
+            <li style="border-top:1px solid #f0f4ff;margin:4px 0;"></li>
             <li><a href="solution-digital-onboarding.php">Digital Onboarding &amp; Compliance</a></li>
             <li><a href="solution-enterprise-automation.php">Enterprise Content &amp; Process Automation</a></li>
             <li><a href="solution-tea-boy.php">Tea Boy – Smart Internal Operations</a></li>
           </ul>
         </li>
         <li class="nav-item has-dropdown">
-          <a href="#" class="nav-link">Our Services <i class="fas fa-chevron-down"></i></a>
+          <a href="services.php" class="nav-link <?= $current_page === 'services' ? 'active' : '' ?>">Our Services <i class="fas fa-chevron-down"></i></a>
           <ul class="dropdown">
+            <li><a href="services.php"><i class="fas fa-th-large" style="width:16px;color:var(--accent);margin-right:4px;font-size:12px;"></i> All Services</a></li>
+            <li style="border-top:1px solid #f0f4ff;margin:4px 0;"></li>
             <li><a href="service-recruitment.php">Expert Technical Recruitment</a></li>
             <li><a href="service-outsourcing.php">Scalable Outsourcing Solutions</a></li>
             <li><a href="service-digital-transformation.php">Enterprise Digital Transformation</a></li>
