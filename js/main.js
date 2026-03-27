@@ -156,6 +156,40 @@ $(function () {
       x: 40, opacity: 0, duration: 0.7, ease: 'power3.out'
     });
 
+    // Inner page overview
+    gsap.from('.inner-overview-text', {
+      scrollTrigger: { trigger: '.inner-overview', start: 'top 70%' },
+      x: -50, opacity: 0, duration: 0.8, ease: 'power3.out'
+    });
+    gsap.from('.inner-overview-image', {
+      scrollTrigger: { trigger: '.inner-overview', start: 'top 70%' },
+      x: 50, opacity: 0, duration: 0.8, ease: 'power3.out'
+    });
+    gsap.from('.inner-feature-card', {
+      scrollTrigger: { trigger: '.inner-features', start: 'top 75%' },
+      y: 50, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out'
+    });
+    gsap.from('.inner-highlight-item', {
+      scrollTrigger: { trigger: '.inner-highlights', start: 'top 80%' },
+      y: 30, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out'
+    });
+
+    // Blog cards
+    gsap.from('.blog-card', {
+      scrollTrigger: { trigger: '.blog-grid', start: 'top 75%' },
+      y: 50, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out'
+    });
+
+    // Post content
+    gsap.from('.post-content', {
+      scrollTrigger: { trigger: '.post-section', start: 'top 75%' },
+      y: 40, opacity: 0, duration: 0.7, ease: 'power3.out'
+    });
+    gsap.from('.post-sidebar', {
+      scrollTrigger: { trigger: '.post-section', start: 'top 75%' },
+      x: 40, opacity: 0, duration: 0.7, ease: 'power3.out'
+    });
+
     // Testimonials
     gsap.from('.testimonial-card', {
       scrollTrigger: { trigger: '.testimonials-section', start: 'top 75%' },

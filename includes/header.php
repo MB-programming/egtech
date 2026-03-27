@@ -46,23 +46,23 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li class="nav-item has-dropdown">
           <a href="#" class="nav-link">Our Solutions <i class="fas fa-chevron-down"></i></a>
           <ul class="dropdown">
-            <li><a href="#">Digital Onboarding &amp; Compliance</a></li>
-            <li><a href="#">Enterprise Content &amp; Process Automation</a></li>
-            <li><a href="#">Tea Boy – Smart Internal Operations</a></li>
+            <li><a href="solution-digital-onboarding.php">Digital Onboarding &amp; Compliance</a></li>
+            <li><a href="solution-enterprise-automation.php">Enterprise Content &amp; Process Automation</a></li>
+            <li><a href="solution-tea-boy.php">Tea Boy – Smart Internal Operations</a></li>
           </ul>
         </li>
         <li class="nav-item has-dropdown">
           <a href="#" class="nav-link">Our Services <i class="fas fa-chevron-down"></i></a>
           <ul class="dropdown">
-            <li><a href="#">Expert Technical Recruitment</a></li>
-            <li><a href="#">Scalable Outsourcing Solutions</a></li>
-            <li><a href="#">Enterprise Digital Transformation</a></li>
-            <li><a href="#">Tech Squad-as-a-Service</a></li>
-            <li><a href="#">Data Handling Solutions</a></li>
+            <li><a href="service-recruitment.php">Expert Technical Recruitment</a></li>
+            <li><a href="service-outsourcing.php">Scalable Outsourcing Solutions</a></li>
+            <li><a href="service-digital-transformation.php">Enterprise Digital Transformation</a></li>
+            <li><a href="service-tech-squad.php">Tech Squad-as-a-Service</a></li>
+            <li><a href="service-data-handling.php">Data Handling Solutions</a></li>
           </ul>
         </li>
         <li class="nav-item">
-          <a href="#" class="nav-link">Blogs</a>
+          <a href="blog.php" class="nav-link <?= $current_page === 'blog' ? 'active' : '' ?>">Blogs</a>
         </li>
         <li class="nav-item">
           <a href="contact.php" class="nav-link <?= $current_page === 'contact' ? 'active' : '' ?>">Contact</a>
