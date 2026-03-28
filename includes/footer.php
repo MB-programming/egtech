@@ -1,3 +1,11 @@
+<?php
+/* Load site_info if not already loaded */
+if (!function_exists('dgtec_site_info')) {
+    require_once __DIR__ . '/admin-db.php';
+}
+$_fsite = dgtec_site_info();
+$_footer_logo = $_fsite['footer_logo'] ?: 'assets/images/logo.webp';
+?>
 <!-- ======= FOOTER ======= -->
 <footer class="site-footer">
   <div class="container">
@@ -5,8 +13,8 @@
 
       <!-- Brand -->
       <div class="footer-brand">
-        <img src="assets/images/logo.webp" alt="DGTEC Logo" width="140" height="44" />
-        <p>We believe technology has the power to do amazing things. DGTEC delivers advanced integrated solutions that transform businesses across the Kingdom.</p>
+        <img src="<?= htmlspecialchars($_footer_logo) ?>" alt="DGTEC Logo" width="140" height="44" />
+        <p><?= htmlspecialchars($_fsite['footer_description'] ?: 'We believe technology has the power to do amazing things. DGTEC delivers advanced integrated solutions that transform businesses across the Kingdom.') ?></p>
         <div class="footer-social">
           <a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
           <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
@@ -40,18 +48,24 @@
       <!-- Contact -->
       <div class="footer-col">
         <h4>Contact Us</h4>
+        <?php if ($_fsite['phone']): ?>
         <div class="footer-contact-item">
           <i class="fas fa-phone"></i>
-          <span><a href="tel:+966539796000">+966 539 796 000</a></span>
+          <span><a href="tel:<?= preg_replace('/[^+0-9]/', '', $_fsite['phone']) ?>"><?= htmlspecialchars($_fsite['phone']) ?></a></span>
         </div>
+        <?php endif; ?>
+        <?php if ($_fsite['email']): ?>
         <div class="footer-contact-item">
           <i class="fas fa-envelope"></i>
-          <span><a href="mailto:projects@dgtec.com.sa">projects@dgtec.com.sa</a></span>
+          <span><a href="mailto:<?= htmlspecialchars($_fsite['email']) ?>"><?= htmlspecialchars($_fsite['email']) ?></a></span>
         </div>
+        <?php endif; ?>
+        <?php if ($_fsite['address']): ?>
         <div class="footer-contact-item">
           <i class="fas fa-location-dot"></i>
-          <span>King Abdulaziz Rd, As Sulimaniyah,<br>Riyadh 12243, Saudi Arabia</span>
+          <span><?= htmlspecialchars($_fsite['address']) ?></span>
         </div>
+        <?php endif; ?>
       </div>
 
     </div>

@@ -1,8 +1,11 @@
 <?php
-$page_title = 'DGTEC – Technological Transformation in The Kingdom';
-$page_desc  = 'DGTEC delivers advanced Technical Recruitment, Scalable Outsourcing, AI automation and Digital Transformation solutions in Saudi Arabia.';
 require_once 'includes/admin-db.php';
+$_si        = dgtec_site_info();
+$page_title = 'DGTEC – Technological Transformation in The Kingdom';
+$page_desc  = $_si['site_description'] ?: 'DGTEC delivers advanced Technical Recruitment, Scalable Outsourcing, AI automation and Digital Transformation solutions in Saudi Arabia.';
 $hero_slides = dgtec_slides_active();
+$partners    = dgtec_partners_active();
+$reviews     = dgtec_reviews_active();
 include 'includes/header.php';
 ?>
 
@@ -276,23 +279,39 @@ include 'includes/header.php';
       <h2 class="section-title">Trusted By Leading Brands</h2>
     </div>
   </div>
+  <?php if (!empty($partners)): ?>
   <div class="marquee-wrapper">
     <div class="marquee-track">
-      <div class="partner-logo"><img src="assets/images/partner-1.jpg" alt="Partner 1" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/partner-2.jpg" alt="Partner 2" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/partner-3.jpg" alt="Partner 3" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/partner-4.jpg" alt="Partner 4" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/partner-5.jpg" alt="Partner 5" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/brand-one.webp" alt="Brand Partner" loading="lazy" /></div>
+      <?php foreach ($partners as $p): ?>
+      <?php if ($p['logo']): ?>
+      <div class="partner-logo">
+        <?php if ($p['website_url']): ?>
+        <a href="<?= htmlspecialchars($p['website_url']) ?>" target="_blank" rel="noopener">
+          <img src="<?= htmlspecialchars($p['logo']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" loading="lazy" />
+        </a>
+        <?php else: ?>
+        <img src="<?= htmlspecialchars($p['logo']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" loading="lazy" />
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
+      <?php endforeach; ?>
       <!-- Duplicate for seamless loop -->
-      <div class="partner-logo"><img src="assets/images/partner-1.jpg" alt="Partner 1" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/partner-2.jpg" alt="Partner 2" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/partner-3.jpg" alt="Partner 3" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/partner-4.jpg" alt="Partner 4" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/partner-5.jpg" alt="Partner 5" loading="lazy" /></div>
-      <div class="partner-logo"><img src="assets/images/brand-one.webp" alt="Brand Partner" loading="lazy" /></div>
+      <?php foreach ($partners as $p): ?>
+      <?php if ($p['logo']): ?>
+      <div class="partner-logo">
+        <?php if ($p['website_url']): ?>
+        <a href="<?= htmlspecialchars($p['website_url']) ?>" target="_blank" rel="noopener">
+          <img src="<?= htmlspecialchars($p['logo']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" loading="lazy" />
+        </a>
+        <?php else: ?>
+        <img src="<?= htmlspecialchars($p['logo']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" loading="lazy" />
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
+      <?php endforeach; ?>
     </div>
   </div>
+  <?php endif; ?>
 </section>
 
 
@@ -307,69 +326,43 @@ include 'includes/header.php';
       </p>
     </div>
 
+    <?php if (!empty($reviews)): ?>
     <div class="testi-slider">
-      <!-- Slides -->
       <div class="testi-track">
-
-        <div class="testi-slide active">
+        <?php foreach ($reviews as $ri => $rv): ?>
+        <div class="testi-slide <?= $ri === 0 ? 'active' : '' ?>">
           <div class="testimonial-card">
             <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
-            <p class="testimonial-text">"DGTEC transformed our HR and recruitment process entirely. Their team understood our needs from day one and delivered a talent pipeline that exceeded every expectation. We now operate with a level of efficiency we didn't think was possible."</p>
+            <p class="testimonial-text">"<?= htmlspecialchars($rv['review']) ?>"</p>
             <div class="testimonial-author">
-              <div class="testimonial-avatar">A</div>
+              <?php if ($rv['image']): ?>
+              <img src="<?= htmlspecialchars($rv['image']) ?>" alt="<?= htmlspecialchars($rv['name']) ?>"
+                   style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0" />
+              <?php else: ?>
+              <div class="testimonial-avatar"><?= strtoupper(substr($rv['name'], 0, 1)) ?></div>
+              <?php endif; ?>
               <div class="testimonial-info">
-                <h5>Ahmed Al-Rashidi</h5>
-                <span>HR Director, National Tech Co.</span>
+                <h5><?= htmlspecialchars($rv['name']) ?></h5>
+                <span><?= htmlspecialchars($rv['job_title']) ?></span>
               </div>
-              <div class="testimonial-stars">★★★★★</div>
+              <div class="testimonial-stars"><?= str_repeat('★', (int)$rv['stars']) ?></div>
             </div>
           </div>
         </div>
-
-        <div class="testi-slide">
-          <div class="testimonial-card">
-            <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
-            <p class="testimonial-text">"The digital transformation roadmap DGTEC delivered was exactly what our organisation needed. Their expertise in process automation and AI integration helped us cut operational costs significantly and accelerate our Vision 2030 alignment."</p>
-            <div class="testimonial-author">
-              <div class="testimonial-avatar">S</div>
-              <div class="testimonial-info">
-                <h5>Sara Al-Otaibi</h5>
-                <span>CEO, GreenPath Solutions KSA</span>
-              </div>
-              <div class="testimonial-stars">★★★★★</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="testi-slide">
-          <div class="testimonial-card">
-            <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
-            <p class="testimonial-text">"We engaged DGTEC's Tech Squad-as-a-Service and the results were outstanding. A dedicated, highly skilled team deployed within days — no overhead, no delays. Their agile approach made scaling our product development seamless and cost-effective."</p>
-            <div class="testimonial-author">
-              <div class="testimonial-avatar">K</div>
-              <div class="testimonial-info">
-                <h5>Khalid Mansour</h5>
-                <span>CTO, Horizons Digital Group</span>
-              </div>
-              <div class="testimonial-stars">★★★★★</div>
-            </div>
-          </div>
-        </div>
-
+        <?php endforeach; ?>
       </div><!-- /.testi-track -->
 
-      <!-- Controls -->
       <div class="testi-controls">
         <button class="testi-btn testi-prev" aria-label="Previous"><i class="fas fa-arrow-left"></i></button>
         <div class="testi-dots">
-          <span class="testi-dot active"></span>
-          <span class="testi-dot"></span>
-          <span class="testi-dot"></span>
+          <?php foreach ($reviews as $ri => $rv): ?>
+          <span class="testi-dot <?= $ri === 0 ? 'active' : '' ?>"></span>
+          <?php endforeach; ?>
         </div>
         <button class="testi-btn testi-next" aria-label="Next"><i class="fas fa-arrow-right"></i></button>
       </div>
-
     </div><!-- /.testi-slider -->
+    <?php endif; ?>
   </div>
 </section>
 
@@ -386,18 +379,24 @@ include 'includes/header.php';
           Ready to transform your business? Fill in the form and our team will get back to you within 24 hours.
         </p>
         <div class="home-contact-info">
+          <?php if ($_si['phone']): ?>
           <div class="home-contact-info-item">
             <div class="hci-icon"><i class="fas fa-phone"></i></div>
-            <span>+966 11 000 0000</span>
+            <span><?= htmlspecialchars($_si['phone']) ?></span>
           </div>
+          <?php endif; ?>
+          <?php if ($_si['email']): ?>
           <div class="home-contact-info-item">
             <div class="hci-icon"><i class="fas fa-envelope"></i></div>
-            <span>info@dgtec.com.sa</span>
+            <span><?= htmlspecialchars($_si['email']) ?></span>
           </div>
+          <?php endif; ?>
+          <?php if ($_si['address']): ?>
           <div class="home-contact-info-item">
             <div class="hci-icon"><i class="fas fa-location-dot"></i></div>
-            <span>Riyadh, Saudi Arabia</span>
+            <span><?= htmlspecialchars($_si['address']) ?></span>
           </div>
+          <?php endif; ?>
         </div>
       </div>
 
