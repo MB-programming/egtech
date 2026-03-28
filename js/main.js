@@ -2,6 +2,21 @@
    DGTEC Website — main.js
    jQuery + GSAP (hero entrance only) + IntersectionObserver
    ======================================== */
+
+/* ---- Header: apply scrolled state BEFORE first paint (no transition flash) ---- */
+(function () {
+  document.documentElement.classList.add('header-no-trans');
+  if ((window.pageYOffset || document.documentElement.scrollTop) > 60) {
+    var h = document.querySelector('.site-header');
+    if (h) h.classList.add('scrolled');
+  }
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      document.documentElement.classList.remove('header-no-trans');
+    });
+  });
+}());
+
 $(function () {
 
   /* ---- Floating Header ---- */
