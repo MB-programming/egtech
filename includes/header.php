@@ -37,6 +37,13 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
 
       <!-- Nav Menu -->
       <ul class="nav-menu" id="nav-menu">
+
+        <!-- Mobile panel header (hidden on desktop) -->
+        <li class="mobile-panel-head">
+          <a href="index.php"><img src="assets/images/logo.webp" alt="DGTEC" width="120" /></a>
+          <button class="mobile-panel-close" id="mobile-close" aria-label="Close menu"><i class="fas fa-times"></i></button>
+        </li>
+
         <li class="nav-item">
           <a href="index.php" class="nav-link <?= $current_page === 'index' ? 'active' : '' ?>">Home</a>
         </li>
@@ -88,3 +95,5 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
     </nav>
   </div>
 </header>
+<!-- Mobile menu overlay -->
+<div class="mobile-overlay" id="mobile-overlay"></div>

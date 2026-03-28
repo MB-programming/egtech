@@ -26,23 +26,29 @@ $(function () {
   $(window).on('scroll.header', updateHeader);
   updateHeader();
 
-  /* ---- Mobile Hamburger ---- */
-  $('.hamburger').on('click', function () {
-    $(this).toggleClass('open');
-    $('.nav-menu').toggleClass('open');
-    $('body').toggleClass('nav-open');
-  });
+  /* ---- Mobile popout menu ---- */
+  function openMobileMenu() {
+    $('.hamburger').addClass('open');
+    $('.nav-menu').addClass('open');
+    $('#mobile-overlay').addClass('open');
+    $('body').addClass('nav-open').css('overflow', 'hidden');
+  }
+  function closeMobileMenu() {
+    $('.hamburger').removeClass('open');
+    $('.nav-menu').removeClass('open');
+    $('#mobile-overlay').removeClass('open');
+    $('body').removeClass('nav-open').css('overflow', '');
+  }
 
-  // Close menu when a non-dropdown link is clicked
+  $('.hamburger').on('click', openMobileMenu);
+  $('#mobile-close, #mobile-overlay').on('click', closeMobileMenu);
+
+  // Close on regular link click (not dropdown toggles)
   $('.nav-menu .nav-link').not('.has-dropdown > .nav-link').on('click', function () {
-    if ($('.nav-menu').hasClass('open')) {
-      $('.hamburger').removeClass('open');
-      $('.nav-menu').removeClass('open');
-      $('body').removeClass('nav-open');
-    }
+    if ($('.nav-menu').hasClass('open')) closeMobileMenu();
   });
 
-  // Mobile: toggle dropdowns on parent click
+  // Mobile: toggle sub-dropdowns
   $('.nav-item.has-dropdown > .nav-link').on('click', function (e) {
     if (window.innerWidth <= 768) {
       e.preventDefault();
@@ -86,6 +92,33 @@ $(function () {
     $('.hero-prev').on('click', function () { showSlide(current - 1); resetAuto(); });
     $dots.on('click', function () { showSlide($(this).index()); resetAuto(); });
     startAuto();
+  }
+
+  /* ================================================================
+     TESTIMONIALS SLIDER
+  ================================================================ */
+  var $tSlides = $('.testi-slide');
+  var $tDots   = $('.testi-dot');
+
+  if ($tSlides.length > 0) {
+    var tCur   = 0;
+    var tTotal = $tSlides.length;
+    var tTimer = null;
+
+    function showTesti(n) {
+      $tSlides.eq(tCur).removeClass('active');
+      $tDots.eq(tCur).removeClass('active');
+      tCur = ((n % tTotal) + tTotal) % tTotal;
+      $tSlides.eq(tCur).addClass('active');
+      $tDots.eq(tCur).addClass('active');
+    }
+    function startTestiAuto() { tTimer = setInterval(function () { showTesti(tCur + 1); }, 5500); }
+    function resetTestiAuto() { clearInterval(tTimer); startTestiAuto(); }
+
+    $('.testi-next').on('click', function () { showTesti(tCur + 1); resetTestiAuto(); });
+    $('.testi-prev').on('click', function () { showTesti(tCur - 1); resetTestiAuto(); });
+    $tDots.on('click', function () { showTesti($(this).index()); resetTestiAuto(); });
+    startTestiAuto();
   }
 
   /* ================================================================
