@@ -86,49 +86,49 @@ include 'includes/header.php';
     </div>
     <div class="services-grid">
 
-      <div class="service-card">
+      <div class="service-card scroll-reveal r-up" style="transition-delay:0s">
         <div class="service-icon">
           <img src="assets/icons/icon-recruitment.png" alt="Recruitment" />
         </div>
         <h3>Expert Technical Recruitment</h3>
         <p>Hire Top-Tier talents across Technical, Managerial, and Engineering fields to drive innovation and success across your organisation.</p>
-        <a href="#" class="service-link">Hire Now <i class="fas fa-arrow-right"></i></a>
+        <a href="service-recruitment.php" class="service-link">Hire Now <i class="fas fa-arrow-right"></i></a>
       </div>
 
-      <div class="service-card">
+      <div class="service-card scroll-reveal r-up" style="transition-delay:.10s">
         <div class="service-icon">
           <img src="assets/icons/icon-outsourcing.png" alt="Outsourcing" />
         </div>
         <h3>Scalable Outsourcing Solutions</h3>
         <p>Get the Talent you need and reduce up to 55% operational cost and Hiring Risks with our flexible outsourcing model.</p>
-        <a href="#" class="service-link">Access the Right Talent <i class="fas fa-arrow-right"></i></a>
+        <a href="service-outsourcing.php" class="service-link">Access the Right Talent <i class="fas fa-arrow-right"></i></a>
       </div>
 
-      <div class="service-card">
+      <div class="service-card scroll-reveal r-up" style="transition-delay:.20s">
         <div class="service-icon">
           <img src="assets/icons/icon-digital.png" alt="Digital Transformation" />
         </div>
         <h3>Enterprise Digital Transformation</h3>
         <p>Empower transformation with Zenoo and Newgen through smart automation, AI-driven growth and end-to-end digitisation.</p>
-        <a href="#" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
+        <a href="service-digital-transformation.php" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
       </div>
 
-      <div class="service-card">
+      <div class="service-card scroll-reveal r-up" style="transition-delay:.30s">
         <div class="service-icon">
           <img src="assets/icons/icon-squad.png" alt="Tech Squad" />
         </div>
         <h3>Tech Squad-as-a-Service</h3>
         <p>Deploy a dedicated, fully managed technical team on demand — the agile way to scale engineering capacity without the overhead.</p>
-        <a href="#" class="service-link">Build Your Squad <i class="fas fa-arrow-right"></i></a>
+        <a href="service-tech-squad.php" class="service-link">Build Your Squad <i class="fas fa-arrow-right"></i></a>
       </div>
 
-      <div class="service-card">
+      <div class="service-card scroll-reveal r-up" style="transition-delay:.40s">
         <div class="service-icon">
           <img src="assets/icons/icon-data.png" alt="Data Handling" />
         </div>
         <h3>Data Handling Solutions</h3>
         <p>Harness the power of your data — from collection and cleansing to governance, analytics and AI-ready pipelines at scale.</p>
-        <a href="#" class="service-link">Explore Data Services <i class="fas fa-arrow-right"></i></a>
+        <a href="service-data-handling.php" class="service-link">Explore Data Services <i class="fas fa-arrow-right"></i></a>
       </div>
 
     </div>
@@ -200,28 +200,28 @@ include 'includes/header.php';
     </div>
     <div class="process-grid">
 
-      <div class="process-step">
+      <div class="process-step scroll-reveal r-up" style="transition-delay:0s">
         <div class="step-number">01</div>
         <div class="step-icon"><i class="fas fa-magnifying-glass-chart"></i></div>
         <h4>Discovery &amp; Assessment</h4>
         <p>We start by deeply understanding your business goals, current challenges, and technology landscape to build a clear picture of your needs.</p>
       </div>
 
-      <div class="process-step">
+      <div class="process-step scroll-reveal r-up" style="transition-delay:.12s">
         <div class="step-number">02</div>
         <div class="step-icon"><i class="fas fa-pencil-ruler"></i></div>
         <h4>Strategy &amp; Design</h4>
         <p>Our experts craft a tailored digital roadmap and solution architecture that aligns with your Vision 2030 objectives and growth ambitions.</p>
       </div>
 
-      <div class="process-step">
+      <div class="process-step scroll-reveal r-up" style="transition-delay:.24s">
         <div class="step-number">03</div>
         <div class="step-icon"><i class="fas fa-robot"></i></div>
         <h4>Build &amp; Automate</h4>
         <p>We implement smart automation, AI-driven workflows and enterprise systems — deploying efficiently with minimal disruption to daily operations.</p>
       </div>
 
-      <div class="process-step">
+      <div class="process-step scroll-reveal r-up" style="transition-delay:.36s">
         <div class="step-number">04</div>
         <div class="step-icon"><i class="fas fa-chart-line"></i></div>
         <h4>Scale &amp; Grow</h4>
@@ -330,7 +330,7 @@ include 'includes/header.php';
     </div>
     <div class="testimonials-grid">
 
-      <div class="testimonial-card">
+      <div class="testimonial-card scroll-reveal r-up" style="transition-delay:0s">
         <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
         <p class="testimonial-text">"DGTEC transformed our HR and recruitment process entirely. Their team understood our needs from day one and delivered a talent pipeline that exceeded every expectation. We now operate with a level of efficiency we didn't think was possible."</p>
         <div class="testimonial-author">
@@ -343,7 +343,7 @@ include 'includes/header.php';
         </div>
       </div>
 
-      <div class="testimonial-card">
+      <div class="testimonial-card scroll-reveal r-up" style="transition-delay:.12s">
         <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
         <p class="testimonial-text">"The digital transformation roadmap DGTEC delivered was exactly what our organisation needed. Their expertise in process automation and AI integration helped us cut operational costs significantly and accelerate our Vision 2030 alignment."</p>
         <div class="testimonial-author">
@@ -356,7 +356,7 @@ include 'includes/header.php';
         </div>
       </div>
 
-      <div class="testimonial-card">
+      <div class="testimonial-card scroll-reveal r-up" style="transition-delay:.24s">
         <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
         <p class="testimonial-text">"We engaged DGTEC's Tech Squad-as-a-Service and the results were outstanding. A dedicated, highly skilled team deployed within days — no overhead, no delays. Their agile approach made scaling our product development seamless and cost-effective."</p>
         <div class="testimonial-author">
@@ -379,7 +379,7 @@ include 'includes/header.php';
   <div class="container">
     <div class="home-contact-inner">
 
-      <div class="home-contact-text">
+      <div class="home-contact-text scroll-reveal r-left">
         <span class="section-label">Get In Touch</span>
         <h2 class="section-title" style="color:#fff">Let's Start Your<br>Digital Journey</h2>
         <p class="section-desc" style="color:rgba(255,255,255,.75)">
@@ -401,7 +401,7 @@ include 'includes/header.php';
         </div>
       </div>
 
-      <div class="home-contact-form-wrap">
+      <div class="home-contact-form-wrap scroll-reveal r-right">
         <h3>Send Us a Message</h3>
         <p>We'll respond within 24 hours.</p>
         <form id="home-contact-form" novalidate>
