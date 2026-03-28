@@ -100,7 +100,6 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
   <title><?= $pageTitle ?> – DGTEC Admin</title>
   <link rel="stylesheet" href="assets/admin.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
-  <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js" crossorigin="anonymous"></script>
   <style>
     .upload-progress {
       display: none; margin-top: 12px; background: var(--bg); border-radius: 8px;
@@ -130,9 +129,19 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
     .form-tab:hover  { color:var(--dark); }
     .form-panel      { display:none; }
     .form-panel.active { display:block; }
-    /* ── CKEditor ── */
-    .ck-editor__editable { min-height:380px; font-size:15px; line-height:1.7; }
-    #togglePageHtmlBtn.active { background:var(--dark,#0f172a); color:#7dd3fc; border-color:var(--dark,#0f172a); }
+    /* ── Feature builder cards ── */
+    .feat-item { border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px;
+                 background:var(--white); position:relative; }
+    .feat-item .feat-num-badge { position:absolute; top:12px; right:14px; font-size:22px;
+                                  font-weight:900; color:var(--border); line-height:1; }
+    .feat-remove { position:absolute; top:10px; right:14px; background:none; border:none;
+                   color:var(--gray); cursor:pointer; font-size:18px; line-height:1; }
+    .feat-remove:hover { color:#dc2626; }
+    .feat-icon-preview { font-size:20px; color:var(--p); margin-top:5px; min-height:24px; }
+    .stat-row { display:grid; grid-template-columns:1fr 2fr; gap:10px; align-items:center;
+                border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:8px; }
+    .stat-row label { font-size:12px; font-weight:600; color:var(--gray); text-transform:uppercase;
+                      letter-spacing:.5px; white-space:nowrap; }
   </style>
 </head>
 <body>
@@ -337,31 +346,108 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
 
         <!-- ════ TAB: PAGE CONTENT ════ -->
         <div class="form-panel" id="panel-pagecontent">
+
+          <!-- ── OVERVIEW ── -->
           <div class="card" style="margin-bottom:24px">
             <div class="card-header">
-              <h2><i class="fas fa-pen-nib" style="color:var(--acc)"></i> Full Page Content</h2>
-              <button type="button" id="togglePageHtmlBtn"
-                      style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
-                             border:1.5px solid var(--border);border-radius:7px;background:var(--white);
-                             font-size:12px;font-weight:600;cursor:pointer;color:var(--gray);transition:.15s">
-                <i class="fas fa-code"></i> HTML Source
-              </button>
+              <h2><i class="fas fa-layout" style="color:var(--acc)"></i> Overview Section</h2>
+              <small style="color:var(--gray);font-size:12px">Leave empty to keep the static page layout</small>
             </div>
-            <div class="card-body" style="padding:12px">
-              <p style="font-size:13px;color:var(--gray);margin-bottom:12px">
-                If filled in, this content will be displayed on the <strong><?= strtolower($typeLabel) ?> detail page</strong>
-                instead of the static HTML. Leave empty to keep the static page layout.
-              </p>
-              <div id="pageEditorWrap">
-                <div id="pageEditorContainer"><?= $d['page_content'] ?></div>
+            <div class="card-body">
+              <div class="form-grid">
+
+                <div class="form-group">
+                  <label class="form-label">Sub-label <small style="text-transform:none;font-weight:400">(small text above title)</small></label>
+                  <input type="text" id="pc_sub_label" class="form-input" placeholder="e.g. Smart Onboarding" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">CTA Button Text</label>
+                  <input type="text" id="pc_cta_text" class="form-input" placeholder="e.g. Request a Demo" />
+                </div>
+
+                <div class="form-group full">
+                  <label class="form-label">Main Title <small style="text-transform:none;font-weight:400">(each line = line break on page)</small></label>
+                  <textarea id="pc_title" class="form-textarea" rows="2" placeholder="Onboard Faster.&#10;Comply Smarter."></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">CTA Button URL</label>
+                  <input type="text" id="pc_cta_url" class="form-input" placeholder="contact.php" />
+                </div>
+
+                <div class="form-group full">
+                  <label class="form-label">Description Paragraph</label>
+                  <textarea id="pc_description" class="form-textarea" rows="3" placeholder="Short paragraph describing this page…"></textarea>
+                </div>
+
+                <div class="form-group full">
+                  <label class="form-label">Bullet Points <small style="text-transform:none;font-weight:400">(one per line)</small></label>
+                  <textarea id="pc_bullets" class="form-textarea" rows="6" placeholder="Automated KYC and identity verification&#10;Digital document collection and e-signature&#10;…"></textarea>
+                </div>
+
               </div>
-              <textarea id="pageHtmlSourceArea"
-                        style="display:none;width:100%;min-height:400px;font-family:'Courier New',monospace;
-                               font-size:13px;line-height:1.6;padding:14px;border:1px solid var(--border);
-                               border-radius:8px;resize:vertical;background:#1e1e2e;color:#cdd6f4;
-                               box-sizing:border-box"
-                        placeholder="<!-- Write raw HTML here -->"
-                        spellcheck="false"></textarea>
+
+              <!-- Hero image -->
+              <div style="margin-top:16px">
+                <label class="form-label">Section Image <small style="text-transform:none;font-weight:400">(right side)</small></label>
+                <input type="hidden" id="pc_image" value="" />
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px">
+                  <img id="pcImgPreview" src="" alt=""
+                       style="max-width:200px;max-height:130px;border-radius:8px;
+                              border:1px solid var(--border);object-fit:cover;display:none" />
+                  <div>
+                    <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+                                  background:var(--white);border:1.5px solid var(--border);
+                                  border-radius:7px;cursor:pointer;font-size:13px">
+                      <i class="fas fa-upload"></i> Upload Image
+                      <input type="file" id="pcImageInput" accept="image/jpeg,image/png,image/webp"
+                             style="display:none" onchange="uploadPcImage(this)" />
+                    </label>
+                    <button type="button" id="pcImgClearBtn" onclick="clearPcImage()"
+                            style="display:none;margin-left:8px;background:none;border:none;
+                                   cursor:pointer;font-size:12px;color:var(--gray)">
+                      × Remove
+                    </button>
+                    <div id="pcImgStatus" style="font-size:12px;margin-top:4px;color:var(--gray)"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── STATS ── -->
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header">
+              <h2><i class="fas fa-chart-simple" style="color:var(--acc)"></i> Stats / Highlights</h2>
+              <small style="color:var(--gray);font-size:12px">Leave all empty to hide this section</small>
+            </div>
+            <div class="card-body">
+              <?php for ($si = 0; $si < 4; $si++): ?>
+              <div class="stat-row">
+                <label>Stat <?= $si + 1 ?></label>
+                <input type="text" class="form-input stat-value"
+                       placeholder="Value, e.g. 80% / Zero / 24/7"
+                       style="margin-bottom:6px" />
+                <label></label>
+                <input type="text" class="form-input stat-label"
+                       placeholder="Label, e.g. Reduction in onboarding time" />
+              </div>
+              <?php endfor; ?>
+            </div>
+          </div>
+
+          <!-- ── KEY FEATURES ── -->
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header">
+              <h2><i class="fas fa-list-check" style="color:var(--acc)"></i> Key Features</h2>
+            </div>
+            <div class="card-body">
+              <div id="featuresContainer"></div>
+              <button type="button" id="addFeatureBtn" class="btn btn-secondary"
+                      style="margin-top:8px">
+                <i class="fas fa-plus"></i> Add Feature
+              </button>
             </div>
           </div>
 
@@ -371,6 +457,7 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
               <i class="fas fa-floppy-disk"></i> <?= $isEdit ? "Update $typeLabel" : "Save $typeLabel" ?>
             </button>
           </div>
+
         </div><!-- /panel-pagecontent -->
 
       </form>
@@ -389,66 +476,181 @@ document.querySelectorAll('.form-tab').forEach(function(btn) {
     });
 });
 
-/* ── CKEditor 5 for Page Content ── */
-var pageEditor;
-var pageHtmlMode = false;
+/* ══════════════════════════════════════════════
+   PAGE CONTENT — structured JSON builder
+   ══════════════════════════════════════════════ */
 
-ClassicEditor.create(document.getElementById('pageEditorContainer'), {
-    toolbar: {
-        items: [
-            'heading', '|',
-            'bold', 'italic', 'underline', 'strikethrough', '|',
-            'link', 'blockQuote', 'code', '|',
-            'bulletedList', 'numberedList', 'outdent', 'indent', '|',
-            'insertTable', 'horizontalLine', '|',
-            'undo', 'redo'
-        ]
-    },
-    heading: {
-        options: [
-            { model:'paragraph', title:'Paragraph', class:'ck-heading_paragraph' },
-            { model:'heading1', view:'h1', title:'Heading 1', class:'ck-heading_heading1' },
-            { model:'heading2', view:'h2', title:'Heading 2', class:'ck-heading_heading2' },
-            { model:'heading3', view:'h3', title:'Heading 3', class:'ck-heading_heading3' },
-            { model:'heading4', view:'h4', title:'Heading 4', class:'ck-heading_heading4' },
-        ]
-    },
-    table: { contentToolbar: ['tableColumn','tableRow','mergeTableCells'] }
-}).then(function(editor) {
-    pageEditor = editor;
-}).catch(function(err) { console.error('CKEditor error:', err); });
+/* ── Feature cards ── */
+var featureCount = 0;
 
-/* HTML source toggle for page content */
-document.getElementById('togglePageHtmlBtn').addEventListener('click', function() {
-    if (!pageEditor) return;
-    var srcArea = document.getElementById('pageHtmlSourceArea');
-    var edWrap  = document.getElementById('pageEditorWrap');
-    var btn     = this;
-    if (!pageHtmlMode) {
-        srcArea.value = pageEditor.getData();
-        edWrap.style.display  = 'none';
-        srcArea.style.display = 'block';
-        btn.innerHTML = '<i class="fas fa-eye"></i> Visual Editor';
-        btn.classList.add('active');
-        pageHtmlMode = true;
-    } else {
-        pageEditor.setData(srcArea.value);
-        srcArea.style.display = 'none';
-        edWrap.style.display  = 'block';
-        btn.innerHTML = '<i class="fas fa-code"></i> HTML Source';
-        btn.classList.remove('active');
-        pageHtmlMode = false;
-    }
+function buildFeatureCard(data) {
+    featureCount++;
+    var idx = featureCount;
+    var icon  = (data && data.icon)        || '';
+    var title = (data && data.title)       || '';
+    var desc  = (data && data.description) || '';
+    var div = document.createElement('div');
+    div.className = 'feat-item';
+    div.innerHTML =
+        '<button type="button" class="feat-remove" title="Remove">×</button>' +
+        '<div class="form-grid">' +
+          '<div class="form-group">' +
+            '<label class="form-label">Font Awesome Icon</label>' +
+            '<input type="text" class="form-input feat-icon" placeholder="fas fa-shield-halved"' +
+              ' value="' + escHtml(icon) + '" oninput="previewFeatIcon(this)" />' +
+            '<div class="feat-icon-preview">' + (icon ? '<i class="' + escHtml(icon) + '"></i>' : '') + '</div>' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label class="form-label">Title *</label>' +
+            '<input type="text" class="form-input feat-title" placeholder="KYC &amp; Identity Verification"' +
+              ' value="' + escHtml(title) + '" />' +
+          '</div>' +
+          '<div class="form-group full">' +
+            '<label class="form-label">Description</label>' +
+            '<textarea class="form-textarea feat-desc" rows="2"' +
+              ' placeholder="Short description…">' + escHtml(desc) + '</textarea>' +
+          '</div>' +
+        '</div>';
+    div.querySelector('.feat-remove').addEventListener('click', function() {
+        div.remove();
+    });
+    return div;
+}
+
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function previewFeatIcon(input) {
+    var preview = input.closest('.form-group').querySelector('.feat-icon-preview');
+    preview.innerHTML = input.value.trim() ? '<i class="' + input.value.trim() + '"></i>' : '';
+}
+
+document.getElementById('addFeatureBtn').addEventListener('click', function() {
+    document.getElementById('featuresContainer').appendChild(buildFeatureCard(null));
 });
 
-/* Sync page content on submit */
+/* ── Serialize all fields to JSON ── */
+function serializePageContent() {
+    var hero = {
+        sub_label:   (document.getElementById('pc_sub_label').value   || '').trim(),
+        title:       (document.getElementById('pc_title').value        || '').trim(),
+        description: (document.getElementById('pc_description').value  || '').trim(),
+        bullets:     (document.getElementById('pc_bullets').value      || '')
+                         .split('\n').map(function(s){ return s.trim(); }).filter(Boolean),
+        cta_text:    (document.getElementById('pc_cta_text').value     || '').trim(),
+        cta_url:     (document.getElementById('pc_cta_url').value      || '').trim(),
+        image:       (document.getElementById('pc_image').value        || '').trim(),
+    };
+
+    var stats = [];
+    document.querySelectorAll('.stat-row').forEach(function(row) {
+        var v = row.querySelector('.stat-value') ? row.querySelector('.stat-value').value.trim() : '';
+        var l = row.querySelector('.stat-label') ? row.querySelector('.stat-label').value.trim() : '';
+        stats.push({ value: v, label: l });
+    });
+
+    var features = [];
+    document.querySelectorAll('#featuresContainer .feat-item').forEach(function(item) {
+        features.push({
+            icon:        (item.querySelector('.feat-icon')  ? item.querySelector('.feat-icon').value.trim()  : ''),
+            title:       (item.querySelector('.feat-title') ? item.querySelector('.feat-title').value.trim() : ''),
+            description: (item.querySelector('.feat-desc')  ? item.querySelector('.feat-desc').value.trim()  : ''),
+        });
+    });
+
+    /* Return empty string if everything is empty (keeps static page) */
+    var hasData = hero.title || hero.description || features.length > 0;
+    if (!hasData) return '';
+    return JSON.stringify({ hero: hero, stats: stats, features: features });
+}
+
+/* ── Populate fields from existing JSON ── */
+function loadPageContent(jsonStr) {
+    if (!jsonStr) return;
+    var data;
+    try { data = JSON.parse(jsonStr); } catch(e) { return; }
+
+    var h = data.hero || {};
+    document.getElementById('pc_sub_label').value   = h.sub_label   || '';
+    document.getElementById('pc_title').value       = h.title       || '';
+    document.getElementById('pc_description').value = h.description || '';
+    document.getElementById('pc_bullets').value     = (h.bullets || []).join('\n');
+    document.getElementById('pc_cta_text').value    = h.cta_text    || '';
+    document.getElementById('pc_cta_url').value     = h.cta_url     || '';
+    if (h.image) {
+        document.getElementById('pc_image').value = h.image;
+        var prev = document.getElementById('pcImgPreview');
+        prev.src = '../' + h.image;
+        prev.style.display = 'block';
+        document.getElementById('pcImgClearBtn').style.display = 'inline-block';
+    }
+
+    var statRows = document.querySelectorAll('.stat-row');
+    (data.stats || []).forEach(function(s, i) {
+        if (statRows[i]) {
+            statRows[i].querySelector('.stat-value').value = s.value || '';
+            statRows[i].querySelector('.stat-label').value = s.label || '';
+        }
+    });
+
+    (data.features || []).forEach(function(f) {
+        document.getElementById('featuresContainer').appendChild(buildFeatureCard(f));
+    });
+}
+
+/* Serialize on submit */
 document.getElementById('itemForm').addEventListener('submit', function() {
-    if (pageHtmlMode) {
-        document.getElementById('pageContentHidden').value = document.getElementById('pageHtmlSourceArea').value;
-    } else if (pageEditor) {
-        document.getElementById('pageContentHidden').value = pageEditor.getData();
-    }
+    document.getElementById('pageContentHidden').value = serializePageContent();
 });
+
+/* Load existing data */
+loadPageContent(document.getElementById('pageContentHidden').value);
+
+/* ── Hero image upload ── */
+function uploadPcImage(input) {
+    if (!input.files || !input.files[0]) return;
+    var statusEl = document.getElementById('pcImgStatus');
+    statusEl.textContent = 'Uploading…';
+    statusEl.style.color = 'var(--gray)';
+    var fd = new FormData();
+    fd.append('image', input.files[0]);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'item-upload.php', true);
+    xhr.setRequestHeader('X-CSRF-Token', '<?= admin_csrf_token() ?>');
+    xhr.addEventListener('load', function() {
+        input.value = '';
+        try {
+            var resp = JSON.parse(xhr.responseText);
+            if (resp.success) {
+                document.getElementById('pc_image').value = resp.path;
+                var prev = document.getElementById('pcImgPreview');
+                prev.src = resp.preview;
+                prev.style.display = 'block';
+                document.getElementById('pcImgClearBtn').style.display = 'inline-block';
+                statusEl.textContent = 'Uploaded.';
+                statusEl.style.color = '#16a34a';
+            } else {
+                statusEl.textContent = resp.error || 'Upload failed.';
+                statusEl.style.color = '#dc2626';
+            }
+        } catch(e) {
+            statusEl.textContent = 'Server error.';
+            statusEl.style.color = '#dc2626';
+        }
+    });
+    xhr.send(fd);
+}
+
+function clearPcImage() {
+    document.getElementById('pc_image').value = '';
+    var prev = document.getElementById('pcImgPreview');
+    prev.src = ''; prev.style.display = 'none';
+    document.getElementById('pcImgClearBtn').style.display = 'none';
+    document.getElementById('pcImgStatus').textContent = '';
+}
 
 /* ======================================================
    Auto-generate slug from title
