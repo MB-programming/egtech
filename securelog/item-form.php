@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $navItem['children'][] = [
                         'id'    => $maxId + 1,
                         'label' => $d['title'],
-                        'url'   => $d['slug'] . '.php',
+                        'url'   => ($type === 'solution' ? 'solution-detail.php?slug=' : 'service-detail.php?slug=') . $d['slug'],
                     ];
                     break;
                 }

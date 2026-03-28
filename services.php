@@ -34,7 +34,7 @@ include 'includes/header.php';
       <?php foreach ($services as $i => $svc): ?>
       <?php
         $features  = array_filter(explode('|', $svc['features']));
-        $detailUrl = htmlspecialchars($svc['slug'] . '.php');
+        $detailUrl = 'service-detail.php?slug=' . urlencode($svc['slug']);
       ?>
       <a href="<?= $detailUrl ?>" class="listing-card <?= $svc['is_reversed'] ? 'reversed' : '' ?>" style="text-decoration:none;color:inherit;display:flex">
         <div class="listing-card-image">

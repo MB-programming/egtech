@@ -34,7 +34,7 @@ include 'includes/header.php';
       <?php foreach ($solutions as $i => $sol): ?>
       <?php
         $features  = array_filter(explode('|', $sol['features']));
-        $detailUrl = htmlspecialchars($sol['slug'] . '.php');
+        $detailUrl = 'solution-detail.php?slug=' . urlencode($sol['slug']);
       ?>
       <a href="<?= $detailUrl ?>" class="listing-card <?= $sol['is_reversed'] ? 'reversed' : '' ?>" style="text-decoration:none;color:inherit;display:flex">
         <div class="listing-card-image">
