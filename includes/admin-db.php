@@ -211,12 +211,16 @@ function dgtec_db_init(PDO $pdo): void {
     /* ---- site_info column migrations ---- */
     $siCols = array_column($pdo->query("SHOW COLUMNS FROM `site_info`")->fetchAll(), 'Field');
     $siAdd  = [
-        'google_analytics' => "VARCHAR(100) NOT NULL DEFAULT ''",
-        'favicon'          => "VARCHAR(500) NOT NULL DEFAULT ''",
-        'global_head_code' => "TEXT NOT NULL",
-        'global_body_code' => "TEXT NOT NULL",
-        'header_nav_json'  => "LONGTEXT NOT NULL",
-        'footer_nav_json'  => "LONGTEXT NOT NULL",
+        'google_analytics'       => "VARCHAR(100) NOT NULL DEFAULT ''",
+        'favicon'                => "VARCHAR(500) NOT NULL DEFAULT ''",
+        'global_head_code'       => "TEXT NOT NULL",
+        'global_body_code'       => "TEXT NOT NULL",
+        'header_nav_json'        => "LONGTEXT NOT NULL",
+        'footer_nav_json'        => "LONGTEXT NOT NULL",
+        'home_content_json'      => "LONGTEXT NOT NULL",
+        'home_process_json'      => "LONGTEXT NOT NULL",
+        'home_achievements_json' => "LONGTEXT NOT NULL",
+        'about_content_json'     => "LONGTEXT NOT NULL",
     ];
     foreach ($siAdd as $col => $def) {
         if (!in_array($col, $siCols, true)) {
@@ -724,6 +728,7 @@ function dgtec_site_info_save(array $data): void {
         'phone', 'email', 'address', 'footer_description', 'site_description',
         'header_logo', 'footer_logo', 'google_analytics', 'favicon',
         'global_head_code', 'global_body_code', 'header_nav_json', 'footer_nav_json',
+        'home_content_json', 'home_process_json', 'home_achievements_json', 'about_content_json',
     ];
     $filtered = array_filter($data, fn($k) => in_array($k, $allowedCols, true), ARRAY_FILTER_USE_KEY);
     if (empty($filtered)) return;
@@ -1020,4 +1025,126 @@ function dgtec_page_save(array $data): int {
 
 function dgtec_page_delete(int $id): void {
     dgtec_db()->prepare("DELETE FROM `pages` WHERE `id`=?")->execute([$id]);
+}
+
+/* ================================================================
+   HOME PAGE CONTENT HELPERS
+   ================================================================ */
+
+function _dgtec_default_home_content(): array {
+    return [
+        'services_label'         => 'What We Do',
+        'services_title'         => 'Explore Our Services',
+        'services_desc'          => 'A full spectrum of technology and talent services to power your business in a rapidly evolving market.',
+        'services_count'         => 5,
+        'solutions_label'        => 'Our Solutions',
+        'solutions_title'        => 'Our Solutions',
+        'solutions_desc'         => 'A comprehensive suite of intelligent AI and automation services designed to enhance efficiency, unlock data-driven insights, and streamline business operations.',
+        'solutions_count'        => 3,
+        'process_label'          => 'How We Work',
+        'process_title'          => 'Our Business Process Road',
+        'process_desc'           => 'From the first conversation to long-term digital success — here\'s the clear, proven path we walk with every client to deliver measurable results.',
+        'achievements_label'     => 'Our Track Record',
+        'achievements_title'     => 'Our Achievements',
+        'achievements_desc'      => 'Numbers that reflect the trust our clients place in us and the results we consistently deliver across The Kingdom and beyond.',
+        'partners_label'         => 'Our Partners',
+        'partners_title'         => 'Trusted By Leading Brands',
+        'testimonials_label'     => 'Client Feedback',
+        'testimonials_title'     => 'Our Clients Says',
+        'testimonials_desc'      => 'Real results, real relationships. Here\'s what our clients say about working with DGTEC.',
+        'contact_label'          => 'Get In Touch',
+        'contact_title'          => "Let's Start Your\nDigital Journey",
+        'contact_desc'           => 'Ready to transform your business? Fill in the form and our team will get back to you within 24 hours.',
+        'contact_form_title'     => 'Send Us a Message',
+        'contact_form_subtitle'  => 'We\'ll respond within 24 hours.',
+    ];
+}
+
+function dgtec_home_content(): array {
+    $info = dgtec_site_info();
+    $defaults = _dgtec_default_home_content();
+    if (!empty($info['home_content_json'])) {
+        $data = json_decode($info['home_content_json'], true);
+        if (is_array($data)) return array_merge($defaults, $data);
+    }
+    return $defaults;
+}
+
+function _dgtec_default_process(): array {
+    return [
+        ['icon'=>'fas fa-magnifying-glass-chart','title'=>'Discovery & Assessment','desc'=>'We start by deeply understanding your business goals, current challenges, and technology landscape to build a clear picture of your needs.'],
+        ['icon'=>'fas fa-pencil-ruler','title'=>'Strategy & Design','desc'=>'Our experts craft a tailored digital roadmap and solution architecture that aligns with your Vision 2030 objectives and growth ambitions.'],
+        ['icon'=>'fas fa-robot','title'=>'Build & Automate','desc'=>'We implement smart automation, AI-driven workflows and enterprise systems — deploying efficiently with minimal disruption to daily operations.'],
+        ['icon'=>'fas fa-chart-line','title'=>'Scale & Grow','desc'=>'We stay with you post-launch — monitoring, optimising and scaling your digital capabilities for sustainable long-term success.'],
+    ];
+}
+
+function dgtec_home_process(): array {
+    $info = dgtec_site_info();
+    if (!empty($info['home_process_json'])) {
+        $data = json_decode($info['home_process_json'], true);
+        if (is_array($data) && count($data) > 0) return $data;
+    }
+    return _dgtec_default_process();
+}
+
+function _dgtec_default_achievements(): array {
+    return [
+        ['icon'=>'fas fa-check-circle','number'=>'250','suffix'=>'+','label'=>'Completed Tasks'],
+        ['icon'=>'fas fa-folder-open','number'=>'120','suffix'=>'+','label'=>'Successful Projects'],
+        ['icon'=>'fas fa-rocket','number'=>'85','suffix'=>'+','label'=>'Delivered Projects'],
+        ['icon'=>'fas fa-handshake','number'=>'60','suffix'=>'+','label'=>'Happy Clients'],
+    ];
+}
+
+function dgtec_home_achievements(): array {
+    $info = dgtec_site_info();
+    if (!empty($info['home_achievements_json'])) {
+        $data = json_decode($info['home_achievements_json'], true);
+        if (is_array($data) && count($data) > 0) return $data;
+    }
+    return _dgtec_default_achievements();
+}
+
+function _dgtec_default_about(): array {
+    return [
+        'hero_title'   => 'About',
+        'intro_label'  => 'Who we are?',
+        'intro_title'  => 'We are DGTEC',
+        'intro_desc1'  => 'A leading integrated solutions company delivering advanced Technical recruitment and outsourcing services, Squad-as-a-Service, AI and digital transformation, in addition to Data Solutions.',
+        'intro_desc2'  => 'With a strong presence in both government and private sectors, we empower our clients to achieve measurable results — not just promises. Our +6 years of experience have enabled us to build a reputation built on trust, innovation, and excellence.',
+        'badge_number' => '6+',
+        'badge_text'   => 'Years of Experience',
+        'intro_image'  => 'assets/images/our-soul.webp',
+        'why_label'    => 'Why Choose Us',
+        'why_title'    => 'Why Choose DGTEC?',
+        'why_cards'    => [
+            ['icon'=>'fas fa-award','text'=>'Our +6 years of experience enabled us to deliver results not just promises.'],
+            ['icon'=>'fas fa-flag','text'=>'Full compliance with Saudi Kingdom Vision 2030.'],
+            ['icon'=>'fas fa-puzzle-piece','text'=>'Provide our clients with tailored solutions, not just ready ones.'],
+            ['icon'=>'fas fa-globe','text'=>'Deep Saudi / GCC market knowledge and expertise.'],
+            ['icon'=>'fas fa-cubes','text'=>'Provide Integrated Services: Recruitment, Squad-as-a-Service, Automation & Digital Transformation.'],
+            ['icon'=>'fas fa-handshake','text'=>'Partnership with global platforms like Zenoo, Newgen and others.'],
+        ],
+        'cta_title'     => 'Ready to Transform Your Business?',
+        'cta_desc'      => 'Let us show you how DGTEC can drive real results for your organization.',
+        'cta_btn1_text' => 'Free Consultation',
+        'cta_btn1_url'  => 'contact.php',
+        'cta_btn2_text' => 'Our Services',
+        'cta_btn2_url'  => 'index.php#services',
+    ];
+}
+
+function dgtec_about_content(): array {
+    $info = dgtec_site_info();
+    $defaults = _dgtec_default_about();
+    if (!empty($info['about_content_json'])) {
+        $data = json_decode($info['about_content_json'], true);
+        if (is_array($data)) {
+            $merged = array_merge($defaults, $data);
+            if (empty($merged['why_cards'])) $merged['why_cards'] = $defaults['why_cards'];
+            return $merged;
+        }
+    }
+    return $defaults;
 }
