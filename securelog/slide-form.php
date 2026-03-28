@@ -33,7 +33,13 @@ $d = array_merge($defaults, $slide ?? []);
 
 /* ---- Handle save ---- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    /* Collect fields */
+    /* Image: prefer AJAX-uploaded path, otherwise keep current */
+    $bgImage = trim($_POST['current_bg_image'] ?? '');
+    $uploadedPath = trim($_POST['bg_image_uploaded'] ?? '');
+    if ($uploadedPath !== '') {
+        $bgImage = $uploadedPath;
+    }
+
     $d = [
         'id'                => $isEdit ? $id : null,
         'position'          => max(1, (int)($_POST['position'] ?? 1)),
@@ -43,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'highlight_text'    => trim($_POST['highlight_text'] ?? ''),
         'highlight_color'   => trim($_POST['highlight_color'] ?? ''),
         'description'       => trim($_POST['description'] ?? ''),
-        'bg_image'          => trim($_POST['current_bg_image'] ?? ''),
+        'bg_image'          => $bgImage,
         'gradient_color1'   => trim($_POST['gradient_color1'] ?? '#183f96'),
         'gradient_opacity1' => max(0, min(1, (float)($_POST['gradient_opacity1'] ?? 0.84))),
         'gradient_color2'   => trim($_POST['gradient_color2'] ?? '#183f96'),
@@ -54,20 +60,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'btn2_url'          => trim($_POST['btn2_url'] ?? ''),
     ];
 
-    /* bg_image comes from the XHR-uploaded path stored in current_bg_image hidden field */
-
     if (empty($d['label'])) $errors[] = 'Label / specialty is required.';
     if (empty($d['title'])) $errors[] = 'Main title is required.';
 
     if (empty($errors)) {
-        $newId = dgtec_slide_save($d);
+        dgtec_slide_save($d);
         header('Location: slides.php?saved=1');
         exit;
     }
 }
 
-$pageTitle   = $isEdit ? 'Edit Slide' : 'Add New Slide';
+/* Sidebar unread count */
 $unreadCount = dgtec_submissions_unread_count();
+
+$pageTitle = $isEdit ? 'Edit Slide' : 'Add New Slide';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -77,6 +83,40 @@ $unreadCount = dgtec_submissions_unread_count();
   <title><?= $pageTitle ?> – DGTEC Admin</title>
   <link rel="stylesheet" href="assets/admin.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+  <style>
+    .upload-progress {
+      display: none;
+      margin-top: 12px;
+      background: var(--bg);
+      border-radius: 8px;
+      overflow: hidden;
+      height: 22px;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+    .upload-progress.active { display: block; }
+    .upload-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--p), var(--btn));
+      width: 0%;
+      transition: width .2s ease;
+      border-radius: 8px;
+    }
+    .upload-progress-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--dark);
+      pointer-events: none;
+    }
+    .upload-status { margin-top: 8px; font-size: 12px; color: var(--gray); }
+    .upload-status.error   { color: #dc2626; }
+    .upload-status.success { color: #16a34a; }
+  </style>
 </head>
 <body>
 <div class="admin-shell">
@@ -134,7 +174,11 @@ $unreadCount = dgtec_submissions_unread_count();
         <a href="slides.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Slides</a>
       </div>
 
-      <form method="post">
+      <form method="post" id="slideForm">
+
+        <!-- Hidden fields for image handling -->
+        <input type="hidden" name="current_bg_image" id="currentBgImage" value="<?= htmlspecialchars($d['bg_image']) ?>" />
+        <input type="hidden" name="bg_image_uploaded" id="uploadedImagePath" value="" />
 
         <!-- ===== SECTION 1: Background Image ===== -->
         <div class="card" style="margin-bottom:24px">
@@ -153,27 +197,22 @@ $unreadCount = dgtec_submissions_unread_count();
             </div>
             <?php endif; ?>
 
-            <div class="img-upload-wrap" id="uploadArea">
-              <input type="file" id="bgImagePicker" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" />
+            <div class="img-upload-wrap" id="uploadArea" <?= $d['bg_image'] ? 'style="display:none"' : '' ?>>
+              <input type="file" name="bg_image_file" id="bgImageInput"
+                     accept="image/jpeg,image/png,image/webp,image/gif"
+                     onchange="handleImageSelect(this)" />
               <div class="img-upload-icon"><i class="fas fa-cloud-arrow-up"></i></div>
               <p><strong>Click to upload</strong> or drag and drop</p>
-              <p style="font-size:11px;margin-top:4px">JPG, PNG, WebP — max 10 MB</p>
+              <p style="font-size:11px;margin-top:4px">JPG, PNG, WebP, GIF — max 10 MB</p>
             </div>
 
-            <!-- Upload progress bar (hidden by default) -->
-            <div id="uploadProgressWrap" style="display:none;margin-top:14px">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                <span style="font-size:12px;color:var(--gray)" id="uploadFileName"></span>
-                <span style="font-size:12px;font-weight:700;color:var(--p)" id="uploadPct">0%</span>
-              </div>
-              <div style="height:8px;border-radius:4px;background:var(--border);overflow:hidden">
-                <div id="uploadBar" style="height:100%;border-radius:4px;background:linear-gradient(90deg,var(--btn),var(--acc));width:0;transition:width .15s ease"></div>
-              </div>
-              <p id="uploadStatus" style="margin-top:8px;font-size:12px;color:var(--gray)">Uploading…</p>
+            <!-- Progress bar (hidden until upload starts) -->
+            <div class="upload-progress" id="uploadProgress">
+              <div class="upload-progress-bar" id="uploadProgressBar"></div>
+              <span class="upload-progress-text" id="uploadProgressText">0%</span>
             </div>
+            <div class="upload-status" id="uploadStatus"></div>
 
-            <!-- Hidden field: path saved after XHR upload -->
-            <input type="hidden" name="current_bg_image" id="currentBgImage" value="<?= htmlspecialchars($d['bg_image']) ?>" />
           </div>
         </div>
 
@@ -246,7 +285,7 @@ $unreadCount = dgtec_submissions_unread_count();
               </div>
 
               <div class="form-group">
-                <label class="form-label">Highlight Colour <small style="text-transform:none;font-weight:400">(leave empty → uses site accent)</small></label>
+                <label class="form-label">Highlight Colour <small style="text-transform:none;font-weight:400">(leave empty uses site accent)</small></label>
                 <div class="color-row">
                   <input type="color" class="color-picker" name="highlight_color" id="hlColor"
                          value="<?= htmlspecialchars($d['highlight_color'] ?: '#6dc6db') ?>" />
@@ -260,7 +299,7 @@ $unreadCount = dgtec_submissions_unread_count();
               <div class="form-group full">
                 <label class="form-label">Description *</label>
                 <textarea name="description" class="form-textarea" rows="3"
-                          placeholder="Hire top-tier technical, managerial and engineering professionals…" required><?= htmlspecialchars($d['description']) ?></textarea>
+                          placeholder="Hire top-tier technical, managerial and engineering professionals..." required><?= htmlspecialchars($d['description']) ?></textarea>
               </div>
 
             </div>
@@ -273,25 +312,25 @@ $unreadCount = dgtec_submissions_unread_count();
           <div class="card-body">
             <div class="form-grid">
               <div class="form-group">
-                <label class="form-label">Button 1 — Text</label>
+                <label class="form-label">Button 1 Text</label>
                 <input type="text" name="btn1_text" class="form-input"
                        value="<?= htmlspecialchars($d['btn1_text']) ?>"
                        placeholder="e.g. Hire Now" />
               </div>
               <div class="form-group">
-                <label class="form-label">Button 1 — Link / URL</label>
+                <label class="form-label">Button 1 Link / URL</label>
                 <input type="text" name="btn1_url" class="form-input"
                        value="<?= htmlspecialchars($d['btn1_url']) ?>"
                        placeholder="e.g. contact.php" />
               </div>
               <div class="form-group">
-                <label class="form-label">Button 2 — Text</label>
+                <label class="form-label">Button 2 Text</label>
                 <input type="text" name="btn2_text" class="form-input"
                        value="<?= htmlspecialchars($d['btn2_text']) ?>"
                        placeholder="e.g. Our Services" />
               </div>
               <div class="form-group">
-                <label class="form-label">Button 2 — Link / URL</label>
+                <label class="form-label">Button 2 Link / URL</label>
                 <input type="text" name="btn2_url" class="form-input"
                        value="<?= htmlspecialchars($d['btn2_url']) ?>"
                        placeholder="e.g. services.php" />
@@ -300,14 +339,14 @@ $unreadCount = dgtec_submissions_unread_count();
           </div>
         </div>
 
-        <!-- ===== SECTION 5: Settings ===== -->
+        <!-- ===== SECTION 5: Visibility ===== -->
         <div class="card" style="margin-bottom:28px">
           <div class="card-header"><h2><i class="fas fa-toggle-on" style="color:var(--acc)"></i> Visibility</h2></div>
           <div class="card-body">
             <label style="display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px">
               <input type="checkbox" name="is_active" <?= $d['is_active'] ? 'checked' : '' ?>
                      style="width:18px;height:18px;accent-color:var(--btn)" />
-              <span><strong>Active</strong> — slide will appear in the hero slider on the homepage</span>
+              <span><strong>Active</strong> slide will appear in the hero slider on the homepage</span>
             </label>
           </div>
         </div>
@@ -315,7 +354,7 @@ $unreadCount = dgtec_submissions_unread_count();
         <!-- Save -->
         <div style="display:flex;gap:12px;justify-content:flex-end">
           <a href="slides.php" class="btn btn-secondary">Cancel</a>
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn btn-primary" id="saveBtn">
             <i class="fas fa-floppy-disk"></i> <?= $isEdit ? 'Update Slide' : 'Save Slide' ?>
           </button>
         </div>
@@ -326,7 +365,9 @@ $unreadCount = dgtec_submissions_unread_count();
 </div>
 
 <script>
-/* ---- Gradient preview ---- */
+/* ======================================================
+   Gradient preview
+   ====================================================== */
 function updateGradientPreview() {
   var c1 = document.getElementById('gc1').value;
   var o1 = parseFloat(document.getElementById('go1').value) || 0.84;
@@ -347,7 +388,9 @@ function updateGradientPreview() {
 }
 updateGradientPreview();
 
-/* ---- Highlight colour sync ---- */
+/* ======================================================
+   Highlight colour sync
+   ====================================================== */
 document.getElementById('hlColor').addEventListener('input', function() {
   document.getElementById('hlColorText').value = this.value;
 });
@@ -357,101 +400,106 @@ document.getElementById('hlColorText').addEventListener('input', function() {
   }
 });
 
-/* ---- XHR Image Upload with Progress ---- */
-document.getElementById('bgImagePicker').addEventListener('change', function() {
-  var file = this.files && this.files[0];
-  if (!file) return;
+/* Fix highlight_color on submit */
+document.getElementById('slideForm').addEventListener('submit', function() {
+  var textVal = document.getElementById('hlColorText').value.trim();
+  document.querySelectorAll('input[name="highlight_color"]').forEach(function(el) { el.name = '_hc_old'; });
+  var hc = document.createElement('input');
+  hc.type  = 'hidden';
+  hc.name  = 'highlight_color';
+  hc.value = /^#[0-9a-fA-F]{6}$/.test(textVal) ? textVal : '';
+  this.appendChild(hc);
+});
 
-  var progressWrap = document.getElementById('uploadProgressWrap');
-  var bar          = document.getElementById('uploadBar');
-  var pct          = document.getElementById('uploadPct');
-  var status       = document.getElementById('uploadStatus');
-  var fileName     = document.getElementById('uploadFileName');
+/* ======================================================
+   AJAX image upload with XHR progress tracking
+   ====================================================== */
+function handleImageSelect(input) {
+  if (!input.files || !input.files[0]) return;
 
-  /* Show progress UI */
-  document.getElementById('uploadArea').style.display = 'none';
-  progressWrap.style.display = 'block';
-  fileName.textContent = file.name;
-  bar.style.width = '0%';
-  pct.textContent = '0%';
-  status.textContent = 'Uploading…';
-  status.style.color = 'var(--gray)';
+  var file         = input.files[0];
+  var progressWrap = document.getElementById('uploadProgress');
+  var progressBar  = document.getElementById('uploadProgressBar');
+  var progressText = document.getElementById('uploadProgressText');
+  var statusEl     = document.getElementById('uploadStatus');
+  var saveBtn      = document.getElementById('saveBtn');
 
-  var fd = new FormData();
-  fd.append('image', file);
+  /* Reset UI */
+  progressWrap.classList.add('active');
+  progressBar.style.width  = '0%';
+  progressText.textContent = '0%';
+  statusEl.className   = 'upload-status';
+  statusEl.textContent = 'Uploading...';
+  saveBtn.disabled = true;
+
+  var formData = new FormData();
+  formData.append('image', file);
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'slide-upload.php', true);
 
   xhr.upload.addEventListener('progress', function(e) {
     if (e.lengthComputable) {
-      var p = Math.round((e.loaded / e.total) * 100);
-      bar.style.width = p + '%';
-      pct.textContent = p + '%';
+      var pct = Math.round((e.loaded / e.total) * 100);
+      progressBar.style.width  = pct + '%';
+      progressText.textContent = pct + '%';
     }
   });
 
   xhr.addEventListener('load', function() {
-    var resp;
-    try { resp = JSON.parse(xhr.responseText); } catch(e) { resp = null; }
+    saveBtn.disabled = false;
+    /* Clear file input — path stored in hidden field, not re-submitted */
+    input.value = '';
 
-    if (resp && resp.success) {
-      /* Update hidden path field */
-      document.getElementById('currentBgImage').value = resp.path;
+    try {
+      var resp = JSON.parse(xhr.responseText);
+      if (resp.success) {
+        /* Store returned path in hidden field */
+        document.getElementById('uploadedImagePath').value = resp.path;
 
-      /* Show image preview */
-      document.getElementById('imgPreview').src = resp.preview;
-      document.getElementById('imgPreviewBox').style.display = 'block';
-      progressWrap.style.display = 'none';
+        /* Show preview */
+        document.getElementById('imgPreview').src              = resp.preview;
+        document.getElementById('imgPreviewBox').style.display = 'block';
+        document.getElementById('uploadArea').style.display    = 'none';
 
-      bar.style.width = '100%';
-      pct.textContent = '100%';
-      status.textContent = 'Upload complete!';
-      status.style.color = '#065f46';
-    } else {
-      bar.style.background = '#dc2626';
-      status.textContent = (resp && resp.error) ? resp.error : 'Upload failed. Please try again.';
-      status.style.color = '#dc2626';
-      pct.textContent = '';
-      /* Re-show upload area */
-      document.getElementById('uploadArea').style.display = 'block';
-      progressWrap.style.display = 'none';
+        progressBar.style.width  = '100%';
+        progressText.textContent = '100%';
+        statusEl.className   = 'upload-status success';
+        statusEl.textContent = 'Image uploaded successfully.';
+      } else {
+        progressWrap.classList.remove('active');
+        statusEl.className   = 'upload-status error';
+        statusEl.textContent = resp.error || 'Upload failed.';
+      }
+    } catch (err) {
+      progressWrap.classList.remove('active');
+      statusEl.className   = 'upload-status error';
+      statusEl.textContent = 'Unexpected server response.';
     }
   });
 
   xhr.addEventListener('error', function() {
-    status.textContent = 'Network error. Please try again.';
-    status.style.color = '#dc2626';
-    document.getElementById('uploadArea').style.display = 'block';
-    progressWrap.style.display = 'none';
+    saveBtn.disabled = false;
+    progressWrap.classList.remove('active');
+    statusEl.className   = 'upload-status error';
+    statusEl.textContent = 'Network error. Please try again.';
   });
 
-  xhr.send(fd);
-});
-
-function clearImage() {
-  document.getElementById('bgImagePicker').value = '';
-  document.getElementById('imgPreviewBox').style.display = 'none';
-  document.getElementById('uploadArea').style.display = 'block';
-  document.getElementById('uploadProgressWrap').style.display = 'none';
-  document.getElementById('currentBgImage').value = '';
+  xhr.send(formData);
 }
 
-/* Show upload area if no current image */
-<?php if (!$d['bg_image']): ?>
-document.getElementById('uploadArea').style.display = 'block';
-<?php endif; ?>
-
-/* Fix highlight_color field: use the text value on submit */
-document.querySelector('form').addEventListener('submit', function() {
-  var textVal = document.getElementById('hlColorText').value.trim();
-  document.querySelectorAll('input[name="highlight_color"]').forEach(function(el) { el.name = '_hc_old'; });
-  var hc = document.createElement('input');
-  hc.type = 'hidden';
-  hc.name = 'highlight_color';
-  hc.value = /^#[0-9a-fA-F]{6}$/.test(textVal) ? textVal : '';
-  this.appendChild(hc);
-});
+/* ======================================================
+   Clear image
+   ====================================================== */
+function clearImage() {
+  document.getElementById('bgImageInput').value      = '';
+  document.getElementById('uploadedImagePath').value = '';
+  document.getElementById('currentBgImage').value    = '';
+  document.getElementById('imgPreviewBox').style.display = 'none';
+  document.getElementById('uploadArea').style.display   = 'block';
+  document.getElementById('uploadProgress').classList.remove('active');
+  document.getElementById('uploadStatus').textContent   = '';
+}
 </script>
 </body>
 </html>
