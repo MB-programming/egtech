@@ -238,6 +238,42 @@ function dgtec_db_init(PDO $pdo): void {
         $pdo->exec("ALTER TABLE `blog_posts` ADD COLUMN `tags` TEXT NOT NULL");
     }
 
+    /* ---- social_links ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `social_links` (
+            `id`        INT AUTO_INCREMENT PRIMARY KEY,
+            `position`  INT NOT NULL DEFAULT 0,
+            `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+            `platform`  VARCHAR(50)  NOT NULL DEFAULT '',
+            `icon`      VARCHAR(100) NOT NULL DEFAULT '',
+            `url`       VARCHAR(500) NOT NULL DEFAULT '',
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- pages ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `pages` (
+            `id`         INT AUTO_INCREMENT PRIMARY KEY,
+            `position`   INT NOT NULL DEFAULT 0,
+            `is_active`  TINYINT(1) NOT NULL DEFAULT 1,
+            `title`      VARCHAR(255) NOT NULL DEFAULT '',
+            `slug`       VARCHAR(255) NOT NULL DEFAULT '',
+            `content`    LONGTEXT NOT NULL,
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- Seed social links ---- */
+    $slCount = (int)$pdo->query("SELECT COUNT(*) FROM `social_links`")->fetchColumn();
+    if ($slCount === 0) {
+        $stmt = $pdo->prepare("INSERT INTO `social_links` (position,platform,icon,url) VALUES (?,?,?,?)");
+        $stmt->execute([1,'LinkedIn',  'fab fa-linkedin-in', '#']);
+        $stmt->execute([2,'Twitter/X', 'fab fa-x-twitter',  '#']);
+        $stmt->execute([3,'Facebook',  'fab fa-facebook-f', '#']);
+        $stmt->execute([4,'Instagram', 'fab fa-instagram',  '#']);
+    }
+
     /* ---- seo_pages ---- */
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS `seo_pages` (
@@ -493,6 +529,12 @@ function dgtec_item_save(string $type, array $data): int {
 function dgtec_item_get_by_page_url(string $type, string $pageUrl): array|false {
     $stmt = dgtec_db()->prepare("SELECT * FROM `"._dgtec_tbl($type)."` WHERE `page_url`=? AND `is_active`=1 LIMIT 1");
     $stmt->execute([$pageUrl]);
+    return $stmt->fetch();
+}
+
+function dgtec_item_get_by_slug(string $type, string $slug): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `"._dgtec_tbl($type)."` WHERE `slug`=? AND `is_active`=1 LIMIT 1");
+    $stmt->execute([$slug]);
     return $stmt->fetch();
 }
 
@@ -896,4 +938,86 @@ function dgtec_footer_nav(): array {
         if (is_array($nav) && count($nav) > 0) return $nav;
     }
     return dgtec_default_footer_nav();
+}
+
+/* ================================================================
+   SOCIAL LINKS
+   ================================================================ */
+
+function dgtec_social_links_all(): array {
+    return dgtec_db()->query("SELECT * FROM `social_links` ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_social_links_active(): array {
+    return dgtec_db()->query("SELECT * FROM `social_links` WHERE `is_active`=1 ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_social_link_get(int $id): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `social_links` WHERE `id`=?");
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
+
+function dgtec_social_link_save(array $data): int {
+    $db = dgtec_db();
+    if (!empty($data['id'])) {
+        $db->prepare("UPDATE `social_links` SET position=:position,is_active=:is_active,platform=:platform,icon=:icon,url=:url WHERE id=:id")->execute($data);
+        return (int)$data['id'];
+    } else {
+        unset($data['id']);
+        $db->prepare("INSERT INTO `social_links` (position,is_active,platform,icon,url) VALUES (:position,:is_active,:platform,:icon,:url)")->execute($data);
+        return (int)$db->lastInsertId();
+    }
+}
+
+function dgtec_social_link_delete(int $id): void {
+    dgtec_db()->prepare("DELETE FROM `social_links` WHERE `id`=?")->execute([$id]);
+}
+
+function dgtec_social_link_move(int $id, string $dir): void {
+    $db  = dgtec_db();
+    $all = $db->query("SELECT `id`,`position` FROM `social_links` ORDER BY `position` ASC")->fetchAll();
+    $idx = array_search($id, array_column($all, 'id'));
+    if ($idx === false) return;
+    $swapIdx = ($dir === 'up') ? $idx - 1 : $idx + 1;
+    if (!isset($all[$swapIdx])) return;
+    $stmt = $db->prepare("UPDATE `social_links` SET `position`=? WHERE `id`=?");
+    $stmt->execute([$all[$swapIdx]['position'], $id]);
+    $stmt->execute([$all[$idx]['position'], $all[$swapIdx]['id']]);
+}
+
+/* ================================================================
+   CUSTOM PAGES
+   ================================================================ */
+
+function dgtec_pages_all(): array {
+    return dgtec_db()->query("SELECT * FROM `pages` ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_page_get(int $id): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `pages` WHERE `id`=?");
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
+
+function dgtec_page_get_by_slug(string $slug): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `pages` WHERE `slug`=? AND `is_active`=1 LIMIT 1");
+    $stmt->execute([$slug]);
+    return $stmt->fetch();
+}
+
+function dgtec_page_save(array $data): int {
+    $db = dgtec_db();
+    if (!empty($data['id'])) {
+        $db->prepare("UPDATE `pages` SET position=:position,is_active=:is_active,title=:title,slug=:slug,content=:content WHERE id=:id")->execute($data);
+        return (int)$data['id'];
+    } else {
+        unset($data['id']);
+        $db->prepare("INSERT INTO `pages` (position,is_active,title,slug,content) VALUES (:position,:is_active,:title,:slug,:content)")->execute($data);
+        return (int)$db->lastInsertId();
+    }
+}
+
+function dgtec_page_delete(int $id): void {
+    dgtec_db()->prepare("DELETE FROM `pages` WHERE `id`=?")->execute([$id]);
 }

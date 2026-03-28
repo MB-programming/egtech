@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/admin-db.php';
 require_once 'includes/item-page-renderer.php';
-$_db_item = dgtec_item_get_by_page_url('service', basename(__FILE__));
+$_db_item = dgtec_item_get_by_slug('service', basename(__FILE__, '.php'));
 $_pc = null;
 if (!empty($_db_item['page_content'])) {
     $_pcDec = json_decode($_db_item['page_content'], true);
