@@ -221,8 +221,10 @@ button { cursor: pointer; font-family: inherit; }
 .card-header h2 { font-size: 16px; font-weight: 700; }
 .card-body { padding: 24px; }
 
-.slides-table { width: 100%; border-collapse: collapse; }
-.slides-table th {
+.slides-table,
+.admin-table { width: 100%; border-collapse: collapse; }
+.slides-table th,
+.admin-table th {
   text-align: left;
   padding: 10px 16px;
   font-size: 11px;
@@ -232,13 +234,16 @@ button { cursor: pointer; font-family: inherit; }
   border-bottom: 1px solid var(--border);
   background: #f8faff;
 }
-.slides-table td {
+.slides-table td,
+.admin-table td {
   padding: 14px 16px;
   border-bottom: 1px solid #f0f4ff;
   vertical-align: middle;
 }
-.slides-table tr:last-child td { border-bottom: none; }
-.slides-table tr:hover td { background: #f8faff; }
+.slides-table tr:last-child td,
+.admin-table tr:last-child td { border-bottom: none; }
+.slides-table tr:hover td,
+.admin-table tr:hover td { background: #f8faff; }
 
 .slide-thumb {
   width: 90px; height: 54px;

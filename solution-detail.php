@@ -21,8 +21,9 @@ if (!empty($_db_item['page_content'])) {
     if (is_array($_pcDec)) $_pc = $_pcDec;
 }
 
-$page_title = htmlspecialchars($_db_item['title']) . ' – DGTEC';
-$page_desc  = htmlspecialchars(mb_substr($_db_item['description'], 0, 160));
+$page_title   = htmlspecialchars($_db_item['title']) . ' – DGTEC';
+$page_desc    = htmlspecialchars(mb_substr($_db_item['description'], 0, 160));
+$seo_page_key = $slug;   /* matches key stored in seo_pages (e.g. solution-digital-onboarding) */
 include 'includes/header.php';
 ?>
 

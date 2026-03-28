@@ -114,9 +114,12 @@ $_favicon_url  = $_favicon_raw ?: 'assets/images/favicon.ico';
           <ul class="dropdown">
             <li><a href="solutions.php" class="dd-view-all"><i class="fas fa-grip"></i> View All Solutions <i class="fas fa-arrow-right dd-arrow"></i></a></li>
             <li class="dd-sep"></li>
-            <li><a href="solution-digital-onboarding.php" class="dd-item"><span class="dd-icon"><i class="fas fa-id-card-clip"></i></span><span class="dd-label">Digital Onboarding &amp; Compliance</span></a></li>
-            <li><a href="solution-enterprise-automation.php" class="dd-item"><span class="dd-icon"><i class="fas fa-robot"></i></span><span class="dd-label">Enterprise Content &amp; Process Automation</span></a></li>
-            <li><a href="solution-tea-boy.php" class="dd-item"><span class="dd-icon"><i class="fas fa-mug-hot"></i></span><span class="dd-label">Tea Boy – Smart Internal Operations</span></a></li>
+            <?php foreach (dgtec_items_active('solution') as $_hn): ?>
+            <li><a href="solution-detail.php?slug=<?= urlencode($_hn['slug']) ?>" class="dd-item">
+              <span class="dd-icon"><i class="<?= htmlspecialchars($_hn['icon'] ?: 'fas fa-lightbulb') ?>"></i></span>
+              <span class="dd-label"><?= htmlspecialchars($_hn['title']) ?></span>
+            </a></li>
+            <?php endforeach; ?>
           </ul>
         </li>
         <li class="nav-item has-dropdown">
@@ -124,11 +127,12 @@ $_favicon_url  = $_favicon_raw ?: 'assets/images/favicon.ico';
           <ul class="dropdown">
             <li><a href="services.php" class="dd-view-all"><i class="fas fa-grip"></i> View All Services <i class="fas fa-arrow-right dd-arrow"></i></a></li>
             <li class="dd-sep"></li>
-            <li><a href="service-recruitment.php" class="dd-item"><span class="dd-icon"><i class="fas fa-users"></i></span><span class="dd-label">Expert Technical Recruitment</span></a></li>
-            <li><a href="service-outsourcing.php" class="dd-item"><span class="dd-icon"><i class="fas fa-handshake"></i></span><span class="dd-label">Scalable Outsourcing Solutions</span></a></li>
-            <li><a href="service-digital-transformation.php" class="dd-item"><span class="dd-icon"><i class="fas fa-wand-magic-sparkles"></i></span><span class="dd-label">Enterprise Digital Transformation</span></a></li>
-            <li><a href="service-tech-squad.php" class="dd-item"><span class="dd-icon"><i class="fas fa-code"></i></span><span class="dd-label">Tech Squad-as-a-Service</span></a></li>
-            <li><a href="service-data-handling.php" class="dd-item"><span class="dd-icon"><i class="fas fa-database"></i></span><span class="dd-label">Data Handling Solutions</span></a></li>
+            <?php foreach (dgtec_items_active('service') as $_hn): ?>
+            <li><a href="service-detail.php?slug=<?= urlencode($_hn['slug']) ?>" class="dd-item">
+              <span class="dd-icon"><i class="<?= htmlspecialchars($_hn['icon'] ?: 'fas fa-briefcase') ?>"></i></span>
+              <span class="dd-label"><?= htmlspecialchars($_hn['title']) ?></span>
+            </a></li>
+            <?php endforeach; ?>
           </ul>
         </li>
         <li class="nav-item">
@@ -193,9 +197,12 @@ $_favicon_url  = $_favicon_raw ?: 'assets/images/favicon.ico';
           </div>
           <ul class="fs-sub">
             <li><a href="solutions.php"><i class="fas fa-grip"></i> All Solutions</a></li>
-            <li><a href="solution-digital-onboarding.php"><i class="fas fa-id-card-clip"></i> Digital Onboarding</a></li>
-            <li><a href="solution-enterprise-automation.php"><i class="fas fa-robot"></i> Enterprise Automation</a></li>
-            <li><a href="solution-tea-boy.php"><i class="fas fa-mug-hot"></i> Tea Boy Operations</a></li>
+            <?php foreach (dgtec_items_active('solution') as $_mn): ?>
+            <li><a href="solution-detail.php?slug=<?= urlencode($_mn['slug']) ?>">
+              <i class="<?= htmlspecialchars($_mn['icon'] ?: 'fas fa-lightbulb') ?>"></i>
+              <?= htmlspecialchars(mb_substr($_mn['title'], 0, 40)) ?>
+            </a></li>
+            <?php endforeach; ?>
           </ul>
         </li>
 
@@ -207,11 +214,12 @@ $_favicon_url  = $_favicon_raw ?: 'assets/images/favicon.ico';
           </div>
           <ul class="fs-sub">
             <li><a href="services.php"><i class="fas fa-grip"></i> All Services</a></li>
-            <li><a href="service-recruitment.php"><i class="fas fa-users"></i> Expert Recruitment</a></li>
-            <li><a href="service-outsourcing.php"><i class="fas fa-handshake"></i> Scalable Outsourcing</a></li>
-            <li><a href="service-digital-transformation.php"><i class="fas fa-wand-magic-sparkles"></i> Digital Transformation</a></li>
-            <li><a href="service-tech-squad.php"><i class="fas fa-code"></i> Tech Squad</a></li>
-            <li><a href="service-data-handling.php"><i class="fas fa-database"></i> Data Handling</a></li>
+            <?php foreach (dgtec_items_active('service') as $_mn): ?>
+            <li><a href="service-detail.php?slug=<?= urlencode($_mn['slug']) ?>">
+              <i class="<?= htmlspecialchars($_mn['icon'] ?: 'fas fa-briefcase') ?>"></i>
+              <?= htmlspecialchars(mb_substr($_mn['title'], 0, 40)) ?>
+            </a></li>
+            <?php endforeach; ?>
           </ul>
         </li>
 

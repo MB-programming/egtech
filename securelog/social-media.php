@@ -107,7 +107,7 @@ $activePage  = 'social-media';
               </td>
               <td>
                 <div style="display:flex;gap:6px;align-items:center">
-                  <form method="post" style="display:inline"><<?= csrf_field() ?><input type="hidden" name="action" value="move_up" /><input type="hidden" name="id" value="<?= $link['id'] ?>" /><button type="submit" class="btn-icon" title="Move Up"><i class="fas fa-arrow-up"></i></button></form>
+                  <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="action" value="move_up" /><input type="hidden" name="id" value="<?= $link['id'] ?>" /><button type="submit" class="btn-icon" title="Move Up"><i class="fas fa-arrow-up"></i></button></form>
                   <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="action" value="move_down" /><input type="hidden" name="id" value="<?= $link['id'] ?>" /><button type="submit" class="btn-icon" title="Move Down"><i class="fas fa-arrow-down"></i></button></form>
                   <a href="social-form.php?id=<?= $link['id'] ?>" class="btn-icon" title="Edit"><i class="fas fa-pen"></i></a>
                   <form method="post" style="display:inline" onsubmit="return confirm('Delete this link?')">
