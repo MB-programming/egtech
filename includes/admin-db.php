@@ -235,7 +235,7 @@ function dgtec_db_init(PDO $pdo): void {
     /* ---- blog_posts: add tags if missing ---- */
     $bpCols = array_column($pdo->query("SHOW COLUMNS FROM `blog_posts`")->fetchAll(), 'Field');
     if (!in_array('tags', $bpCols, true)) {
-        $pdo->exec("ALTER TABLE `blog_posts` ADD COLUMN `tags` TEXT NOT NULL DEFAULT ''");
+        $pdo->exec("ALTER TABLE `blog_posts` ADD COLUMN `tags` TEXT NOT NULL");
     }
 
     /* ---- seo_pages ---- */
