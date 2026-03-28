@@ -1,8 +1,14 @@
 <?php
+require_once 'includes/admin-db.php';
+$_db_item = dgtec_item_get_by_page_url('service', basename(__FILE__));
 $page_title = 'Tech Squad-as-a-Service – DGTEC';
 $page_desc  = 'Deploy a dedicated, fully managed technical squad on demand. DGTEC\'s Tech Squad-as-a-Service gives you agile engineering capacity without the overhead of permanent hiring.';
 include 'includes/header.php';
-?>
+if (!empty($_db_item['page_content'])): ?>
+<div class="container" style="padding-top:60px;padding-bottom:60px">
+  <?= $_db_item['page_content'] ?>
+</div>
+<?php include 'includes/footer.php'; exit; endif; ?>
 
 <!-- ======= PAGE HERO ======= -->
 <section class="page-hero">

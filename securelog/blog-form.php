@@ -19,6 +19,7 @@ $defaults = [
     'title'        => '',
     'slug'         => '',
     'category'     => '',
+    'tags'         => '',
     'excerpt'      => '',
     'content'      => '',
     'image'        => '',
@@ -66,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'title'        => $title,
         'slug'         => $slug,
         'category'     => sanitize_str($_POST['category'] ?? '', 100),
+        'tags'         => sanitize_str($_POST['tags'] ?? '', 500),
         'excerpt'      => sanitize_str($_POST['excerpt'] ?? '', 1000),
         'content'      => sanitize_html($_POST['content'] ?? ''),
         'image'        => sanitize_url($image),
@@ -144,6 +146,18 @@ $pageTitle   = $isEdit ? 'Edit Post' : 'Add New Post';
     .code-textarea { font-family:'Courier New',monospace; font-size:12px; line-height:1.5; min-height:100px; background:#1e1e2e; color:#cdd6f4; border-radius:8px; padding:12px; }
     /* ── Toggle HTML button active state ── */
     #toggleHtmlBtn.active { background:var(--dark,#0f172a); color:#7dd3fc; border-color:var(--dark,#0f172a); }
+    /* ── Tags chip input ── */
+    .tags-chip-wrap { display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+                      border:1.5px solid var(--border); border-radius:8px; padding:6px 10px;
+                      background:var(--white); min-height:42px; cursor:text; }
+    .tags-chip-wrap:focus-within { border-color:var(--btn); }
+    .tag-chip { display:inline-flex; align-items:center; gap:5px; background:var(--btn);
+                color:#fff; border-radius:20px; padding:3px 10px 3px 12px; font-size:12px;
+                font-weight:600; white-space:nowrap; }
+    .tag-chip .remove-tag { cursor:pointer; font-size:14px; line-height:1; color:rgba(255,255,255,.8); }
+    .tag-chip .remove-tag:hover { color:#fff; }
+    .tag-chip-input { border:none; outline:none; font-size:13px; background:transparent;
+                      min-width:120px; flex:1; padding:2px 4px; }
   </style>
 </head>
 <body>
@@ -257,10 +271,22 @@ $pageTitle   = $isEdit ? 'Edit Post' : 'Add New Post';
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Category / Tag</label>
+                  <label class="form-label">Category</label>
                   <input type="text" name="category" class="form-input"
                          value="<?= htmlspecialchars($d['category']) ?>"
                          placeholder="e.g. AI &amp; Recruitment" />
+                </div>
+
+                <div class="form-group full">
+                  <label class="form-label">Tags <small style="text-transform:none;font-weight:400">(press Enter or comma to add)</small></label>
+                  <!-- Hidden comma-separated tags value -->
+                  <input type="hidden" name="tags" id="tagsHidden" value="<?= htmlspecialchars($d['tags']) ?>" />
+                  <div class="tags-chip-wrap" id="tagsChipWrap">
+                    <!-- chips rendered by JS -->
+                    <input type="text" class="tag-chip-input" id="tagInput"
+                           placeholder="Type a tag and press Enter…" autocomplete="off" />
+                  </div>
+                  <p class="form-hint">Press Enter or comma to add each tag. Click × to remove.</p>
                 </div>
 
                 <div class="form-group">
@@ -639,6 +665,64 @@ function uploadBlogOgImage(input) {
   });
   xhr.send(fd);
 }
+
+/* ── Tags chip input ── */
+(function() {
+    var hidden = document.getElementById('tagsHidden');
+    var input  = document.getElementById('tagInput');
+    var wrap   = document.getElementById('tagsChipWrap');
+    if (!hidden || !input || !wrap) return;
+
+    var tags = hidden.value ? hidden.value.split(',').map(function(t){ return t.trim(); }).filter(Boolean) : [];
+
+    function renderChips() {
+        wrap.querySelectorAll('.tag-chip').forEach(function(c){ c.remove(); });
+        tags.forEach(function(tag, i) {
+            var chip = document.createElement('span');
+            chip.className = 'tag-chip';
+            chip.innerHTML = '<span class="tag-text">' + tag.replace(/</g,'&lt;') + '</span>' +
+                             '<span class="remove-tag" data-i="' + i + '">×</span>';
+            chip.querySelector('.remove-tag').addEventListener('click', function() {
+                tags.splice(parseInt(this.dataset.i), 1);
+                updateHidden();
+                renderChips();
+            });
+            wrap.insertBefore(chip, input);
+        });
+        updateHidden();
+    }
+
+    function updateHidden() {
+        hidden.value = tags.join(',');
+    }
+
+    function addTag(val) {
+        var t = val.trim().replace(/,/g, '');
+        if (t && !tags.includes(t)) {
+            tags.push(t);
+            renderChips();
+        }
+        input.value = '';
+    }
+
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            addTag(input.value);
+        } else if (e.key === 'Backspace' && input.value === '' && tags.length) {
+            tags.pop();
+            renderChips();
+        }
+    });
+
+    input.addEventListener('blur', function() {
+        if (input.value.trim()) addTag(input.value);
+    });
+
+    wrap.addEventListener('click', function() { input.focus(); });
+
+    renderChips();
+})();
 
 /* ── SEO char counters ── */
 function updateCounter(el, counterId, limit) {
