@@ -1,14 +1,16 @@
 <?php
 require_once 'includes/admin-db.php';
+require_once 'includes/item-page-renderer.php';
 $_db_item = dgtec_item_get_by_page_url('solution', basename(__FILE__));
+$_pc = null;
+if (!empty($_db_item['page_content'])) {
+    $_pcDec = json_decode($_db_item['page_content'], true);
+    if (is_array($_pcDec)) $_pc = $_pcDec;
+}
 $page_title = 'Digital Onboarding & Compliance Solutions – DGTEC';
 $page_desc  = 'Streamline client and employee onboarding with DGTEC\'s smart digital workflows and full compliance management solutions for Saudi enterprises.';
 include 'includes/header.php';
-if (!empty($_db_item['page_content'])): ?>
-<div class="container" style="padding-top:60px;padding-bottom:60px">
-  <?= $_db_item['page_content'] ?>
-</div>
-<?php include 'includes/footer.php'; exit; endif; ?>
+?>
 
 <!-- ======= PAGE HERO ======= -->
 <section class="page-hero">
@@ -23,6 +25,12 @@ if (!empty($_db_item['page_content'])): ?>
     </nav>
   </div>
 </section>
+
+<?php if ($_pc !== null): ?>
+<?= dgtec_render_item_overview($_pc['hero']     ?? []) ?>
+<?= dgtec_render_item_stats   ($_pc['stats']    ?? []) ?>
+<?= dgtec_render_item_features($_pc['features'] ?? []) ?>
+<?php else: ?>
 
 <!-- ======= OVERVIEW ======= -->
 <section class="inner-overview">
@@ -124,6 +132,8 @@ if (!empty($_db_item['page_content'])): ?>
     </div>
   </div>
 </section>
+
+<?php endif; ?>
 
 <!-- ======= CTA ======= -->
 <section class="cta-section">
