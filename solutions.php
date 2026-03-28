@@ -32,8 +32,11 @@ include 'includes/header.php';
     <div class="listing-cards">
 
       <?php foreach ($solutions as $i => $sol): ?>
-      <?php $features = array_filter(explode('|', $sol['features'])); ?>
-      <div class="listing-card <?= $sol['is_reversed'] ? 'reversed' : '' ?>">
+      <?php
+        $features  = array_filter(explode('|', $sol['features']));
+        $detailUrl = htmlspecialchars($sol['slug'] . '.php');
+      ?>
+      <a href="<?= $detailUrl ?>" class="listing-card <?= $sol['is_reversed'] ? 'reversed' : '' ?>" style="text-decoration:none;color:inherit;display:flex">
         <div class="listing-card-image">
           <img src="<?= htmlspecialchars($sol['image']) ?>" alt="<?= htmlspecialchars($sol['title']) ?>" loading="lazy" />
           <div class="listing-card-image-overlay">
@@ -51,9 +54,9 @@ include 'includes/header.php';
             <?php endforeach; ?>
           </div>
           <?php endif; ?>
-          <a href="<?= htmlspecialchars($sol['page_url']) ?>" class="listing-card-link">Explore This Solution <i class="fas fa-arrow-right"></i></a>
+          <span class="listing-card-link">Explore This Solution <i class="fas fa-arrow-right"></i></span>
         </div>
-      </div>
+      </a>
       <?php endforeach; ?>
 
     </div>

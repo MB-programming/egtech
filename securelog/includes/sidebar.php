@@ -19,6 +19,8 @@ $_nav_active = $activePage ?? '';
     <a href="partners.php" <?= $_nav_active === 'partners' ? 'class="active"' : '' ?>><i class="fas fa-handshake"></i> Partners</a>
     <a href="reviews.php" <?= $_nav_active === 'reviews' ? 'class="active"' : '' ?>><i class="fas fa-star"></i> Client Reviews</a>
     <a href="blog.php" <?= $_nav_active === 'blog' ? 'class="active"' : '' ?>><i class="fas fa-newspaper"></i> Blog Posts</a>
+    <a href="pages.php" <?= $_nav_active === 'pages' ? 'class="active"' : '' ?>><i class="fas fa-file-lines"></i> Pages</a>
+    <a href="social-media.php" <?= $_nav_active === 'social-media' ? 'class="active"' : '' ?>><i class="fas fa-share-nodes"></i> Social Media</a>
     <p class="nav-section">Inbox</p>
     <a href="submissions.php" <?= $_nav_active === 'submissions' ? 'class="active"' : '' ?>>
       <i class="fas fa-envelope"></i> Submissions

@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'image'        => $image,
         'description'  => trim($_POST['description'] ?? ''),
         'features'     => $featuresStored,
-        'page_url'     => trim($_POST['page_url'] ?? ''),
+        'page_url'     => $slug . '.php',   /* auto-computed from slug */
         'is_reversed'  => isset($_POST['is_reversed']) ? 1 : 0,
         'page_content' => sanitize_html($_POST['page_content'] ?? ''),
     ];
@@ -79,7 +79,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($d['description'])) $errors[] = 'Description is required.';
 
     if (empty($errors)) {
-        dgtec_item_save($type, $d);
+        $newId = dgtec_item_save($type, $d);
+
+        /* Add to nav menu if requested (new items only) */
+        if (!$isEdit && isset($_POST['add_to_menu'])) {
+            $nav = dgtec_header_nav();
+            $maxId = array_reduce($nav, fn($carry, $item) => max($carry, (int)($item['id'] ?? 0)), 0);
+            /* Find parent (solutions_auto / services_auto) and add as child */
+            $parentType = $type === 'solution' ? 'solutions_auto' : 'services_auto';
+            foreach ($nav as &$navItem) {
+                if (($navItem['type'] ?? '') === $parentType) {
+                    if (!isset($navItem['children'])) $navItem['children'] = [];
+                    $navItem['children'][] = [
+                        'id'    => $maxId + 1,
+                        'label' => $d['title'],
+                        'url'   => $d['slug'] . '.php',
+                    ];
+                    break;
+                }
+            }
+            unset($navItem);
+            dgtec_site_info_save(['header_nav_json' => json_encode($nav)]);
+        }
+
         header('Location: ' . $listPage . '?saved=1');
         exit;
     }
@@ -273,13 +295,15 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
                 </div>
               </div>
 
-              <div class="form-group">
-                <label class="form-label">Page URL</label>
-                <input type="text" name="page_url" class="form-input"
-                       value="<?= htmlspecialchars($d['page_url']) ?>"
-                       placeholder="Auto-filled from slug" />
-                <p class="form-hint">Auto-filled from slug (slug + .php). Edit only if needed.</p>
+              <?php if (!$isEdit): ?>
+              <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:8px">
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px">
+                  <input type="checkbox" name="add_to_menu" value="1"
+                         style="width:18px;height:18px;accent-color:var(--btn)" />
+                  <span><strong>Add to nav menu</strong> <small style="font-weight:400;text-transform:none">(under <?= $type === 'solution' ? 'Our Solutions' : 'Our Services' ?> dropdown)</small></span>
+                </label>
               </div>
+              <?php endif; ?>
 
               <div class="form-group full">
                 <label class="form-label">Description *</label>
@@ -653,27 +677,12 @@ function clearPcImage() {
 }
 
 /* ======================================================
-   Auto-generate slug from title + sync page_url from slug
+   Auto-generate slug from title
    ====================================================== */
 var slugTouched = <?= ($d['slug'] !== '') ? 'true' : 'false' ?>;
-var pageUrlTouched = <?= ($d['page_url'] !== '') ? 'true' : 'false' ?>;
 
 document.getElementById('slugInput').addEventListener('input', function() {
   slugTouched = true;
-  syncPageUrl(this.value);
-});
-
-function syncPageUrl(slug) {
-  if (pageUrlTouched) return;
-  var pageUrlInput = document.querySelector('input[name="page_url"]');
-  if (pageUrlInput && slug.trim()) {
-    pageUrlInput.value = slug.trim() + '.php';
-  }
-}
-
-/* Also allow manual override of page_url */
-document.querySelector('input[name="page_url"]').addEventListener('input', function() {
-  pageUrlTouched = true;
 });
 
 function autoSlug() {
@@ -685,7 +694,6 @@ function autoSlug() {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
   document.getElementById('slugInput').value = slug;
-  syncPageUrl(slug);
 }
 
 /* ======================================================

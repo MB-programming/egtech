@@ -30,7 +30,7 @@ include 'includes/header.php';
     <?php if (!empty($blog_posts)): ?>
     <div class="blog-grid">
       <?php foreach ($blog_posts as $post): ?>
-      <article class="blog-card">
+      <a href="blog-post.php?slug=<?= urlencode($post['slug']) ?>" class="blog-card" style="text-decoration:none;color:inherit;display:flex;flex-direction:column">
         <div class="blog-card-image">
           <img src="<?= htmlspecialchars($post['image'] ?: 'assets/images/hero-slider.webp') ?>"
                alt="<?= htmlspecialchars($post['title']) ?>" loading="lazy" />
@@ -49,11 +49,9 @@ include 'includes/header.php';
           </div>
           <h3><?= htmlspecialchars($post['title']) ?></h3>
           <p><?= htmlspecialchars($post['excerpt']) ?></p>
-          <a href="blog-post.php?slug=<?= urlencode($post['slug']) ?>" class="blog-read-more">
-            Read Article <i class="fas fa-arrow-right"></i>
-          </a>
+          <span class="blog-read-more">Read Article <i class="fas fa-arrow-right"></i></span>
         </div>
-      </article>
+      </a>
       <?php endforeach; ?>
     </div>
     <?php else: ?>

@@ -32,8 +32,11 @@ include 'includes/header.php';
     <div class="listing-cards">
 
       <?php foreach ($services as $i => $svc): ?>
-      <?php $features = array_filter(explode('|', $svc['features'])); ?>
-      <div class="listing-card <?= $svc['is_reversed'] ? 'reversed' : '' ?>">
+      <?php
+        $features  = array_filter(explode('|', $svc['features']));
+        $detailUrl = htmlspecialchars($svc['slug'] . '.php');
+      ?>
+      <a href="<?= $detailUrl ?>" class="listing-card <?= $svc['is_reversed'] ? 'reversed' : '' ?>" style="text-decoration:none;color:inherit;display:flex">
         <div class="listing-card-image">
           <img src="<?= htmlspecialchars($svc['image']) ?>" alt="<?= htmlspecialchars($svc['title']) ?>" loading="lazy" />
           <div class="listing-card-image-overlay">
@@ -51,9 +54,9 @@ include 'includes/header.php';
             <?php endforeach; ?>
           </div>
           <?php endif; ?>
-          <a href="<?= htmlspecialchars($svc['page_url']) ?>" class="listing-card-link">Explore This Service <i class="fas fa-arrow-right"></i></a>
+          <span class="listing-card-link">Explore This Service <i class="fas fa-arrow-right"></i></span>
         </div>
-      </div>
+      </a>
       <?php endforeach; ?>
 
     </div>
