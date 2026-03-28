@@ -9,41 +9,25 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
   <meta name="description" content="<?= $page_desc ?? 'DGTEC – Leading integrated solutions company delivering advanced Technical recruitment, outsourcing, AI and digital transformation in Saudi Arabia.' ?>" />
   <title><?= $page_title ?? 'DGTEC – Technological Transformation in The Kingdom' ?></title>
 
-  <!-- Favicon -->
   <link rel="icon" type="image/webp" href="assets/images/logo.webp" />
-
-  <!-- Font Asap via Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Asap:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
-
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
-
-  <!-- Main CSS -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-<!-- ======= HEADER ======= -->
+<!-- ======= HEADER (desktop) ======= -->
 <header class="site-header">
   <div class="container">
     <nav class="navbar">
 
-      <!-- Logo -->
       <a href="index.php" class="nav-logo">
         <img src="assets/images/logo.webp" alt="DGTEC Logo" width="140" height="48" />
       </a>
 
-      <!-- Nav Menu -->
       <ul class="nav-menu" id="nav-menu">
-
-        <!-- Mobile panel header (hidden on desktop) -->
-        <li class="mobile-panel-head">
-          <a href="index.php"><img src="assets/images/logo.webp" alt="DGTEC" width="120" /></a>
-          <button class="mobile-panel-close" id="mobile-close" aria-label="Close menu"><i class="fas fa-times"></i></button>
-        </li>
-
         <li class="nav-item">
           <a href="index.php" class="nav-link <?= $current_page === 'index' ? 'active' : '' ?>">Home</a>
         </li>
@@ -78,22 +62,112 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li class="nav-item">
           <a href="contact.php" class="nav-link <?= $current_page === 'contact' ? 'active' : '' ?>">Contact</a>
         </li>
-        <!-- CTA inside mobile menu only -->
-        <li class="nav-item nav-cta-mobile">
-          <a href="contact.php" class="btn btn-primary">Free Consultation</a>
-        </li>
       </ul>
 
-      <!-- Desktop CTA (hidden on mobile via CSS) -->
       <a href="contact.php" class="btn btn-primary nav-cta-desktop">Free Consultation</a>
 
-      <!-- Hamburger -->
-      <button class="hamburger" aria-label="Toggle menu">
+      <!-- Hamburger (mobile only) -->
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
-
     </nav>
   </div>
 </header>
-<!-- Mobile menu overlay -->
-<div class="mobile-overlay" id="mobile-overlay"></div>
+
+<!-- ======= FULL-SCREEN MOBILE MENU ======= -->
+<div class="fs-menu" id="fs-menu" aria-hidden="true">
+
+  <!-- Decorative glow -->
+  <div class="fs-glow"></div>
+
+  <div class="fs-inner">
+
+    <!-- Top bar -->
+    <div class="fs-top">
+      <a href="index.php" class="fs-logo">
+        <img src="assets/images/logo.webp" alt="DGTEC" />
+      </a>
+      <button class="fs-close" id="fs-close" aria-label="Close menu">
+        <span></span><span></span>
+      </button>
+    </div>
+
+    <!-- Navigation links -->
+    <nav class="fs-nav" aria-label="Mobile navigation">
+      <ul>
+
+        <li class="fs-item" style="--d:.12s">
+          <a href="index.php" class="fs-link">
+            <span class="fs-num">01</span>
+            <span class="fs-text">Home</span>
+          </a>
+        </li>
+
+        <li class="fs-item" style="--d:.20s">
+          <a href="about.php" class="fs-link">
+            <span class="fs-num">02</span>
+            <span class="fs-text">About</span>
+          </a>
+        </li>
+
+        <li class="fs-item has-fs-sub" style="--d:.28s">
+          <div class="fs-link fs-toggle" role="button" tabindex="0">
+            <span class="fs-num">03</span>
+            <span class="fs-text">Our Solutions</span>
+            <i class="fas fa-plus fs-plus"></i>
+          </div>
+          <ul class="fs-sub">
+            <li><a href="solutions.php"><i class="fas fa-grip"></i> All Solutions</a></li>
+            <li><a href="solution-digital-onboarding.php"><i class="fas fa-id-card-clip"></i> Digital Onboarding</a></li>
+            <li><a href="solution-enterprise-automation.php"><i class="fas fa-robot"></i> Enterprise Automation</a></li>
+            <li><a href="solution-tea-boy.php"><i class="fas fa-mug-hot"></i> Tea Boy Operations</a></li>
+          </ul>
+        </li>
+
+        <li class="fs-item has-fs-sub" style="--d:.36s">
+          <div class="fs-link fs-toggle" role="button" tabindex="0">
+            <span class="fs-num">04</span>
+            <span class="fs-text">Our Services</span>
+            <i class="fas fa-plus fs-plus"></i>
+          </div>
+          <ul class="fs-sub">
+            <li><a href="services.php"><i class="fas fa-grip"></i> All Services</a></li>
+            <li><a href="service-recruitment.php"><i class="fas fa-users"></i> Expert Recruitment</a></li>
+            <li><a href="service-outsourcing.php"><i class="fas fa-handshake"></i> Scalable Outsourcing</a></li>
+            <li><a href="service-digital-transformation.php"><i class="fas fa-wand-magic-sparkles"></i> Digital Transformation</a></li>
+            <li><a href="service-tech-squad.php"><i class="fas fa-code"></i> Tech Squad</a></li>
+            <li><a href="service-data-handling.php"><i class="fas fa-database"></i> Data Handling</a></li>
+          </ul>
+        </li>
+
+        <li class="fs-item" style="--d:.44s">
+          <a href="blog.php" class="fs-link">
+            <span class="fs-num">05</span>
+            <span class="fs-text">Blog &amp; Insights</span>
+          </a>
+        </li>
+
+        <li class="fs-item" style="--d:.52s">
+          <a href="contact.php" class="fs-link">
+            <span class="fs-num">06</span>
+            <span class="fs-text">Contact Us</span>
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+
+    <!-- Footer -->
+    <div class="fs-footer">
+      <a href="contact.php" class="btn btn-primary fs-cta">
+        Free Consultation <i class="fas fa-arrow-right"></i>
+      </a>
+      <div class="fs-socials">
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" aria-label="X / Twitter"><i class="fab fa-x-twitter"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+
+  </div><!-- /.fs-inner -->
+</div><!-- /.fs-menu -->

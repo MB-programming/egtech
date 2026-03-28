@@ -1,73 +1,51 @@
 <?php
 $page_title = 'DGTEC – Technological Transformation in The Kingdom';
 $page_desc  = 'DGTEC delivers advanced Technical Recruitment, Scalable Outsourcing, AI automation and Digital Transformation solutions in Saudi Arabia.';
+require_once 'includes/admin-db.php';
+$hero_slides = dgtec_slides_active();
 include 'includes/header.php';
 ?>
 
-<!-- ======= HERO SLIDER ======= -->
+<!-- ======= HERO SLIDER (dynamic from DB) ======= -->
 <section class="hero-section" id="home">
   <div class="hero-slider-wrapper">
-
-    <!-- Slide 1 -->
-    <div class="hero-slide active">
-      <div class="hero-slide-bg" style="background-image:url('assets/images/hero-slider.webp')"></div>
-      <div class="hero-slide-overlay" style="background:linear-gradient(105deg,rgba(24,63,150,.84)0%,rgba(24,63,150,.45)100%)"></div>
+<?php foreach ($hero_slides as $i => $sl): ?>
+    <div class="hero-slide <?= $i === 0 ? 'active' : '' ?>">
+      <?php if ($sl['bg_image']): ?>
+      <div class="hero-slide-bg" style="background-image:url('<?= htmlspecialchars($sl['bg_image']) ?>')"></div>
+      <?php endif; ?>
+      <div class="hero-slide-overlay" style="background:linear-gradient(105deg,<?= hex_rgba($sl['gradient_color1'], $sl['gradient_opacity1']) ?> 0%,<?= hex_rgba($sl['gradient_color2'], $sl['gradient_opacity2']) ?> 100%)"></div>
       <div class="container hero-content">
         <div class="hero-text">
-          <span class="hero-label">Saudi Vision 2030 Aligned</span>
-          <h1 class="hero-title">Technological<br>transformation in<br><span>The Kingdom</span></h1>
-          <p class="hero-desc">We deliver advanced integrated solutions — from Technical Recruitment and Outsourcing to AI-driven Digital Transformation.</p>
+          <span class="hero-label"><?= htmlspecialchars($sl['label']) ?></span>
+          <h1 class="hero-title">
+            <?php foreach (explode("\n", $sl['title']) as $line): ?><?= htmlspecialchars($line) ?><br><?php endforeach; ?>
+            <?php if ($sl['highlight_text']): ?>
+            <span<?= $sl['highlight_color'] ? ' style="color:' . htmlspecialchars($sl['highlight_color']) . '"' : '' ?>><?= htmlspecialchars($sl['highlight_text']) ?></span>
+            <?php endif; ?>
+          </h1>
+          <p class="hero-desc"><?= htmlspecialchars($sl['description']) ?></p>
           <div class="hero-btns">
-            <a href="contact.php" class="btn btn-white">Get Started</a>
-            <a href="about.php" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.5)">About Us</a>
+            <?php if ($sl['btn1_text']): ?>
+            <a href="<?= htmlspecialchars($sl['btn1_url']) ?>" class="btn btn-white"><?= htmlspecialchars($sl['btn1_text']) ?></a>
+            <?php endif; ?>
+            <?php if ($sl['btn2_text']): ?>
+            <a href="<?= htmlspecialchars($sl['btn2_url']) ?>" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.5)"><?= htmlspecialchars($sl['btn2_text']) ?></a>
+            <?php endif; ?>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Slide 2 -->
-    <div class="hero-slide">
-      <div class="hero-slide-bg" style="background-image:url('assets/images/hero-bg.png')"></div>
-      <div class="hero-slide-overlay" style="background:linear-gradient(105deg,rgba(3,50,80,.88)0%,rgba(3,100,120,.50)100%)"></div>
-      <div class="container hero-content">
-        <div class="hero-text">
-          <span class="hero-label">Expert Talent Acquisition</span>
-          <h1 class="hero-title">The Right Talent,<br>Right Now, Right<br><span>Here</span></h1>
-          <p class="hero-desc">Hire top-tier technical, managerial and engineering professionals to drive innovation and business success across The Kingdom.</p>
-          <div class="hero-btns">
-            <a href="contact.php" class="btn btn-white">Hire Now</a>
-            <a href="#services" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.5)">Our Services</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Slide 3 -->
-    <div class="hero-slide">
-      <div class="hero-slide-bg" style="background-image:url('assets/images/hero-slider.webp')"></div>
-      <div class="hero-slide-overlay" style="background:linear-gradient(135deg,rgba(3,134,158,.86)0%,rgba(24,63,150,.90)100%)"></div>
-      <div class="container hero-content">
-        <div class="hero-text">
-          <span class="hero-label">AI-Powered Digital Growth</span>
-          <h1 class="hero-title">Automate, Scale,<br>and Lead in the<br><span>Digital Era</span></h1>
-          <p class="hero-desc">Transform your enterprise with AI-driven automation, smart digital workflows and cutting-edge technology solutions built for tomorrow.</p>
-          <div class="hero-btns">
-            <a href="contact.php" class="btn btn-white">Transform Now</a>
-            <a href="#solutions" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.5)">Our Solutions</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
+<?php endforeach; ?>
   </div><!-- /.hero-slider-wrapper -->
 
   <!-- Slider Controls -->
   <div class="hero-slider-nav">
     <button class="hero-nav-btn hero-prev" aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
     <div class="hero-dots">
-      <span class="hero-dot active"></span>
-      <span class="hero-dot"></span>
-      <span class="hero-dot"></span>
+      <?php foreach ($hero_slides as $i => $sl): ?>
+      <span class="hero-dot <?= $i === 0 ? 'active' : '' ?>"></span>
+      <?php endforeach; ?>
     </div>
     <button class="hero-nav-btn hero-next" aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
   </div>
