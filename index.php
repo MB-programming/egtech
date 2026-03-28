@@ -86,7 +86,7 @@ include 'includes/header.php';
     </div>
     <div class="services-grid">
 
-      <div class="service-card scroll-reveal r-up" style="transition-delay:0s">
+      <div class="service-card">
         <div class="service-icon">
           <img src="assets/icons/icon-recruitment.png" alt="Recruitment" />
         </div>
@@ -95,7 +95,7 @@ include 'includes/header.php';
         <a href="service-recruitment.php" class="service-link">Hire Now <i class="fas fa-arrow-right"></i></a>
       </div>
 
-      <div class="service-card scroll-reveal r-up" style="transition-delay:.10s">
+      <div class="service-card">
         <div class="service-icon">
           <img src="assets/icons/icon-outsourcing.png" alt="Outsourcing" />
         </div>
@@ -104,7 +104,7 @@ include 'includes/header.php';
         <a href="service-outsourcing.php" class="service-link">Access the Right Talent <i class="fas fa-arrow-right"></i></a>
       </div>
 
-      <div class="service-card scroll-reveal r-up" style="transition-delay:.20s">
+      <div class="service-card">
         <div class="service-icon">
           <img src="assets/icons/icon-digital.png" alt="Digital Transformation" />
         </div>
@@ -113,7 +113,7 @@ include 'includes/header.php';
         <a href="service-digital-transformation.php" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
       </div>
 
-      <div class="service-card scroll-reveal r-up" style="transition-delay:.30s">
+      <div class="service-card">
         <div class="service-icon">
           <img src="assets/icons/icon-squad.png" alt="Tech Squad" />
         </div>
@@ -122,7 +122,7 @@ include 'includes/header.php';
         <a href="service-tech-squad.php" class="service-link">Build Your Squad <i class="fas fa-arrow-right"></i></a>
       </div>
 
-      <div class="service-card scroll-reveal r-up" style="transition-delay:.40s">
+      <div class="service-card">
         <div class="service-icon">
           <img src="assets/icons/icon-data.png" alt="Data Handling" />
         </div>
@@ -200,28 +200,28 @@ include 'includes/header.php';
     </div>
     <div class="process-grid">
 
-      <div class="process-step scroll-reveal r-up" style="transition-delay:0s">
+      <div class="process-step">
         <div class="step-number">01</div>
         <div class="step-icon"><i class="fas fa-magnifying-glass-chart"></i></div>
         <h4>Discovery &amp; Assessment</h4>
         <p>We start by deeply understanding your business goals, current challenges, and technology landscape to build a clear picture of your needs.</p>
       </div>
 
-      <div class="process-step scroll-reveal r-up" style="transition-delay:.12s">
+      <div class="process-step">
         <div class="step-number">02</div>
         <div class="step-icon"><i class="fas fa-pencil-ruler"></i></div>
         <h4>Strategy &amp; Design</h4>
         <p>Our experts craft a tailored digital roadmap and solution architecture that aligns with your Vision 2030 objectives and growth ambitions.</p>
       </div>
 
-      <div class="process-step scroll-reveal r-up" style="transition-delay:.24s">
+      <div class="process-step">
         <div class="step-number">03</div>
         <div class="step-icon"><i class="fas fa-robot"></i></div>
         <h4>Build &amp; Automate</h4>
         <p>We implement smart automation, AI-driven workflows and enterprise systems — deploying efficiently with minimal disruption to daily operations.</p>
       </div>
 
-      <div class="process-step scroll-reveal r-up" style="transition-delay:.36s">
+      <div class="process-step">
         <div class="step-number">04</div>
         <div class="step-icon"><i class="fas fa-chart-line"></i></div>
         <h4>Scale &amp; Grow</h4>
