@@ -184,6 +184,8 @@ function fmt_date(string $dt): string {
     <nav class="sidebar-nav">
       <p class="nav-section">Content</p>
       <a href="slides.php"><i class="fas fa-images"></i> Hero Slides</a>
+      <a href="services.php"><i class="fas fa-briefcase"></i> Services</a>
+      <a href="solutions.php"><i class="fas fa-lightbulb"></i> Solutions</a>
       <p class="nav-section">Inbox</p>
       <a href="submissions.php" class="active">
         <i class="fas fa-envelope"></i> Submissions

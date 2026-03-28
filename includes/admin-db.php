@@ -61,6 +61,42 @@ function dgtec_db_init(PDO $pdo): void {
         $pdo->exec("ALTER TABLE `contacts` ADD COLUMN `is_read` TINYINT(1) NOT NULL DEFAULT 0");
     }
 
+    /* ---- services ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `services` (
+            `id`          INT AUTO_INCREMENT PRIMARY KEY,
+            `position`    INT NOT NULL DEFAULT 0,
+            `is_active`   TINYINT(1) NOT NULL DEFAULT 1,
+            `title`       VARCHAR(255) NOT NULL DEFAULT '',
+            `slug`        VARCHAR(255) NOT NULL DEFAULT '',
+            `icon`        VARCHAR(100) NOT NULL DEFAULT '',
+            `image`       VARCHAR(500) NOT NULL DEFAULT '',
+            `description` TEXT NOT NULL,
+            `features`    TEXT NOT NULL DEFAULT '',
+            `page_url`    VARCHAR(500) NOT NULL DEFAULT '',
+            `is_reversed` TINYINT(1) NOT NULL DEFAULT 0,
+            `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- solutions ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `solutions` (
+            `id`          INT AUTO_INCREMENT PRIMARY KEY,
+            `position`    INT NOT NULL DEFAULT 0,
+            `is_active`   TINYINT(1) NOT NULL DEFAULT 1,
+            `title`       VARCHAR(255) NOT NULL DEFAULT '',
+            `slug`        VARCHAR(255) NOT NULL DEFAULT '',
+            `icon`        VARCHAR(100) NOT NULL DEFAULT '',
+            `image`       VARCHAR(500) NOT NULL DEFAULT '',
+            `description` TEXT NOT NULL,
+            `features`    TEXT NOT NULL DEFAULT '',
+            `page_url`    VARCHAR(500) NOT NULL DEFAULT '',
+            `is_reversed` TINYINT(1) NOT NULL DEFAULT 0,
+            `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
     /* ---- Seed admin user ---- */
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM `admin_users` WHERE `username` = ?");
     $stmt->execute(['minaboules']);
@@ -74,6 +110,18 @@ function dgtec_db_init(PDO $pdo): void {
     $count = (int)$pdo->query("SELECT COUNT(*) FROM `hero_slides`")->fetchColumn();
     if ($count === 0) {
         dgtec_seed_slides($pdo);
+    }
+
+    /* ---- Seed default services ---- */
+    $svcCount = (int)$pdo->query("SELECT COUNT(*) FROM `services`")->fetchColumn();
+    if ($svcCount === 0) {
+        dgtec_seed_services($pdo);
+    }
+
+    /* ---- Seed default solutions ---- */
+    $solCount = (int)$pdo->query("SELECT COUNT(*) FROM `solutions`")->fetchColumn();
+    if ($solCount === 0) {
+        dgtec_seed_solutions($pdo);
     }
 }
 
@@ -250,6 +298,80 @@ function dgtec_submissions_unread_count(): int {
     return (int)dgtec_db()
         ->query("SELECT COUNT(*) FROM `contacts` WHERE `is_read` = 0")
         ->fetchColumn();
+}
+
+/* ---- Seed functions for services & solutions ---- */
+
+function dgtec_seed_services(PDO $pdo): void {
+    $items = [
+        ['position'=>1,'title'=>'Expert Technical Recruitment','slug'=>'service-recruitment','icon'=>'fas fa-users','image'=>'assets/images/team.png','description'=>'Hire top-tier technical, managerial and engineering talent fast. Our AI-powered screening, vast talent network and 72-hour shortlist SLA ensures you never lose a great candidate to a slower competitor.','features'=>'72h Shortlist SLA|AI-Powered Screening|Permanent & Contract|Saudisation Compliance|90-Day Guarantee','page_url'=>'service-recruitment.php','is_reversed'=>0],
+        ['position'=>2,'title'=>'Scalable Outsourcing Solutions','slug'=>'service-outsourcing','icon'=>'fas fa-people-group','image'=>'assets/images/our-soul.webp','description'=>'Access fully managed, skilled resources at up to 55% less than traditional employment. Flexible monthly contracts, zero overhead, full Saudi labour law compliance and rapid scale-up capability.','features'=>'Up to 55% Cost Reduction|Fully Managed Teams|Flexible Contracts|Legal Compliance|KPI Reporting','page_url'=>'service-outsourcing.php','is_reversed'=>1],
+        ['position'=>3,'title'=>'Enterprise Digital Transformation','slug'=>'service-digital-transformation','icon'=>'fas fa-microchip','image'=>'assets/images/hero-bg.png','description'=>'Powered by Zenoo and Newgen — we take your organisation from strategy to go-live. Legacy modernisation, cloud adoption, AI integration and change management — all under one accountable partner.','features'=>'Digital Strategy & Roadmap|Cloud Adoption|AI & Automation|Change Management|Vision 2030 Aligned','page_url'=>'service-digital-transformation.php','is_reversed'=>0],
+        ['position'=>4,'title'=>'Tech Squad-as-a-Service','slug'=>'service-tech-squad','icon'=>'fas fa-code','image'=>'assets/images/hero-slider.webp','description'=>'A fully assembled, cross-functional engineering team deployed in 48 hours — complete with a dedicated Project Manager, agile delivery methodology and flexible monthly scaling. Ship faster without the overhead.','features'=>'48h Deployment|Full-Stack Capabilities|Dedicated PM Included|Agile / Scrum|Elastic Scaling','page_url'=>'service-tech-squad.php','is_reversed'=>1],
+        ['position'=>5,'title'=>'Data Handling Solutions','slug'=>'service-data-handling','icon'=>'fas fa-database','image'=>'assets/images/process-road.webp','description'=>'From raw data collection to AI-ready pipelines — DGTEC manages the full data lifecycle. Clean, governed, secure data that powers smarter decisions, better analytics and faster machine learning.','features'=>'Data Collection & Ingestion|Cleansing & Enrichment|Governance Framework|BI & Analytics|PDPL Compliant','page_url'=>'service-data-handling.php','is_reversed'=>0],
+    ];
+    $stmt = $pdo->prepare("INSERT INTO `services` (position,title,slug,icon,image,description,features,page_url,is_reversed) VALUES (:position,:title,:slug,:icon,:image,:description,:features,:page_url,:is_reversed)");
+    foreach ($items as $item) { $stmt->execute($item); }
+}
+
+function dgtec_seed_solutions(PDO $pdo): void {
+    $items = [
+        ['position'=>1,'title'=>'Digital Onboarding & Compliance','slug'=>'solution-digital-onboarding','icon'=>'fas fa-id-card-clip','image'=>'assets/images/our-soul.webp','description'=>'Replace slow, paper-heavy onboarding with intelligent digital workflows. From KYC and identity verification to compliance monitoring and audit trails — fully automated, fully compliant.','features'=>'KYC & Identity Verification|Digital Document Management|Compliance Monitoring|Smart Workflow Builder|Full Audit Trail','page_url'=>'solution-digital-onboarding.php','is_reversed'=>0],
+        ['position'=>2,'title'=>'Enterprise Content & Process Automation','slug'=>'solution-enterprise-automation','icon'=>'fas fa-robot','image'=>'assets/images/process-road.webp','description'=>'Powered by Newgen — a global BPM and ECM leader — automate complex cross-department processes, manage enterprise content and unlock real-time process intelligence at scale.','features'=>'Business Process Automation|Intelligent Document Capture|Low-Code Workflow Designer|Enterprise Content Management|Process Analytics','page_url'=>'solution-enterprise-automation.php','is_reversed'=>1],
+        ['position'=>3,'title'=>'Tea Boy – Smart Internal Operations Automation','slug'=>'solution-tea-boy','icon'=>'fas fa-mug-hot','image'=>'assets/images/team.png','description'=>"DGTEC's proprietary AI-powered platform transforms how organisations manage day-to-day internal operations — from facilities and IT requests to asset tracking and smart scheduling.",'features'=>'Smart Request Management|Intelligent Scheduling|Internal Service Desk|Asset Tracking|Mobile Employee App','page_url'=>'solution-tea-boy.php','is_reversed'=>0],
+    ];
+    $stmt = $pdo->prepare("INSERT INTO `solutions` (position,title,slug,icon,image,description,features,page_url,is_reversed) VALUES (:position,:title,:slug,:icon,:image,:description,:features,:page_url,:is_reversed)");
+    foreach ($items as $item) { $stmt->execute($item); }
+}
+
+/* ---- Generic list/get/save/delete/move for services & solutions ---- */
+
+function _dgtec_tbl(string $type): string {
+    return $type === 'service' ? 'services' : 'solutions';
+}
+
+function dgtec_items_all(string $type): array {
+    return dgtec_db()->query("SELECT * FROM `"._dgtec_tbl($type)."` ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_items_active(string $type): array {
+    return dgtec_db()->query("SELECT * FROM `"._dgtec_tbl($type)."` WHERE `is_active`=1 ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_item_get(string $type, int $id): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `"._dgtec_tbl($type)."` WHERE `id`=?");
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
+
+function dgtec_item_save(string $type, array $data): int {
+    $db  = dgtec_db();
+    $tbl = _dgtec_tbl($type);
+    if (!empty($data['id'])) {
+        $db->prepare("UPDATE `$tbl` SET position=:position,is_active=:is_active,title=:title,slug=:slug,icon=:icon,image=:image,description=:description,features=:features,page_url=:page_url,is_reversed=:is_reversed WHERE id=:id")->execute($data);
+        return (int)$data['id'];
+    } else {
+        unset($data['id']);
+        $db->prepare("INSERT INTO `$tbl` (position,is_active,title,slug,icon,image,description,features,page_url,is_reversed) VALUES (:position,:is_active,:title,:slug,:icon,:image,:description,:features,:page_url,:is_reversed)")->execute($data);
+        return (int)$db->lastInsertId();
+    }
+}
+
+function dgtec_item_delete(string $type, int $id): void {
+    dgtec_db()->prepare("DELETE FROM `"._dgtec_tbl($type)."` WHERE `id`=?")->execute([$id]);
+}
+
+function dgtec_item_move(string $type, int $id, string $dir): void {
+    $db  = dgtec_db();
+    $tbl = _dgtec_tbl($type);
+    $all = $db->query("SELECT `id`,`position` FROM `$tbl` ORDER BY `position` ASC")->fetchAll();
+    $idx = array_search($id, array_column($all, 'id'));
+    if ($idx === false) return;
+    $swapIdx = ($dir === 'up') ? $idx - 1 : $idx + 1;
+    if (!isset($all[$swapIdx])) return;
+    $stmt = $db->prepare("UPDATE `$tbl` SET `position`=? WHERE `id`=?");
+    $stmt->execute([$all[$swapIdx]['position'], $id]);
+    $stmt->execute([$all[$idx]['position'], $all[$swapIdx]['id']]);
 }
 
 /* ---- Utility ---- */
