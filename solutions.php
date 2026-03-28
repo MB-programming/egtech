@@ -1,4 +1,6 @@
 <?php
+require_once 'includes/admin-db.php';
+$solutions  = dgtec_items_active('solution');
 $page_title = 'Our Solutions – Digital Onboarding, Automation & Smart Operations | DGTEC';
 $page_desc  = 'Explore DGTEC\'s intelligent solutions: Digital Onboarding & Compliance, Enterprise Content & Process Automation, and Tea Boy Smart Internal Operations.';
 include 'includes/header.php';
@@ -29,74 +31,30 @@ include 'includes/header.php';
 
     <div class="listing-cards">
 
-      <!-- Solution 01 -->
-      <div class="listing-card">
+      <?php foreach ($solutions as $i => $sol): ?>
+      <?php $features = array_filter(explode('|', $sol['features'])); ?>
+      <div class="listing-card <?= $sol['is_reversed'] ? 'reversed' : '' ?>">
         <div class="listing-card-image">
-          <img src="assets/images/our-soul.webp" alt="Digital Onboarding & Compliance" loading="lazy" />
+          <img src="<?= htmlspecialchars($sol['image']) ?>" alt="<?= htmlspecialchars($sol['title']) ?>" loading="lazy" />
           <div class="listing-card-image-overlay">
-            <div class="listing-card-icon-large"><i class="fas fa-id-card-clip"></i></div>
+            <div class="listing-card-icon-large"><i class="<?= htmlspecialchars($sol['icon']) ?>"></i></div>
           </div>
         </div>
-        <div class="listing-card-content" data-num="01">
-          <span class="section-label">Solution 01</span>
-          <h3>Digital Onboarding &amp; Compliance</h3>
-          <p>Replace slow, paper-heavy onboarding with intelligent digital workflows. From KYC and identity verification to compliance monitoring and audit trails — fully automated, fully compliant.</p>
+        <div class="listing-card-content" data-num="<?= str_pad($i + 1, 2, '0', STR_PAD_LEFT) ?>">
+          <span class="section-label">Solution <?= str_pad($i + 1, 2, '0', STR_PAD_LEFT) ?></span>
+          <h3><?= htmlspecialchars($sol['title']) ?></h3>
+          <p><?= htmlspecialchars($sol['description']) ?></p>
+          <?php if ($features): ?>
           <div class="listing-feature-pills">
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> KYC &amp; Identity Verification</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Digital Document Management</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Compliance Monitoring</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Smart Workflow Builder</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Full Audit Trail</span>
+            <?php foreach ($features as $f): ?>
+            <span class="listing-feature-pill"><i class="fas fa-check"></i> <?= htmlspecialchars(trim($f)) ?></span>
+            <?php endforeach; ?>
           </div>
-          <a href="solution-digital-onboarding.php" class="listing-card-link">Explore This Solution <i class="fas fa-arrow-right"></i></a>
+          <?php endif; ?>
+          <a href="<?= htmlspecialchars($sol['page_url']) ?>" class="listing-card-link">Explore This Solution <i class="fas fa-arrow-right"></i></a>
         </div>
       </div>
-
-      <!-- Solution 02 -->
-      <div class="listing-card reversed">
-        <div class="listing-card-image">
-          <img src="assets/images/process-road.webp" alt="Enterprise Content & Process Automation" loading="lazy" />
-          <div class="listing-card-image-overlay">
-            <div class="listing-card-icon-large"><i class="fas fa-robot"></i></div>
-          </div>
-        </div>
-        <div class="listing-card-content" data-num="02">
-          <span class="section-label">Solution 02</span>
-          <h3>Enterprise Content &amp; Process Automation</h3>
-          <p>Powered by Newgen — a global BPM and ECM leader — automate complex cross-department processes, manage enterprise content and unlock real-time process intelligence at scale.</p>
-          <div class="listing-feature-pills">
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Business Process Automation</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Intelligent Document Capture</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Low-Code Workflow Designer</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Enterprise Content Management</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Process Analytics</span>
-          </div>
-          <a href="solution-enterprise-automation.php" class="listing-card-link">Explore This Solution <i class="fas fa-arrow-right"></i></a>
-        </div>
-      </div>
-
-      <!-- Solution 03 -->
-      <div class="listing-card">
-        <div class="listing-card-image">
-          <img src="assets/images/team.png" alt="Tea Boy – Smart Internal Operations" loading="lazy" />
-          <div class="listing-card-image-overlay">
-            <div class="listing-card-icon-large"><i class="fas fa-mug-hot"></i></div>
-          </div>
-        </div>
-        <div class="listing-card-content" data-num="03">
-          <span class="section-label">Solution 03</span>
-          <h3>Tea Boy – Smart Internal Operations Automation</h3>
-          <p>DGTEC's proprietary AI-powered platform transforms how organisations manage day-to-day internal operations — from facilities and IT requests to asset tracking and smart scheduling.</p>
-          <div class="listing-feature-pills">
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Smart Request Management</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Intelligent Scheduling</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Internal Service Desk</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Asset Tracking</span>
-            <span class="listing-feature-pill"><i class="fas fa-check"></i> Mobile Employee App</span>
-          </div>
-          <a href="solution-tea-boy.php" class="listing-card-link">Explore This Solution <i class="fas fa-arrow-right"></i></a>
-        </div>
-      </div>
+      <?php endforeach; ?>
 
     </div>
   </div>

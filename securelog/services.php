@@ -3,8 +3,8 @@ require_once dirname(__DIR__) . '/includes/admin-auth.php';
 require_once dirname(__DIR__) . '/includes/admin-db.php';
 admin_require_login();
 
-/* ---- Handle quick actions ---- */
-$msg = '';
+$type    = 'service';
+$msg     = '';
 $msgType = 'success';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -12,30 +12,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id     = (int)($_POST['id'] ?? 0);
 
     if ($action === 'toggle' && $id) {
-        $slide = dgtec_slide_get($id);
-        if ($slide) {
-            dgtec_db()->prepare("UPDATE hero_slides SET is_active = ? WHERE id = ?")
-                ->execute([$slide['is_active'] ? 0 : 1, $id]);
-            $msg = 'Slide status updated.';
+        $item = dgtec_item_get($type, $id);
+        if ($item) {
+            dgtec_db()->prepare("UPDATE services SET is_active=? WHERE id=?")
+                ->execute([$item['is_active'] ? 0 : 1, $id]);
+            $msg = 'Service status updated.';
         }
     } elseif ($action === 'delete' && $id) {
-        $slide = dgtec_slide_get($id);
-        if ($slide && $slide['bg_image'] && strpos($slide['bg_image'], 'assets/images/slides/') !== false) {
-            $path = dirname(__DIR__) . '/' . $slide['bg_image'];
-            if (file_exists($path)) unlink($path);
-        }
-        dgtec_slide_delete($id);
-        $msg = 'Slide deleted.';
+        dgtec_item_delete($type, $id);
+        $msg = 'Service deleted.';
     } elseif ($action === 'move_up' && $id) {
-        dgtec_slide_move($id, 'up');
-        $msg = 'Slide moved up.';
+        dgtec_item_move($type, $id, 'up');
+        $msg = 'Moved up.';
     } elseif ($action === 'move_down' && $id) {
-        dgtec_slide_move($id, 'down');
-        $msg = 'Slide moved down.';
+        dgtec_item_move($type, $id, 'down');
+        $msg = 'Moved down.';
     }
 }
 
-$slides      = dgtec_slides_all();
+$items       = dgtec_items_all($type);
 $unreadCount = dgtec_submissions_unread_count();
 ?>
 <!DOCTYPE html>
@@ -43,7 +38,7 @@ $unreadCount = dgtec_submissions_unread_count();
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hero Slides – DGTEC Admin</title>
+  <title>Services – DGTEC Admin</title>
   <link rel="stylesheet" href="assets/admin.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
 </head>
@@ -58,8 +53,8 @@ $unreadCount = dgtec_submissions_unread_count();
     </div>
     <nav class="sidebar-nav">
       <p class="nav-section">Content</p>
-      <a href="slides.php" class="active"><i class="fas fa-images"></i> Hero Slides</a>
-      <a href="services.php"><i class="fas fa-briefcase"></i> Services</a>
+      <a href="slides.php"><i class="fas fa-images"></i> Hero Slides</a>
+      <a href="services.php" class="active"><i class="fas fa-briefcase"></i> Services</a>
       <a href="solutions.php"><i class="fas fa-lightbulb"></i> Solutions</a>
       <p class="nav-section">Inbox</p>
       <a href="submissions.php">
@@ -79,7 +74,7 @@ $unreadCount = dgtec_submissions_unread_count();
   <!-- Main -->
   <main class="admin-main">
     <div class="admin-topbar">
-      <div class="topbar-title">Hero <span>Slides</span></div>
+      <div class="topbar-title">Our <span>Services</span></div>
       <div class="topbar-user">
         <div class="topbar-avatar"><?= strtoupper(substr(admin_current_user(), 0, 1)) ?></div>
         <?= htmlspecialchars(admin_current_user()) ?>
@@ -94,22 +89,22 @@ $unreadCount = dgtec_submissions_unread_count();
 
       <div class="page-header">
         <div>
-          <h1>Hero Slides</h1>
-          <p>Manage the homepage hero slider. Drag to reorder or use arrows.</p>
+          <h1>Services</h1>
+          <p>Manage the services displayed on the Services page.</p>
         </div>
-        <a href="slide-form.php" class="btn btn-primary"><i class="fas fa-plus"></i> Add Slide</a>
+        <a href="item-form.php?type=service" class="btn btn-primary"><i class="fas fa-plus"></i> Add Service</a>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <h2>All Slides (<?= count($slides) ?>)</h2>
-          <a href="../index.php#home" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i> Preview</a>
+          <h2>All Services (<?= count($items) ?>)</h2>
+          <a href="../services.php" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i> Preview</a>
         </div>
 
-        <?php if (empty($slides)): ?>
+        <?php if (empty($items)): ?>
         <div class="card-body" style="text-align:center;padding:60px;color:var(--gray)">
-          <i class="fas fa-images" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px"></i>
-          No slides yet. <a href="slide-form.php" style="color:var(--btn)">Add your first slide</a>.
+          <i class="fas fa-briefcase" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px"></i>
+          No services yet. <a href="item-form.php?type=service" style="color:var(--btn)">Add your first service</a>.
         </div>
         <?php else: ?>
         <div style="overflow-x:auto">
@@ -117,42 +112,47 @@ $unreadCount = dgtec_submissions_unread_count();
           <thead>
             <tr>
               <th style="width:50px">#</th>
-              <th>Thumbnail</th>
-              <th>Label / Title</th>
-              <th>Gradient</th>
+              <th>Image</th>
+              <th>Icon</th>
+              <th>Title</th>
+              <th>Features</th>
+              <th>Page URL</th>
               <th>Status</th>
               <th>Order</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-          <?php foreach ($slides as $i => $s): ?>
+          <?php foreach ($items as $i => $s): ?>
+          <?php $featureCount = count(array_filter(explode('|', $s['features']))); ?>
             <tr>
               <td style="color:var(--gray);font-weight:700"><?= $s['position'] ?></td>
 
               <td>
-                <?php if ($s['bg_image']): ?>
-                <img src="../<?= htmlspecialchars($s['bg_image']) ?>"
+                <?php if ($s['image']): ?>
+                <img src="../<?= htmlspecialchars($s['image']) ?>"
                      class="slide-thumb"
-                     style="border:2px solid rgba(<?= implode(',', sscanf($s['gradient_color1'], '#%02x%02x%02x') ?: [24,63,150]) ?>,.3)"
-                     alt="Slide" />
+                     alt="<?= htmlspecialchars($s['title']) ?>" />
                 <?php else: ?>
                 <div class="slide-thumb-placeholder"><i class="fas fa-image"></i></div>
                 <?php endif; ?>
               </td>
 
-              <td>
-                <div style="font-size:11px;color:var(--acc);font-weight:600;letter-spacing:.5px;margin-bottom:2px"><?= htmlspecialchars($s['label']) ?></div>
-                <div style="font-weight:700;font-size:13px">
-                  <?= nl2br(htmlspecialchars($s['title'])) ?>
-                  <?php if ($s['highlight_text']): ?>
-                  <em style="color:var(--btn)"><?= htmlspecialchars($s['highlight_text']) ?></em>
-                  <?php endif; ?>
-                </div>
+              <td style="font-size:20px;color:var(--p);text-align:center">
+                <i class="<?= htmlspecialchars($s['icon']) ?>"></i>
               </td>
 
               <td>
-                <div style="width:60px;height:28px;border-radius:6px;background:linear-gradient(105deg,<?= hex_rgba($s['gradient_color1'], $s['gradient_opacity1']) ?> 0%,<?= hex_rgba($s['gradient_color2'], $s['gradient_opacity2']) ?> 100%)"></div>
+                <div style="font-weight:700;font-size:13px"><?= htmlspecialchars($s['title']) ?></div>
+                <div style="font-size:11px;color:var(--gray);margin-top:2px"><?= htmlspecialchars($s['slug']) ?></div>
+              </td>
+
+              <td style="color:var(--gray);font-size:12px"><?= $featureCount ?> feature<?= $featureCount !== 1 ? 's' : '' ?></td>
+
+              <td style="font-size:12px;color:var(--gray)">
+                <a href="../<?= htmlspecialchars($s['page_url']) ?>" target="_blank" style="color:var(--p)">
+                  <?= htmlspecialchars($s['page_url']) ?>
+                </a>
               </td>
 
               <td>
@@ -174,7 +174,7 @@ $unreadCount = dgtec_submissions_unread_count();
                     <button type="submit" class="btn btn-secondary btn-icon btn-sm" title="Move up"><i class="fas fa-chevron-up"></i></button>
                   </form>
                   <?php endif; ?>
-                  <?php if ($i < count($slides) - 1): ?>
+                  <?php if ($i < count($items) - 1): ?>
                   <form method="post" style="display:inline">
                     <input type="hidden" name="action" value="move_down" />
                     <input type="hidden" name="id" value="<?= $s['id'] ?>" />
@@ -186,8 +186,8 @@ $unreadCount = dgtec_submissions_unread_count();
 
               <td>
                 <div style="display:flex;gap:6px">
-                  <a href="slide-form.php?id=<?= $s['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-pen"></i> Edit</a>
-                  <button class="btn btn-danger btn-sm" onclick="confirmDelete(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['label'] ?: 'this slide')) ?>')">
+                  <a href="item-form.php?type=service&id=<?= $s['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-pen"></i> Edit</a>
+                  <button class="btn btn-danger btn-sm" onclick="confirmDelete(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['title'] ?: 'this service')) ?>')">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
@@ -207,8 +207,8 @@ $unreadCount = dgtec_submissions_unread_count();
 <!-- Delete Confirm Modal -->
 <div class="modal-backdrop" id="deleteModal">
   <div class="modal">
-    <h3><i class="fas fa-triangle-exclamation" style="color:#dc2626"></i> Delete Slide</h3>
-    <p id="deleteMsg">Are you sure you want to permanently delete this slide?</p>
+    <h3><i class="fas fa-triangle-exclamation" style="color:#dc2626"></i> Delete Service</h3>
+    <p id="deleteMsg">Are you sure you want to permanently delete this service?</p>
     <div class="modal-btns">
       <button class="btn btn-secondary" onclick="document.getElementById('deleteModal').classList.remove('open')">Cancel</button>
       <form method="post" id="deleteForm" style="display:inline">
