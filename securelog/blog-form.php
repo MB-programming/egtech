@@ -142,6 +142,8 @@ $pageTitle   = $isEdit ? 'Edit Post' : 'Add New Post';
 
     /* ── Code textarea ── */
     .code-textarea { font-family:'Courier New',monospace; font-size:12px; line-height:1.5; min-height:100px; background:#1e1e2e; color:#cdd6f4; border-radius:8px; padding:12px; }
+    /* ── Toggle HTML button active state ── */
+    #toggleHtmlBtn.active { background:var(--dark,#0f172a); color:#7dd3fc; border-color:var(--dark,#0f172a); }
   </style>
 </head>
 <body>
@@ -302,11 +304,26 @@ $pageTitle   = $isEdit ? 'Edit Post' : 'Add New Post';
           <div class="card" style="margin-bottom:24px">
             <div class="card-header">
               <h2><i class="fas fa-pen-nib" style="color:var(--acc)"></i> Post Content</h2>
-              <span style="font-size:12px;color:var(--gray)">Rich editor — use toolbar for formatting</span>
+              <button type="button" id="toggleHtmlBtn"
+                      style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
+                             border:1.5px solid var(--border);border-radius:7px;background:var(--white);
+                             font-size:12px;font-weight:600;cursor:pointer;color:var(--gray);transition:.15s">
+                <i class="fas fa-code"></i> HTML Source
+              </button>
             </div>
             <div class="card-body" style="padding:12px">
               <!-- CKEditor attaches here -->
-              <div id="editorContainer"><?= $d['content'] ?></div>
+              <div id="ckEditorWrap">
+                <div id="editorContainer"><?= $d['content'] ?></div>
+              </div>
+              <!-- Raw HTML textarea (shown in source mode) -->
+              <textarea id="htmlSourceArea"
+                        style="display:none;width:100%;min-height:400px;font-family:'Courier New',monospace;
+                               font-size:13px;line-height:1.6;padding:14px;border:1px solid var(--border);
+                               border-radius:8px;resize:vertical;background:#1e1e2e;color:#cdd6f4;
+                               box-sizing:border-box"
+                        placeholder="<!-- Write raw HTML here -->"
+                        spellcheck="false"></textarea>
             </div>
           </div>
         </div><!-- /panel-content -->
@@ -365,10 +382,24 @@ $pageTitle   = $isEdit ? 'Edit Post' : 'Add New Post';
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">OG Image URL</label>
-                  <input type="text" name="seo_og_image" class="form-input"
-                         value="<?= htmlspecialchars($sd['og_image']) ?>"
-                         placeholder="https://…/image.jpg" />
+                  <label class="form-label">OG Image <small style="font-weight:400;text-transform:none">(1200×630 px recommended)</small></label>
+                  <input type="hidden" name="seo_og_image" id="ogImgHidden" value="<?= htmlspecialchars($sd['og_image']) ?>" />
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px">
+                    <?php if (!empty($sd['og_image'])): ?>
+                    <img id="blogOgPreview" src="../<?= htmlspecialchars($sd['og_image']) ?>"
+                         style="max-width:180px;max-height:100px;border-radius:6px;border:1px solid var(--border);object-fit:cover" />
+                    <?php else: ?>
+                    <img id="blogOgPreview" src="" style="max-width:180px;max-height:100px;border-radius:6px;border:1px solid var(--border);object-fit:cover;display:none" />
+                    <?php endif; ?>
+                    <div>
+                      <label style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px">
+                        <i class="fas fa-upload"></i> Upload OG Image
+                        <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none"
+                               onchange="uploadBlogOgImage(this)" />
+                      </label>
+                      <div id="blogOgStatus" style="font-size:12px;margin-top:4px;color:var(--gray)"></div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="form-group full">
@@ -429,6 +460,8 @@ document.querySelectorAll('.form-tab').forEach(function(btn) {
 
 /* ── CKEditor 5 ── */
 var ckEditor;
+var htmlMode = false;
+
 ClassicEditor.create(document.getElementById('editorContainer'), {
     toolbar: {
         items: [
@@ -437,9 +470,7 @@ ClassicEditor.create(document.getElementById('editorContainer'), {
             'link', 'blockQuote', 'code', '|',
             'bulletedList', 'numberedList', 'outdent', 'indent', '|',
             'insertTable', 'horizontalLine', '|',
-            'imageUpload', 'mediaEmbed', '|',
-            'undo', 'redo', '|',
-            'sourceEditing'
+            'undo', 'redo'
         ]
     },
     heading: {
@@ -448,6 +479,7 @@ ClassicEditor.create(document.getElementById('editorContainer'), {
             { model:'heading1', view:'h1', title:'Heading 1', class:'ck-heading_heading1' },
             { model:'heading2', view:'h2', title:'Heading 2', class:'ck-heading_heading2' },
             { model:'heading3', view:'h3', title:'Heading 3', class:'ck-heading_heading3' },
+            { model:'heading4', view:'h4', title:'Heading 4', class:'ck-heading_heading4' },
         ]
     },
     table: { contentToolbar: ['tableColumn','tableRow','mergeTableCells'] }
@@ -457,9 +489,37 @@ ClassicEditor.create(document.getElementById('editorContainer'), {
     console.error('CKEditor error:', err);
 });
 
-/* Sync CKEditor content to hidden textarea before submit */
+/* ── Custom HTML source toggle ── */
+document.getElementById('toggleHtmlBtn').addEventListener('click', function() {
+    if (!ckEditor) return;
+    var srcArea  = document.getElementById('htmlSourceArea');
+    var ckWrap   = document.getElementById('ckEditorWrap');
+    var btn      = this;
+
+    if (!htmlMode) {
+        /* Switch to HTML source view */
+        srcArea.value  = ckEditor.getData();
+        ckWrap.style.display  = 'none';
+        srcArea.style.display = 'block';
+        btn.innerHTML = '<i class="fas fa-eye"></i> Visual Editor';
+        btn.classList.add('active');
+        htmlMode = true;
+    } else {
+        /* Switch back to visual */
+        ckEditor.setData(srcArea.value);
+        srcArea.style.display = 'none';
+        ckWrap.style.display  = 'block';
+        btn.innerHTML = '<i class="fas fa-code"></i> HTML Source';
+        btn.classList.remove('active');
+        htmlMode = false;
+    }
+});
+
+/* Sync CKEditor / HTML source to hidden textarea before submit */
 document.getElementById('blogForm').addEventListener('submit', function() {
-    if (ckEditor) {
+    if (htmlMode) {
+        document.getElementById('contentHidden').value = document.getElementById('htmlSourceArea').value;
+    } else if (ckEditor) {
         document.getElementById('contentHidden').value = ckEditor.getData();
     }
 });
@@ -544,6 +604,40 @@ function clearImage() {
     document.getElementById('uploadArea').style.display = 'block';
     document.getElementById('uploadProgress').classList.remove('active');
     document.getElementById('uploadStatus').textContent = '';
+}
+
+/* ── OG image upload ── */
+function uploadBlogOgImage(input) {
+  if (!input.files || !input.files[0]) return;
+  var statusEl = document.getElementById('blogOgStatus');
+  statusEl.textContent = 'Uploading…';
+  statusEl.style.color = 'var(--gray)';
+  var fd = new FormData();
+  fd.append('image', input.files[0]);
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'og-upload.php', true);
+  xhr.setRequestHeader('X-CSRF-Token', <?= json_encode(admin_csrf_token()) ?>);
+  xhr.addEventListener('load', function() {
+    input.value = '';
+    try {
+      var resp = JSON.parse(xhr.responseText);
+      if (resp.success) {
+        document.getElementById('ogImgHidden').value = resp.path;
+        var prev = document.getElementById('blogOgPreview');
+        prev.src = resp.preview;
+        prev.style.display = 'block';
+        statusEl.textContent = 'Uploaded.';
+        statusEl.style.color = '#16a34a';
+      } else {
+        statusEl.textContent = resp.error || 'Upload failed.';
+        statusEl.style.color = '#dc2626';
+      }
+    } catch(e) {
+      statusEl.textContent = 'Server error.';
+      statusEl.style.color = '#dc2626';
+    }
+  });
+  xhr.send(fd);
 }
 
 /* ── SEO char counters ── */
