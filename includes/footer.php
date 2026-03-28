@@ -22,10 +22,9 @@ if (!isset($_seo)) {
         <img src="<?= htmlspecialchars($_footer_logo) ?>" alt="DGTEC Logo" width="140" height="44" />
         <p><?= htmlspecialchars($_fsite['footer_description'] ?: 'We believe technology has the power to do amazing things. DGTEC delivers advanced integrated solutions that transform businesses across the Kingdom.') ?></p>
         <div class="footer-social">
-          <a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-          <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="social-link" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <?php foreach (dgtec_social_links_active() as $_sl): ?>
+          <a href="<?= htmlspecialchars($_sl['url']) ?>" class="social-link" aria-label="<?= htmlspecialchars($_sl['platform']) ?>" target="_blank" rel="noopener noreferrer"><i class="<?= htmlspecialchars($_sl['icon']) ?>"></i></a>
+          <?php endforeach; ?>
         </div>
       </div>
 
@@ -33,9 +32,9 @@ if (!isset($_seo)) {
       <div class="footer-col">
         <h4>Our Solutions</h4>
         <ul class="footer-links">
-          <li><a href="#">Digital Onboarding</a></li>
-          <li><a href="#">Process Automation</a></li>
-          <li><a href="#">Internal Operations</a></li>
+          <?php foreach (dgtec_items_active('solution') as $_fi): ?>
+          <li><a href="solution-detail.php?slug=<?= urlencode($_fi['slug']) ?>"><?= htmlspecialchars($_fi['title']) ?></a></li>
+          <?php endforeach; ?>
         </ul>
       </div>
 
@@ -43,11 +42,9 @@ if (!isset($_seo)) {
       <div class="footer-col">
         <h4>Our Services</h4>
         <ul class="footer-links">
-          <li><a href="#">Expert Tech Recruitment</a></li>
-          <li><a href="#">Scalable Outsourcing</a></li>
-          <li><a href="#">Digital Transformation</a></li>
-          <li><a href="#">Tech Squad-as-a-Service</a></li>
-          <li><a href="#">Data Handling Solutions</a></li>
+          <?php foreach (dgtec_items_active('service') as $_fi): ?>
+          <li><a href="service-detail.php?slug=<?= urlencode($_fi['slug']) ?>"><?= htmlspecialchars($_fi['title']) ?></a></li>
+          <?php endforeach; ?>
         </ul>
       </div>
 

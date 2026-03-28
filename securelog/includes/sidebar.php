@@ -30,6 +30,8 @@ $_nav_active = $activePage ?? '';
     </a>
     <p class="nav-section">Settings</p>
     <a href="site-info.php" <?= $_nav_active === 'site-info' ? 'class="active"' : '' ?>><i class="fas fa-gear"></i> Site Info</a>
+    <a href="home-content.php" <?= $_nav_active === 'home-content' ? 'class="active"' : '' ?>><i class="fas fa-house"></i> Home Content</a>
+    <a href="about-content.php" <?= $_nav_active === 'about-content' ? 'class="active"' : '' ?>><i class="fas fa-circle-info"></i> About Content</a>
     <a href="seo.php" <?= $_nav_active === 'seo' ? 'class="active"' : '' ?>><i class="fas fa-magnifying-glass-chart"></i> SEO Settings</a>
     <a href="nav-menus.php" <?= $_nav_active === 'nav-menus' ? 'class="active"' : '' ?>><i class="fas fa-bars"></i> Nav Menus</a>
     <p class="nav-section">Site</p>

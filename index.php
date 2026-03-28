@@ -1,11 +1,16 @@
 <?php
 require_once 'includes/admin-db.php';
-$_si        = dgtec_site_info();
-$page_title = 'DGTEC – Technological Transformation in The Kingdom';
-$page_desc  = $_si['site_description'] ?: 'DGTEC delivers advanced Technical Recruitment, Scalable Outsourcing, AI automation and Digital Transformation solutions in Saudi Arabia.';
-$hero_slides = dgtec_slides_active();
-$partners    = dgtec_partners_active();
-$reviews     = dgtec_reviews_active();
+$_si          = dgtec_site_info();
+$_hc          = dgtec_home_content();
+$_hp          = dgtec_home_process();
+$_ha          = dgtec_home_achievements();
+$page_title   = 'DGTEC – Technological Transformation in The Kingdom';
+$page_desc    = $_si['site_description'] ?: 'DGTEC delivers advanced Technical Recruitment, Scalable Outsourcing, AI automation and Digital Transformation solutions in Saudi Arabia.';
+$hero_slides  = dgtec_slides_active();
+$partners     = dgtec_partners_active();
+$reviews      = dgtec_reviews_active();
+$_home_svcs   = array_slice(dgtec_items_active('service'),  0, (int)($_hc['services_count']  ?? 5));
+$_home_sols   = array_slice(dgtec_items_active('solution'), 0, (int)($_hc['solutions_count'] ?? 3));
 include 'includes/header.php';
 ?>
 
@@ -60,58 +65,22 @@ include 'includes/header.php';
   <div class="container">
     <div class="services-header">
       <div>
-        <span class="section-label">What We Do</span>
-        <h2 class="section-title">Explore Our Services</h2>
+        <span class="section-label"><?= htmlspecialchars($_hc['services_label']) ?></span>
+        <h2 class="section-title"><?= htmlspecialchars($_hc['services_title']) ?></h2>
       </div>
-      <p class="section-desc">A full spectrum of technology and talent services to power your business in a rapidly evolving market.</p>
+      <p class="section-desc"><?= htmlspecialchars($_hc['services_desc']) ?></p>
     </div>
     <div class="services-grid">
-
+      <?php foreach ($_home_svcs as $_svc): ?>
       <div class="service-card">
-        <div class="service-icon">
-          <img src="assets/icons/icon-recruitment.png" alt="Recruitment" />
+        <div class="service-icon" style="display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--p),var(--btn));color:#fff;font-size:26px;flex-shrink:0">
+          <i class="<?= htmlspecialchars($_svc['icon'] ?: 'fas fa-briefcase') ?>"></i>
         </div>
-        <h3>Expert Technical Recruitment</h3>
-        <p>Hire Top-Tier talents across Technical, Managerial, and Engineering fields to drive innovation and success across your organisation.</p>
-        <a href="service-recruitment.php" class="service-link">Hire Now <i class="fas fa-arrow-right"></i></a>
+        <h3><?= htmlspecialchars($_svc['title']) ?></h3>
+        <p><?= htmlspecialchars($_svc['description']) ?></p>
+        <a href="service-detail.php?slug=<?= urlencode($_svc['slug']) ?>" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
       </div>
-
-      <div class="service-card">
-        <div class="service-icon">
-          <img src="assets/icons/icon-outsourcing.png" alt="Outsourcing" />
-        </div>
-        <h3>Scalable Outsourcing Solutions</h3>
-        <p>Get the Talent you need and reduce up to 55% operational cost and Hiring Risks with our flexible outsourcing model.</p>
-        <a href="service-outsourcing.php" class="service-link">Access the Right Talent <i class="fas fa-arrow-right"></i></a>
-      </div>
-
-      <div class="service-card">
-        <div class="service-icon">
-          <img src="assets/icons/icon-digital.png" alt="Digital Transformation" />
-        </div>
-        <h3>Enterprise Digital Transformation</h3>
-        <p>Empower transformation with Zenoo and Newgen through smart automation, AI-driven growth and end-to-end digitisation.</p>
-        <a href="service-digital-transformation.php" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
-      </div>
-
-      <div class="service-card">
-        <div class="service-icon">
-          <img src="assets/icons/icon-squad.png" alt="Tech Squad" />
-        </div>
-        <h3>Tech Squad-as-a-Service</h3>
-        <p>Deploy a dedicated, fully managed technical team on demand — the agile way to scale engineering capacity without the overhead.</p>
-        <a href="service-tech-squad.php" class="service-link">Build Your Squad <i class="fas fa-arrow-right"></i></a>
-      </div>
-
-      <div class="service-card">
-        <div class="service-icon">
-          <img src="assets/icons/icon-data.png" alt="Data Handling" />
-        </div>
-        <h3>Data Handling Solutions</h3>
-        <p>Harness the power of your data — from collection and cleansing to governance, analytics and AI-ready pipelines at scale.</p>
-        <a href="service-data-handling.php" class="service-link">Explore Data Services <i class="fas fa-arrow-right"></i></a>
-      </div>
-
+      <?php endforeach; ?>
     </div>
   </div>
 </section>
@@ -122,43 +91,21 @@ include 'includes/header.php';
   <div class="container">
     <div class="solutions-inner">
       <div class="solutions-content">
-        <span class="section-label">Our Solutions</span>
-        <h2 class="section-title">Our Solutions</h2>
-        <p class="section-desc">
-          A comprehensive suite of intelligent AI and automation services designed to enhance efficiency, unlock data-driven insights, and streamline business operations.
-        </p>
+        <span class="section-label"><?= htmlspecialchars($_hc['solutions_label']) ?></span>
+        <h2 class="section-title"><?= htmlspecialchars($_hc['solutions_title']) ?></h2>
+        <p class="section-desc"><?= htmlspecialchars($_hc['solutions_desc']) ?></p>
         <div class="solutions-cards">
-
-          <div class="solution-item active">
-            <div class="solution-item-icon">
-              <img src="assets/icons/icon-onboarding.png" alt="Digital Onboarding" />
+          <?php foreach ($_home_sols as $_i => $_sol): ?>
+          <a href="solution-detail.php?slug=<?= urlencode($_sol['slug']) ?>" class="solution-item <?= $_i === 0 ? 'active' : '' ?>" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:16px">
+            <div class="solution-item-icon" style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--p),var(--btn));color:#fff;font-size:22px;flex-shrink:0">
+              <i class="<?= htmlspecialchars($_sol['icon'] ?: 'fas fa-lightbulb') ?>"></i>
             </div>
             <div class="solution-item-text">
-              <h4>Digital Onboarding &amp; Compliance</h4>
-              <p>Streamline your client and employee onboarding with smart digital workflows and full compliance management.</p>
+              <h4><?= htmlspecialchars($_sol['title']) ?></h4>
+              <p><?= htmlspecialchars(mb_substr($_sol['description'], 0, 120)) ?><?= mb_strlen($_sol['description']) > 120 ? '…' : '' ?></p>
             </div>
-          </div>
-
-          <div class="solution-item">
-            <div class="solution-item-icon">
-              <img src="assets/icons/icon-process.png" alt="Process Automation" />
-            </div>
-            <div class="solution-item-text">
-              <h4>Enterprise Content &amp; Process Automation</h4>
-              <p>Automate complex business processes, reduce manual effort, and improve operational speed and accuracy.</p>
-            </div>
-          </div>
-
-          <div class="solution-item">
-            <div class="solution-item-icon">
-              <img src="assets/icons/icon-internal.png" alt="Internal Operations" />
-            </div>
-            <div class="solution-item-text">
-              <h4>Tea Boy – Smart Internal Operations</h4>
-              <p>Automate day-to-day internal operations and support services with AI-powered smart tooling.</p>
-            </div>
-          </div>
-
+          </a>
+          <?php endforeach; ?>
         </div>
       </div>
       <div class="solutions-image">
@@ -173,44 +120,20 @@ include 'includes/header.php';
 <section class="process-section" id="process">
   <div class="container">
     <div class="process-header">
-      <span class="section-label">How We Work</span>
-      <h2 class="section-title">Our Business Process Road</h2>
-      <p class="section-desc">
-        From the first conversation to long-term digital success — here's the clear, proven path we walk with every client to deliver measurable results.
-      </p>
+      <span class="section-label"><?= htmlspecialchars($_hc['process_label']) ?></span>
+      <h2 class="section-title"><?= htmlspecialchars($_hc['process_title']) ?></h2>
+      <p class="section-desc"><?= htmlspecialchars($_hc['process_desc']) ?></p>
     </div>
     <div class="process-grid">
-
+      <?php foreach ($_hp as $_pi => $_step): ?>
       <div class="process-step">
-        <div class="step-number">01</div>
-        <div class="step-icon"><i class="fas fa-magnifying-glass-chart"></i></div>
-        <h4>Discovery &amp; Assessment</h4>
-        <p>We start by deeply understanding your business goals, current challenges, and technology landscape to build a clear picture of your needs.</p>
+        <div class="step-number"><?= str_pad($_pi + 1, 2, '0', STR_PAD_LEFT) ?></div>
+        <div class="step-icon"><i class="<?= htmlspecialchars($_step['icon'] ?: 'fas fa-circle') ?>"></i></div>
+        <h4><?= htmlspecialchars($_step['title']) ?></h4>
+        <p><?= htmlspecialchars($_step['desc']) ?></p>
       </div>
-
-      <div class="process-step">
-        <div class="step-number">02</div>
-        <div class="step-icon"><i class="fas fa-pencil-ruler"></i></div>
-        <h4>Strategy &amp; Design</h4>
-        <p>Our experts craft a tailored digital roadmap and solution architecture that aligns with your Vision 2030 objectives and growth ambitions.</p>
-      </div>
-
-      <div class="process-step">
-        <div class="step-number">03</div>
-        <div class="step-icon"><i class="fas fa-robot"></i></div>
-        <h4>Build &amp; Automate</h4>
-        <p>We implement smart automation, AI-driven workflows and enterprise systems — deploying efficiently with minimal disruption to daily operations.</p>
-      </div>
-
-      <div class="process-step">
-        <div class="step-number">04</div>
-        <div class="step-icon"><i class="fas fa-chart-line"></i></div>
-        <h4>Scale &amp; Grow</h4>
-        <p>We stay with you post-launch — monitoring, optimising and scaling your digital capabilities for sustainable long-term success.</p>
-      </div>
-
+      <?php endforeach; ?>
     </div>
-
     <div class="process-footer">
       <div class="process-footer-inner">
         <i class="fas fa-circle-check"></i>
@@ -226,46 +149,20 @@ include 'includes/header.php';
 <section class="achievements-section" id="achievements">
   <div class="container">
     <div class="achievements-header">
-      <span class="section-label" style="color:var(--accent)">Our Track Record</span>
-      <h2 class="section-title" style="color:#fff">Our Achievements</h2>
-      <p class="section-desc" style="color:rgba(255,255,255,.7);margin:0 auto">
-        Numbers that reflect the trust our clients place in us and the results we consistently deliver across The Kingdom and beyond.
-      </p>
+      <span class="section-label" style="color:var(--accent)"><?= htmlspecialchars($_hc['achievements_label']) ?></span>
+      <h2 class="section-title" style="color:#fff"><?= htmlspecialchars($_hc['achievements_title']) ?></h2>
+      <p class="section-desc" style="color:rgba(255,255,255,.7);margin:0 auto"><?= htmlspecialchars($_hc['achievements_desc']) ?></p>
     </div>
     <div class="achievements-grid">
-
+      <?php foreach ($_ha as $_ach): ?>
       <div class="achievement-item">
-        <div class="achievement-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="achievement-icon"><i class="<?= htmlspecialchars($_ach['icon'] ?: 'fas fa-star') ?>"></i></div>
         <div class="achievement-number">
-          <span class="counter" data-target="250">0</span><span class="plus">+</span>
+          <span class="counter" data-target="<?= (int)$_ach['number'] ?>">0</span><span class="plus"><?= htmlspecialchars($_ach['suffix'] ?? '+') ?></span>
         </div>
-        <p class="achievement-label">Completed Tasks</p>
+        <p class="achievement-label"><?= htmlspecialchars($_ach['label']) ?></p>
       </div>
-
-      <div class="achievement-item">
-        <div class="achievement-icon"><i class="fas fa-folder-open"></i></div>
-        <div class="achievement-number">
-          <span class="counter" data-target="120">0</span><span class="plus">+</span>
-        </div>
-        <p class="achievement-label">Successful Projects</p>
-      </div>
-
-      <div class="achievement-item">
-        <div class="achievement-icon"><i class="fas fa-rocket"></i></div>
-        <div class="achievement-number">
-          <span class="counter" data-target="85">0</span><span class="plus">+</span>
-        </div>
-        <p class="achievement-label">Delivered Projects</p>
-      </div>
-
-      <div class="achievement-item">
-        <div class="achievement-icon"><i class="fas fa-handshake"></i></div>
-        <div class="achievement-number">
-          <span class="counter" data-target="60">0</span><span class="plus">+</span>
-        </div>
-        <p class="achievement-label">Happy Clients</p>
-      </div>
-
+      <?php endforeach; ?>
     </div>
   </div>
 </section>
@@ -275,8 +172,8 @@ include 'includes/header.php';
 <section class="clients-section" id="clients">
   <div class="container">
     <div class="clients-header">
-      <span class="section-label">Our Partners</span>
-      <h2 class="section-title">Trusted By Leading Brands</h2>
+      <span class="section-label"><?= htmlspecialchars($_hc['partners_label']) ?></span>
+      <h2 class="section-title"><?= htmlspecialchars($_hc['partners_title']) ?></h2>
     </div>
   </div>
   <?php if (!empty($partners)): ?>
@@ -319,11 +216,9 @@ include 'includes/header.php';
 <section class="testimonials-section" id="testimonials">
   <div class="container">
     <div class="testimonials-header">
-      <span class="section-label">Client Feedback</span>
-      <h2 class="section-title">Our Clients Says</h2>
-      <p class="section-desc" style="margin:0 auto;text-align:center">
-        Real results, real relationships. Here's what our clients say about working with DGTEC.
-      </p>
+      <span class="section-label"><?= htmlspecialchars($_hc['testimonials_label']) ?></span>
+      <h2 class="section-title"><?= htmlspecialchars($_hc['testimonials_title']) ?></h2>
+      <p class="section-desc" style="margin:0 auto;text-align:center"><?= htmlspecialchars($_hc['testimonials_desc']) ?></p>
     </div>
 
     <?php if (!empty($reviews)): ?>
@@ -373,11 +268,9 @@ include 'includes/header.php';
     <div class="home-contact-inner">
 
       <div class="home-contact-text scroll-reveal r-left">
-        <span class="section-label">Get In Touch</span>
-        <h2 class="section-title" style="color:#fff">Let's Start Your<br>Digital Journey</h2>
-        <p class="section-desc" style="color:rgba(255,255,255,.75)">
-          Ready to transform your business? Fill in the form and our team will get back to you within 24 hours.
-        </p>
+        <span class="section-label"><?= htmlspecialchars($_hc['contact_label']) ?></span>
+        <h2 class="section-title" style="color:#fff"><?= nl2br(htmlspecialchars($_hc['contact_title'])) ?></h2>
+        <p class="section-desc" style="color:rgba(255,255,255,.75)"><?= htmlspecialchars($_hc['contact_desc']) ?></p>
         <div class="home-contact-info">
           <?php if ($_si['phone']): ?>
           <div class="home-contact-info-item">
@@ -401,8 +294,8 @@ include 'includes/header.php';
       </div>
 
       <div class="home-contact-form-wrap scroll-reveal r-right">
-        <h3>Send Us a Message</h3>
-        <p>We'll respond within 24 hours.</p>
+        <h3><?= htmlspecialchars($_hc['contact_form_title']) ?></h3>
+        <p><?= htmlspecialchars($_hc['contact_form_subtitle']) ?></p>
         <form id="home-contact-form" novalidate>
           <div class="form-row">
             <div class="form-group">
