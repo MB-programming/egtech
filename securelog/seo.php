@@ -28,6 +28,13 @@ $knownPages = [
 foreach (dgtec_blogs_all() as $bp) {
     if ($bp['slug']) $knownPages['blog:' . $bp['slug']] = 'Blog: ' . mb_substr($bp['title'], 0, 50);
 }
+/* Add all services/solutions from DB */
+foreach (dgtec_items_all('service') as $svc) {
+    if ($svc['slug']) $knownPages[$svc['slug']] = 'Service: ' . mb_substr($svc['title'], 0, 50);
+}
+foreach (dgtec_items_all('solution') as $sol) {
+    if ($sol['slug']) $knownPages[$sol['slug']] = 'Solution: ' . mb_substr($sol['title'], 0, 50);
+}
 
 $activeTab  = $_GET['tab'] ?? 'global';
 $activePage = 'seo';
