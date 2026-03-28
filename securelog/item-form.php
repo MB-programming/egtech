@@ -277,8 +277,8 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
                 <label class="form-label">Page URL</label>
                 <input type="text" name="page_url" class="form-input"
                        value="<?= htmlspecialchars($d['page_url']) ?>"
-                       placeholder="e.g. service-recruitment.php" />
-                <p class="form-hint">Relative URL for the "Explore" link</p>
+                       placeholder="Auto-filled from slug" />
+                <p class="form-hint">Auto-filled from slug (slug + .php). Edit only if needed.</p>
               </div>
 
               <div class="form-group full">
@@ -653,12 +653,27 @@ function clearPcImage() {
 }
 
 /* ======================================================
-   Auto-generate slug from title
+   Auto-generate slug from title + sync page_url from slug
    ====================================================== */
 var slugTouched = <?= ($d['slug'] !== '') ? 'true' : 'false' ?>;
+var pageUrlTouched = <?= ($d['page_url'] !== '') ? 'true' : 'false' ?>;
 
 document.getElementById('slugInput').addEventListener('input', function() {
   slugTouched = true;
+  syncPageUrl(this.value);
+});
+
+function syncPageUrl(slug) {
+  if (pageUrlTouched) return;
+  var pageUrlInput = document.querySelector('input[name="page_url"]');
+  if (pageUrlInput && slug.trim()) {
+    pageUrlInput.value = slug.trim() + '.php';
+  }
+}
+
+/* Also allow manual override of page_url */
+document.querySelector('input[name="page_url"]').addEventListener('input', function() {
+  pageUrlTouched = true;
 });
 
 function autoSlug() {
@@ -670,6 +685,7 @@ function autoSlug() {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
   document.getElementById('slugInput').value = slug;
+  syncPageUrl(slug);
 }
 
 /* ======================================================
