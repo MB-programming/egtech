@@ -1,6 +1,9 @@
 <?php
+require_once 'includes/admin-db.php';
+$_si       = dgtec_site_info();
 $page_title = 'Blog – Insights & News | DGTEC';
 $page_desc  = 'Explore the latest insights, news and thought leadership from DGTEC on AI, digital transformation, technical recruitment and enterprise technology in Saudi Arabia.';
+$blog_posts = dgtec_blogs_active();
 include 'includes/header.php';
 ?>
 
@@ -23,99 +26,43 @@ include 'includes/header.php';
       <span class="section-label">Latest Articles</span>
       <h2 class="section-title">Insights &amp; Thought Leadership</h2>
     </div>
+
+    <?php if (!empty($blog_posts)): ?>
     <div class="blog-grid">
-
+      <?php foreach ($blog_posts as $post): ?>
       <article class="blog-card">
         <div class="blog-card-image">
-          <img src="assets/images/hero-slider.webp" alt="AI Reshaping Technical Recruitment" loading="lazy" />
+          <img src="<?= htmlspecialchars($post['image'] ?: 'assets/images/hero-slider.webp') ?>"
+               alt="<?= htmlspecialchars($post['title']) ?>" loading="lazy" />
         </div>
         <div class="blog-card-body">
           <div class="blog-card-meta">
-            <span class="blog-card-tag">AI &amp; Recruitment</span>
-            <span class="blog-card-date"><i class="fas fa-calendar-alt"></i> March 10, 2026</span>
+            <?php if ($post['category']): ?>
+            <span class="blog-card-tag"><?= htmlspecialchars($post['category']) ?></span>
+            <?php endif; ?>
+            <?php if ($post['published_at']): ?>
+            <span class="blog-card-date">
+              <i class="fas fa-calendar-alt"></i>
+              <?= date('F j, Y', strtotime($post['published_at'])) ?>
+            </span>
+            <?php endif; ?>
           </div>
-          <h3>How AI is Reshaping Technical Recruitment in Saudi Arabia</h3>
-          <p>Artificial intelligence is transforming how organisations identify, screen and onboard technical talent — cutting time-to-hire while improving candidate quality and cultural fit.</p>
-          <a href="blog-post.php" class="blog-read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+          <h3><?= htmlspecialchars($post['title']) ?></h3>
+          <p><?= htmlspecialchars($post['excerpt']) ?></p>
+          <a href="blog-post.php?slug=<?= urlencode($post['slug']) ?>" class="blog-read-more">
+            Read Article <i class="fas fa-arrow-right"></i>
+          </a>
         </div>
       </article>
-
-      <article class="blog-card">
-        <div class="blog-card-image">
-          <img src="assets/images/our-soul.webp" alt="Digital Transformation Vision 2030" loading="lazy" />
-        </div>
-        <div class="blog-card-body">
-          <div class="blog-card-meta">
-            <span class="blog-card-tag">Digital Transformation</span>
-            <span class="blog-card-date"><i class="fas fa-calendar-alt"></i> February 28, 2026</span>
-          </div>
-          <h3>The Future of Enterprise Digital Transformation in Vision 2030</h3>
-          <p>Saudi Arabia's Vision 2030 is driving a wave of enterprise digitisation. We explore the key pillars, challenges and opportunities for businesses navigating this shift.</p>
-          <a href="blog-post.php" class="blog-read-more">Read Article <i class="fas fa-arrow-right"></i></a>
-        </div>
-      </article>
-
-      <article class="blog-card">
-        <div class="blog-card-image">
-          <img src="assets/images/process-road.webp" alt="IT Outsourcing Cost Savings" loading="lazy" />
-        </div>
-        <div class="blog-card-body">
-          <div class="blog-card-meta">
-            <span class="blog-card-tag">Outsourcing</span>
-            <span class="blog-card-date"><i class="fas fa-calendar-alt"></i> February 14, 2026</span>
-          </div>
-          <h3>Why Outsourcing IT Operations Can Save Your Business Up to 55%</h3>
-          <p>Smart outsourcing isn't just about cost — it's about agility. Discover how companies are leveraging managed outsourcing models to scale without overhead risk.</p>
-          <a href="blog-post.php" class="blog-read-more">Read Article <i class="fas fa-arrow-right"></i></a>
-        </div>
-      </article>
-
-      <article class="blog-card">
-        <div class="blog-card-image">
-          <img src="assets/images/team.png" alt="Tea Boy Smart Automation" loading="lazy" />
-        </div>
-        <div class="blog-card-body">
-          <div class="blog-card-meta">
-            <span class="blog-card-tag">Smart Automation</span>
-            <span class="blog-card-date"><i class="fas fa-calendar-alt"></i> January 30, 2026</span>
-          </div>
-          <h3>Tea Boy: Redefining Internal Operations with Smart Automation</h3>
-          <p>Meet Tea Boy — DGTEC's AI-powered internal operations platform that eliminates manual overhead and brings enterprise-grade service management to everyday workplace tasks.</p>
-          <a href="blog-post.php" class="blog-read-more">Read Article <i class="fas fa-arrow-right"></i></a>
-        </div>
-      </article>
-
-      <article class="blog-card">
-        <div class="blog-card-image">
-          <img src="assets/images/hero-bg.png" alt="Data Governance AI" loading="lazy" />
-        </div>
-        <div class="blog-card-body">
-          <div class="blog-card-meta">
-            <span class="blog-card-tag">Data &amp; AI</span>
-            <span class="blog-card-date"><i class="fas fa-calendar-alt"></i> January 12, 2026</span>
-          </div>
-          <h3>Data Governance in the Age of AI: What Saudi Enterprises Need to Know</h3>
-          <p>As AI adoption accelerates, data governance becomes the backbone of every successful enterprise strategy. We break down what matters most for KSA organisations.</p>
-          <a href="blog-post.php" class="blog-read-more">Read Article <i class="fas fa-arrow-right"></i></a>
-        </div>
-      </article>
-
-      <article class="blog-card">
-        <div class="blog-card-image">
-          <img src="assets/images/contact-us.webp" alt="Tech Squad as a Service" loading="lazy" />
-        </div>
-        <div class="blog-card-body">
-          <div class="blog-card-meta">
-            <span class="blog-card-tag">Tech Squad</span>
-            <span class="blog-card-date"><i class="fas fa-calendar-alt"></i> December 20, 2025</span>
-          </div>
-          <h3>Tech Squad-as-a-Service: The Agile Alternative to Traditional IT Hiring</h3>
-          <p>The "build vs. buy" debate is evolving. Squad-as-a-Service offers a third path — on-demand technical teams that deliver at speed without the cost and risk of permanent hires.</p>
-          <a href="blog-post.php" class="blog-read-more">Read Article <i class="fas fa-arrow-right"></i></a>
-        </div>
-      </article>
-
+      <?php endforeach; ?>
     </div>
+    <?php else: ?>
+    <div style="text-align:center;padding:80px 20px;color:#64748b">
+      <i class="fas fa-newspaper" style="font-size:48px;opacity:.25;display:block;margin-bottom:16px"></i>
+      <p>No articles published yet. Check back soon.</p>
+    </div>
+    <?php endif; ?>
+
   </div>
 </section>
 

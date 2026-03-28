@@ -123,6 +123,90 @@ function dgtec_db_init(PDO $pdo): void {
     if ($solCount === 0) {
         dgtec_seed_solutions($pdo);
     }
+
+    /* ---- partners ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `partners` (
+            `id`          INT AUTO_INCREMENT PRIMARY KEY,
+            `position`    INT NOT NULL DEFAULT 0,
+            `is_active`   TINYINT(1) NOT NULL DEFAULT 1,
+            `name`        VARCHAR(255) NOT NULL DEFAULT '',
+            `logo`        VARCHAR(500) NOT NULL DEFAULT '',
+            `website_url` VARCHAR(500) NOT NULL DEFAULT '',
+            `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- client_reviews ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `client_reviews` (
+            `id`        INT AUTO_INCREMENT PRIMARY KEY,
+            `position`  INT NOT NULL DEFAULT 0,
+            `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+            `name`      VARCHAR(255) NOT NULL DEFAULT '',
+            `job_title` VARCHAR(255) NOT NULL DEFAULT '',
+            `review`    TEXT NOT NULL,
+            `stars`     TINYINT(1) NOT NULL DEFAULT 5,
+            `image`     VARCHAR(500) NOT NULL DEFAULT '',
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- site_info ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `site_info` (
+            `id`                INT AUTO_INCREMENT PRIMARY KEY,
+            `phone`             VARCHAR(100) NOT NULL DEFAULT '',
+            `email`             VARCHAR(150) NOT NULL DEFAULT '',
+            `address`           TEXT NOT NULL,
+            `footer_description` TEXT NOT NULL,
+            `site_description`  TEXT NOT NULL,
+            `header_logo`       VARCHAR(500) NOT NULL DEFAULT '',
+            `footer_logo`       VARCHAR(500) NOT NULL DEFAULT '',
+            `updated_at`        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- blog_posts ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `blog_posts` (
+            `id`           INT AUTO_INCREMENT PRIMARY KEY,
+            `position`     INT NOT NULL DEFAULT 0,
+            `is_active`    TINYINT(1) NOT NULL DEFAULT 1,
+            `title`        VARCHAR(255) NOT NULL DEFAULT '',
+            `slug`         VARCHAR(255) NOT NULL DEFAULT '',
+            `category`     VARCHAR(100) NOT NULL DEFAULT '',
+            `excerpt`      TEXT NOT NULL,
+            `content`      LONGTEXT NOT NULL,
+            `image`        VARCHAR(500) NOT NULL DEFAULT '',
+            `published_at` DATE NULL,
+            `created_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- Seed partners ---- */
+    $partnerCount = (int)$pdo->query("SELECT COUNT(*) FROM `partners`")->fetchColumn();
+    if ($partnerCount === 0) {
+        dgtec_seed_partners($pdo);
+    }
+
+    /* ---- Seed client reviews ---- */
+    $reviewCount = (int)$pdo->query("SELECT COUNT(*) FROM `client_reviews`")->fetchColumn();
+    if ($reviewCount === 0) {
+        dgtec_seed_reviews($pdo);
+    }
+
+    /* ---- Seed site info ---- */
+    $infoCount = (int)$pdo->query("SELECT COUNT(*) FROM `site_info`")->fetchColumn();
+    if ($infoCount === 0) {
+        dgtec_seed_site_info($pdo);
+    }
+
+    /* ---- Seed blog posts ---- */
+    $blogCount = (int)$pdo->query("SELECT COUNT(*) FROM `blog_posts`")->fetchColumn();
+    if ($blogCount === 0) {
+        dgtec_seed_blogs($pdo);
+    }
 }
 
 function dgtec_seed_slides(PDO $pdo): void {
@@ -385,4 +469,277 @@ function hex_rgba(string $hex, float $alpha): string {
     $g = hexdec(substr($hex, 2, 2));
     $b = hexdec(substr($hex, 4, 2));
     return "rgba($r,$g,$b,$alpha)";
+}
+
+/* ================================================================
+   PARTNERS
+   ================================================================ */
+
+function dgtec_seed_partners(PDO $pdo): void {
+    $items = [
+        ['position'=>1,'name'=>'Partner 1','logo'=>'assets/images/partner-1.jpg','website_url'=>''],
+        ['position'=>2,'name'=>'Partner 2','logo'=>'assets/images/partner-2.jpg','website_url'=>''],
+        ['position'=>3,'name'=>'Partner 3','logo'=>'assets/images/partner-3.jpg','website_url'=>''],
+        ['position'=>4,'name'=>'Partner 4','logo'=>'assets/images/partner-4.jpg','website_url'=>''],
+        ['position'=>5,'name'=>'Partner 5','logo'=>'assets/images/partner-5.jpg','website_url'=>''],
+        ['position'=>6,'name'=>'Brand Partner','logo'=>'assets/images/brand-one.webp','website_url'=>''],
+    ];
+    $stmt = $pdo->prepare("INSERT INTO `partners` (position,name,logo,website_url) VALUES (:position,:name,:logo,:website_url)");
+    foreach ($items as $item) { $stmt->execute($item); }
+}
+
+function dgtec_partners_all(): array {
+    return dgtec_db()->query("SELECT * FROM `partners` ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_partners_active(): array {
+    return dgtec_db()->query("SELECT * FROM `partners` WHERE `is_active`=1 ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_partner_get(int $id): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `partners` WHERE `id`=?");
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
+
+function dgtec_partner_save(array $data): int {
+    $db = dgtec_db();
+    if (!empty($data['id'])) {
+        $db->prepare("UPDATE `partners` SET position=:position,is_active=:is_active,name=:name,logo=:logo,website_url=:website_url WHERE id=:id")->execute($data);
+        return (int)$data['id'];
+    } else {
+        unset($data['id']);
+        $db->prepare("INSERT INTO `partners` (position,is_active,name,logo,website_url) VALUES (:position,:is_active,:name,:logo,:website_url)")->execute($data);
+        return (int)$db->lastInsertId();
+    }
+}
+
+function dgtec_partner_delete(int $id): void {
+    dgtec_db()->prepare("DELETE FROM `partners` WHERE `id`=?")->execute([$id]);
+}
+
+function dgtec_partner_move(int $id, string $dir): void {
+    $db  = dgtec_db();
+    $all = $db->query("SELECT `id`,`position` FROM `partners` ORDER BY `position` ASC")->fetchAll();
+    $idx = array_search($id, array_column($all, 'id'));
+    if ($idx === false) return;
+    $swapIdx = ($dir === 'up') ? $idx - 1 : $idx + 1;
+    if (!isset($all[$swapIdx])) return;
+    $stmt = $db->prepare("UPDATE `partners` SET `position`=? WHERE `id`=?");
+    $stmt->execute([$all[$swapIdx]['position'], $id]);
+    $stmt->execute([$all[$idx]['position'], $all[$swapIdx]['id']]);
+}
+
+/* ================================================================
+   CLIENT REVIEWS
+   ================================================================ */
+
+function dgtec_seed_reviews(PDO $pdo): void {
+    $items = [
+        ['position'=>1,'name'=>'Ahmed Al-Rashidi','job_title'=>'HR Director, National Tech Co.','review'=>'DGTEC transformed our HR and recruitment process entirely. Their team understood our needs from day one and delivered a talent pipeline that exceeded every expectation. We now operate with a level of efficiency we didn\'t think was possible.','stars'=>5,'image'=>''],
+        ['position'=>2,'name'=>'Sara Al-Otaibi','job_title'=>'CEO, GreenPath Solutions KSA','review'=>'The digital transformation roadmap DGTEC delivered was exactly what our organisation needed. Their expertise in process automation and AI integration helped us cut operational costs significantly and accelerate our Vision 2030 alignment.','stars'=>5,'image'=>''],
+        ['position'=>3,'name'=>'Khalid Mansour','job_title'=>'CTO, Horizons Digital Group','review'=>'We engaged DGTEC\'s Tech Squad-as-a-Service and the results were outstanding. A dedicated, highly skilled team deployed within days — no overhead, no delays. Their agile approach made scaling our product development seamless and cost-effective.','stars'=>5,'image'=>''],
+    ];
+    $stmt = $pdo->prepare("INSERT INTO `client_reviews` (position,name,job_title,review,stars,image) VALUES (:position,:name,:job_title,:review,:stars,:image)");
+    foreach ($items as $item) { $stmt->execute($item); }
+}
+
+function dgtec_reviews_all(): array {
+    return dgtec_db()->query("SELECT * FROM `client_reviews` ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_reviews_active(): array {
+    return dgtec_db()->query("SELECT * FROM `client_reviews` WHERE `is_active`=1 ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_review_get(int $id): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `client_reviews` WHERE `id`=?");
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
+
+function dgtec_review_save(array $data): int {
+    $db = dgtec_db();
+    if (!empty($data['id'])) {
+        $db->prepare("UPDATE `client_reviews` SET position=:position,is_active=:is_active,name=:name,job_title=:job_title,review=:review,stars=:stars,image=:image WHERE id=:id")->execute($data);
+        return (int)$data['id'];
+    } else {
+        unset($data['id']);
+        $db->prepare("INSERT INTO `client_reviews` (position,is_active,name,job_title,review,stars,image) VALUES (:position,:is_active,:name,:job_title,:review,:stars,:image)")->execute($data);
+        return (int)$db->lastInsertId();
+    }
+}
+
+function dgtec_review_delete(int $id): void {
+    dgtec_db()->prepare("DELETE FROM `client_reviews` WHERE `id`=?")->execute([$id]);
+}
+
+function dgtec_review_move(int $id, string $dir): void {
+    $db  = dgtec_db();
+    $all = $db->query("SELECT `id`,`position` FROM `client_reviews` ORDER BY `position` ASC")->fetchAll();
+    $idx = array_search($id, array_column($all, 'id'));
+    if ($idx === false) return;
+    $swapIdx = ($dir === 'up') ? $idx - 1 : $idx + 1;
+    if (!isset($all[$swapIdx])) return;
+    $stmt = $db->prepare("UPDATE `client_reviews` SET `position`=? WHERE `id`=?");
+    $stmt->execute([$all[$swapIdx]['position'], $id]);
+    $stmt->execute([$all[$idx]['position'], $all[$swapIdx]['id']]);
+}
+
+/* ================================================================
+   SITE INFO
+   ================================================================ */
+
+function dgtec_seed_site_info(PDO $pdo): void {
+    $pdo->prepare("
+        INSERT INTO `site_info` (phone,email,address,footer_description,site_description,header_logo,footer_logo)
+        VALUES (:phone,:email,:address,:footer_description,:site_description,:header_logo,:footer_logo)
+    ")->execute([
+        'phone'               => '+966 11 000 0000',
+        'email'               => 'info@dgtec.com.sa',
+        'address'             => 'Riyadh, Saudi Arabia',
+        'footer_description'  => 'We believe technology has the power to do amazing things. DGTEC delivers advanced integrated solutions that transform businesses across the Kingdom.',
+        'site_description'    => 'DGTEC delivers advanced Technical Recruitment, Scalable Outsourcing, AI automation and Digital Transformation solutions in Saudi Arabia.',
+        'header_logo'         => 'assets/images/logo.webp',
+        'footer_logo'         => 'assets/images/logo.webp',
+    ]);
+}
+
+function dgtec_site_info(): array {
+    static $info;
+    if ($info) return $info;
+    $info = dgtec_db()->query("SELECT * FROM `site_info` ORDER BY `id` ASC LIMIT 1")->fetch();
+    if (!$info) {
+        $info = [
+            'id'=>0,'phone'=>'+966 11 000 0000','email'=>'info@dgtec.com.sa',
+            'address'=>'Riyadh, Saudi Arabia',
+            'footer_description'=>'We believe technology has the power to do amazing things. DGTEC delivers advanced integrated solutions that transform businesses across the Kingdom.',
+            'site_description'=>'DGTEC delivers advanced integrated solutions in Saudi Arabia.',
+            'header_logo'=>'assets/images/logo.webp','footer_logo'=>'assets/images/logo.webp',
+        ];
+    }
+    return $info;
+}
+
+function dgtec_site_info_save(array $data): void {
+    $db  = dgtec_db();
+    $cnt = (int)$db->query("SELECT COUNT(*) FROM `site_info`")->fetchColumn();
+    if ($cnt === 0) {
+        $db->prepare("INSERT INTO `site_info` (phone,email,address,footer_description,site_description,header_logo,footer_logo) VALUES (:phone,:email,:address,:footer_description,:site_description,:header_logo,:footer_logo)")->execute($data);
+    } else {
+        $db->prepare("UPDATE `site_info` SET phone=:phone,email=:email,address=:address,footer_description=:footer_description,site_description=:site_description,header_logo=:header_logo,footer_logo=:footer_logo ORDER BY id ASC LIMIT 1")->execute($data);
+    }
+}
+
+/* ================================================================
+   BLOG POSTS
+   ================================================================ */
+
+function dgtec_seed_blogs(PDO $pdo): void {
+    $posts = [
+        [
+            'position'=>1,'title'=>'How AI is Reshaping Technical Recruitment in Saudi Arabia',
+            'slug'=>'how-ai-is-reshaping-technical-recruitment',
+            'category'=>'AI & Recruitment',
+            'excerpt'=>'Artificial intelligence is transforming how organisations identify, screen and onboard technical talent — cutting time-to-hire while improving candidate quality and cultural fit.',
+            'content'=>'<p>The Kingdom of Saudi Arabia is experiencing an unprecedented demand for technical talent. As Vision 2030 accelerates the pace of digital transformation across both the government and private sectors, organisations are under pressure to attract, screen and onboard skilled professionals faster than ever before.</p><p>Artificial intelligence is emerging as the critical enabler — not to replace human recruiters, but to give them superpowers. From intelligent candidate sourcing to automated skills assessment and predictive retention modelling, AI is fundamentally changing what\'s possible in talent acquisition.</p><h2>The Talent Gap Challenge in KSA</h2><p>Saudi Arabia\'s Vision 2030 has created simultaneous demand across multiple sectors — technology, healthcare, finance, energy and logistics. The challenge isn\'t just finding candidates; it\'s finding the right candidates quickly, reliably and at scale.</p>',
+            'image'=>'assets/images/hero-slider.webp',
+            'published_at'=>'2026-03-10',
+        ],
+        [
+            'position'=>2,'title'=>'The Future of Enterprise Digital Transformation in Vision 2030',
+            'slug'=>'future-enterprise-digital-transformation-vision-2030',
+            'category'=>'Digital Transformation',
+            'excerpt'=>'Saudi Arabia\'s Vision 2030 is driving a wave of enterprise digitisation. We explore the key pillars, challenges and opportunities for businesses navigating this shift.',
+            'content'=>'<p>Saudi Arabia\'s Vision 2030 is one of the most ambitious national transformation programmes in the world. At its core is a fundamental shift in the country\'s economic model — away from oil dependency and towards a diversified, technology-driven knowledge economy.</p><p>For enterprises operating in the Kingdom, this shift is both an enormous opportunity and a serious challenge. The organisations that successfully navigate digital transformation will be the ones that thrive in the new economy. Those that resist will find themselves left behind.</p>',
+            'image'=>'assets/images/our-soul.webp',
+            'published_at'=>'2026-02-28',
+        ],
+        [
+            'position'=>3,'title'=>'Why Outsourcing IT Operations Can Save Your Business Up to 55%',
+            'slug'=>'outsourcing-it-operations-save-55-percent',
+            'category'=>'Outsourcing',
+            'excerpt'=>'Smart outsourcing isn\'t just about cost — it\'s about agility. Discover how companies are leveraging managed outsourcing models to scale without overhead risk.',
+            'content'=>'<p>In today\'s fast-moving business environment, organisations are under constant pressure to do more with less. Operational efficiency is no longer a nice-to-have — it\'s a competitive necessity.</p><p>One of the most powerful levers available to any organisation is the strategic outsourcing of IT operations. When done right, outsourcing can deliver cost savings of up to 55% compared to traditional in-house models, while simultaneously improving service quality, agility and scalability.</p>',
+            'image'=>'assets/images/process-road.webp',
+            'published_at'=>'2026-02-14',
+        ],
+        [
+            'position'=>4,'title'=>'Tea Boy: Redefining Internal Operations with Smart Automation',
+            'slug'=>'tea-boy-smart-internal-operations-automation',
+            'category'=>'Smart Automation',
+            'excerpt'=>'Meet Tea Boy — DGTEC\'s AI-powered internal operations platform that eliminates manual overhead and brings enterprise-grade service management to everyday workplace tasks.',
+            'content'=>'<p>Every organisation, regardless of size or sector, deals with the friction of day-to-day internal operations. Facility requests, IT support tickets, asset management, meeting room bookings, visitor management — the list goes on. These are the invisible costs that drain productivity and frustrate employees.</p><p>Tea Boy, DGTEC\'s proprietary AI-powered platform, was built to solve this problem. By automating the full lifecycle of internal service requests, Tea Boy transforms operational friction into seamless, digital-first experiences.</p>',
+            'image'=>'assets/images/team.png',
+            'published_at'=>'2026-01-30',
+        ],
+        [
+            'position'=>5,'title'=>'Data Governance in the Age of AI: What Saudi Enterprises Need to Know',
+            'slug'=>'data-governance-age-of-ai-saudi-enterprises',
+            'category'=>'Data & AI',
+            'excerpt'=>'As AI adoption accelerates, data governance becomes the backbone of every successful enterprise strategy. We break down what matters most for KSA organisations.',
+            'content'=>'<p>The rise of artificial intelligence has fundamentally changed the strategic importance of data. Data is no longer just a byproduct of operations — it\'s a critical business asset that can drive competitive advantage, improve decision-making and power the next generation of AI applications.</p><p>But for data to deliver value, it must be governed. Poor data quality, inconsistent definitions, compliance gaps and security vulnerabilities don\'t just create operational problems — they actively undermine AI investments and expose organisations to significant risk.</p>',
+            'image'=>'assets/images/hero-bg.png',
+            'published_at'=>'2026-01-12',
+        ],
+        [
+            'position'=>6,'title'=>'Tech Squad-as-a-Service: The Agile Alternative to Traditional IT Hiring',
+            'slug'=>'tech-squad-as-a-service-agile-alternative',
+            'category'=>'Tech Squad',
+            'excerpt'=>'The "build vs. buy" debate is evolving. Squad-as-a-Service offers a third path — on-demand technical teams that deliver at speed without the cost and risk of permanent hires.',
+            'content'=>'<p>The traditional approach to building technical capability — recruit, hire, onboard, retain — is increasingly misaligned with the pace of modern business. Projects move faster. Technology evolves faster. Market windows open and close in months, not years.</p><p>This mismatch between hiring timelines and business needs has created a growing demand for a new model: Squad-as-a-Service. At DGTEC, our Tech Squad-as-a-Service offering represents a fundamentally different approach to technical capability — one designed for the agile, fast-moving business environment of today.</p>',
+            'image'=>'assets/images/contact-us.webp',
+            'published_at'=>'2025-12-20',
+        ],
+    ];
+    $stmt = $pdo->prepare("INSERT INTO `blog_posts` (position,title,slug,category,excerpt,content,image,published_at) VALUES (:position,:title,:slug,:category,:excerpt,:content,:image,:published_at)");
+    foreach ($posts as $post) { $stmt->execute($post); }
+}
+
+function dgtec_blogs_all(): array {
+    return dgtec_db()->query("SELECT * FROM `blog_posts` ORDER BY `position` ASC")->fetchAll();
+}
+
+function dgtec_blogs_active(): array {
+    return dgtec_db()->query("SELECT * FROM `blog_posts` WHERE `is_active`=1 ORDER BY `published_at` DESC, `position` ASC")->fetchAll();
+}
+
+function dgtec_blog_get(int $id): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `blog_posts` WHERE `id`=?");
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
+
+function dgtec_blog_get_by_slug(string $slug): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `blog_posts` WHERE `slug`=? AND `is_active`=1");
+    $stmt->execute([$slug]);
+    return $stmt->fetch();
+}
+
+function dgtec_blog_save(array $data): int {
+    $db = dgtec_db();
+    if (!empty($data['id'])) {
+        $db->prepare("UPDATE `blog_posts` SET position=:position,is_active=:is_active,title=:title,slug=:slug,category=:category,excerpt=:excerpt,content=:content,image=:image,published_at=:published_at WHERE id=:id")->execute($data);
+        return (int)$data['id'];
+    } else {
+        unset($data['id']);
+        $db->prepare("INSERT INTO `blog_posts` (position,is_active,title,slug,category,excerpt,content,image,published_at) VALUES (:position,:is_active,:title,:slug,:category,:excerpt,:content,:image,:published_at)")->execute($data);
+        return (int)$db->lastInsertId();
+    }
+}
+
+function dgtec_blog_delete(int $id): void {
+    dgtec_db()->prepare("DELETE FROM `blog_posts` WHERE `id`=?")->execute([$id]);
+}
+
+function dgtec_blog_move(int $id, string $dir): void {
+    $db  = dgtec_db();
+    $all = $db->query("SELECT `id`,`position` FROM `blog_posts` ORDER BY `position` ASC")->fetchAll();
+    $idx = array_search($id, array_column($all, 'id'));
+    if ($idx === false) return;
+    $swapIdx = ($dir === 'up') ? $idx - 1 : $idx + 1;
+    if (!isset($all[$swapIdx])) return;
+    $stmt = $db->prepare("UPDATE `blog_posts` SET `position`=? WHERE `id`=?");
+    $stmt->execute([$all[$swapIdx]['position'], $id]);
+    $stmt->execute([$all[$idx]['position'], $all[$swapIdx]['id']]);
 }

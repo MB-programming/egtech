@@ -1,15 +1,21 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
+/* Load site_info if not already loaded */
+if (!function_exists('dgtec_site_info')) {
+    require_once __DIR__ . '/admin-db.php';
+}
+$_site = dgtec_site_info();
+$_header_logo = $_site['header_logo'] ?: 'assets/images/logo.webp';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="<?= $page_desc ?? 'DGTEC – Leading integrated solutions company delivering advanced Technical recruitment, outsourcing, AI and digital transformation in Saudi Arabia.' ?>" />
+  <meta name="description" content="<?= htmlspecialchars($page_desc ?? $_site['site_description'] ?: 'DGTEC – Leading integrated solutions company delivering advanced Technical recruitment, outsourcing, AI and digital transformation in Saudi Arabia.') ?>" />
   <title><?= $page_title ?? 'DGTEC – Technological Transformation in The Kingdom' ?></title>
 
-  <link rel="icon" type="image/webp" href="assets/images/logo.webp" />
+  <link rel="icon" type="image/webp" href="<?= htmlspecialchars($_header_logo) ?>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Asap:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
@@ -24,7 +30,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
     <nav class="navbar">
 
       <a href="index.php" class="nav-logo">
-        <img src="assets/images/logo.webp" alt="DGTEC Logo" width="140" height="48" />
+        <img src="<?= htmlspecialchars($_header_logo) ?>" alt="DGTEC Logo" width="140" height="48" />
       </a>
 
       <ul class="nav-menu" id="nav-menu">
@@ -85,7 +91,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
     <!-- Top bar -->
     <div class="fs-top">
       <a href="index.php" class="fs-logo">
-        <img src="assets/images/logo.webp" alt="DGTEC" />
+        <img src="<?= htmlspecialchars($_header_logo) ?>" alt="DGTEC" />
       </a>
       <button class="fs-close" id="fs-close" aria-label="Close menu">
         <span></span><span></span>

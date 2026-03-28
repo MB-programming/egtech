@@ -86,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $unreadCount = dgtec_submissions_unread_count();
+$activePage  = $type === 'service' ? 'services' : 'solutions';
 $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
 ?>
 <!DOCTYPE html>
@@ -143,31 +144,7 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
 <body>
 <div class="admin-shell">
 
-  <!-- Sidebar -->
-  <aside class="admin-sidebar">
-    <div class="sidebar-brand">
-      <img src="../assets/images/logo.webp" alt="DGTEC" />
-      <span>Admin</span>
-    </div>
-    <nav class="sidebar-nav">
-      <p class="nav-section">Content</p>
-      <a href="slides.php"><i class="fas fa-images"></i> Hero Slides</a>
-      <a href="services.php" <?= $type === 'service' ? 'class="active"' : '' ?>><i class="fas fa-briefcase"></i> Services</a>
-      <a href="solutions.php" <?= $type === 'solution' ? 'class="active"' : '' ?>><i class="fas fa-lightbulb"></i> Solutions</a>
-      <p class="nav-section">Inbox</p>
-      <a href="submissions.php">
-        <i class="fas fa-envelope"></i> Submissions
-        <?php if ($unreadCount > 0): ?>
-        <span style="margin-left:auto;background:#dc2626;color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700"><?= $unreadCount ?></span>
-        <?php endif; ?>
-      </a>
-      <p class="nav-section">Site</p>
-      <a href="../index.php" target="_blank"><i class="fas fa-globe"></i> View Website</a>
-    </nav>
-    <div class="sidebar-footer">
-      <a href="logout.php"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
-    </div>
-  </aside>
+  <?php include 'includes/sidebar.php'; ?>
 
   <!-- Main -->
   <main class="admin-main">
