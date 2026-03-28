@@ -1,8 +1,14 @@
 <?php
+require_once 'includes/admin-db.php';
+$_db_item = dgtec_item_get_by_page_url('service', basename(__FILE__));
 $page_title = 'Scalable Outsourcing Solutions – DGTEC';
 $page_desc  = 'Reduce operational costs by up to 55% with DGTEC\'s scalable IT and business process outsourcing solutions for Saudi enterprises. Flexible, compliant, managed.';
 include 'includes/header.php';
-?>
+if (!empty($_db_item['page_content'])): ?>
+<div class="container" style="padding-top:60px;padding-bottom:60px">
+  <?= $_db_item['page_content'] ?>
+</div>
+<?php include 'includes/footer.php'; exit; endif; ?>
 
 <!-- ======= PAGE HERO ======= -->
 <section class="page-hero">

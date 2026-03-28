@@ -1,8 +1,14 @@
 <?php
+require_once 'includes/admin-db.php';
+$_db_item = dgtec_item_get_by_page_url('service', basename(__FILE__));
 $page_title = 'Data Handling Solutions – DGTEC';
 $page_desc  = 'DGTEC\'s Data Handling Solutions cover the full data lifecycle — collection, cleansing, governance, analytics and AI-ready pipelines for Saudi enterprises.';
 include 'includes/header.php';
-?>
+if (!empty($_db_item['page_content'])): ?>
+<div class="container" style="padding-top:60px;padding-bottom:60px">
+  <?= $_db_item['page_content'] ?>
+</div>
+<?php include 'includes/footer.php'; exit; endif; ?>
 
 <!-- ======= PAGE HERO ======= -->
 <section class="page-hero">

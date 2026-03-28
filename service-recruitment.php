@@ -1,8 +1,14 @@
 <?php
+require_once 'includes/admin-db.php';
+$_db_item = dgtec_item_get_by_page_url('service', basename(__FILE__));
 $page_title = 'Expert Technical Recruitment – DGTEC';
 $page_desc  = 'DGTEC connects Saudi organisations with top-tier technical, managerial and engineering talent. Fast, precise and Vision 2030 aligned recruitment solutions.';
 include 'includes/header.php';
-?>
+if (!empty($_db_item['page_content'])): ?>
+<div class="container" style="padding-top:60px;padding-bottom:60px">
+  <?= $_db_item['page_content'] ?>
+</div>
+<?php include 'includes/footer.php'; exit; endif; ?>
 
 <!-- ======= PAGE HERO ======= -->
 <section class="page-hero">

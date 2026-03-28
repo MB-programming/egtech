@@ -20,17 +20,18 @@ $msg    = '';
 
 /* Default values for a new item */
 $defaults = [
-    'id'          => '',
-    'position'    => count(dgtec_items_all($type)) + 1,
-    'is_active'   => 1,
-    'title'       => '',
-    'slug'        => '',
-    'icon'        => '',
-    'image'       => '',
-    'description' => '',
-    'features'    => '',
-    'page_url'    => '',
-    'is_reversed' => 0,
+    'id'           => '',
+    'position'     => count(dgtec_items_all($type)) + 1,
+    'is_active'    => 1,
+    'title'        => '',
+    'slug'         => '',
+    'icon'         => '',
+    'image'        => '',
+    'description'  => '',
+    'features'     => '',
+    'page_url'     => '',
+    'is_reversed'  => 0,
+    'page_content' => '',
 ];
 $d = array_merge($defaults, $item ?? []);
 
@@ -60,17 +61,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $d = [
-        'id'          => $isEdit ? $id : null,
-        'position'    => max(1, (int)($_POST['position'] ?? 1)),
-        'is_active'   => isset($_POST['is_active']) ? 1 : 0,
-        'title'       => $title,
-        'slug'        => $slug,
-        'icon'        => trim($_POST['icon'] ?? ''),
-        'image'       => $image,
-        'description' => trim($_POST['description'] ?? ''),
-        'features'    => $featuresStored,
-        'page_url'    => trim($_POST['page_url'] ?? ''),
-        'is_reversed' => isset($_POST['is_reversed']) ? 1 : 0,
+        'id'           => $isEdit ? $id : null,
+        'position'     => max(1, (int)($_POST['position'] ?? 1)),
+        'is_active'    => isset($_POST['is_active']) ? 1 : 0,
+        'title'        => $title,
+        'slug'         => $slug,
+        'icon'         => trim($_POST['icon'] ?? ''),
+        'image'        => $image,
+        'description'  => trim($_POST['description'] ?? ''),
+        'features'     => $featuresStored,
+        'page_url'     => trim($_POST['page_url'] ?? ''),
+        'is_reversed'  => isset($_POST['is_reversed']) ? 1 : 0,
+        'page_content' => sanitize_html($_POST['page_content'] ?? ''),
     ];
 
     if (empty($d['title'])) $errors[] = 'Title is required.';
@@ -98,48 +100,39 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
   <title><?= $pageTitle ?> – DGTEC Admin</title>
   <link rel="stylesheet" href="assets/admin.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+  <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js" crossorigin="anonymous"></script>
   <style>
     .upload-progress {
-      display: none;
-      margin-top: 12px;
-      background: var(--bg);
-      border-radius: 8px;
-      overflow: hidden;
-      height: 22px;
-      position: relative;
-      border: 1px solid var(--border);
+      display: none; margin-top: 12px; background: var(--bg); border-radius: 8px;
+      overflow: hidden; height: 22px; position: relative; border: 1px solid var(--border);
     }
     .upload-progress.active { display: block; }
     .upload-progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, var(--p), var(--btn));
-      width: 0%;
-      transition: width .2s ease;
-      border-radius: 8px;
+      height: 100%; background: linear-gradient(90deg, var(--p), var(--btn));
+      width: 0%; transition: width .2s ease; border-radius: 8px;
     }
     .upload-progress-text {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--dark);
-      pointer-events: none;
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 11px; font-weight: 700;
+      color: var(--dark); pointer-events: none;
     }
     .upload-status { margin-top: 8px; font-size: 12px; color: var(--gray); }
     .upload-status.error   { color: #dc2626; }
     .upload-status.success { color: #16a34a; }
-    .icon-preview {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 8px;
-      font-size: 13px;
-      color: var(--gray);
-    }
+    .icon-preview { display: inline-flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 13px; color: var(--gray); }
     .icon-preview i { font-size: 24px; color: var(--p); }
+    /* ── Tabs ── */
+    .form-tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:24px; }
+    .form-tab  { padding:10px 22px; font-size:14px; font-weight:600; color:var(--gray); cursor:pointer;
+                 border:none; background:none; border-bottom:3px solid transparent; margin-bottom:-2px;
+                 transition:.15s; display:flex; align-items:center; gap:7px; }
+    .form-tab.active { color:var(--btn); border-bottom-color:var(--btn); }
+    .form-tab:hover  { color:var(--dark); }
+    .form-panel      { display:none; }
+    .form-panel.active { display:block; }
+    /* ── CKEditor ── */
+    .ck-editor__editable { min-height:380px; font-size:15px; line-height:1.7; }
+    #togglePageHtmlBtn.active { background:var(--dark,#0f172a); color:#7dd3fc; border-color:var(--dark,#0f172a); }
   </style>
 </head>
 <body>
@@ -176,6 +169,16 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
         <a href="<?= $listPage ?>" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to <?= $typeLabel ?>s</a>
       </div>
 
+      <!-- Tab navigation -->
+      <div class="form-tabs">
+        <button type="button" class="form-tab active" data-tab="details">
+          <i class="fas fa-list-check"></i> Card Details
+        </button>
+        <button type="button" class="form-tab" data-tab="pagecontent">
+          <i class="fas fa-file-lines"></i> Page Content
+        </button>
+      </div>
+
       <form method="post" id="itemForm">
         <?= csrf_field() ?>
         <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>" />
@@ -183,6 +186,10 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
         <!-- Hidden fields for image handling -->
         <input type="hidden" name="current_image" id="currentImage" value="<?= htmlspecialchars($d['image']) ?>" />
         <input type="hidden" name="image_uploaded" id="uploadedImagePath" value="" />
+        <!-- CKEditor page_content stored here on submit -->
+        <textarea name="page_content" id="pageContentHidden" style="display:none"><?= htmlspecialchars($d['page_content']) ?></textarea>
+
+        <div class="form-panel active" id="panel-details">
 
         <!-- ===== SECTION 1: Image ===== -->
         <div class="card" style="margin-bottom:24px">
@@ -318,7 +325,7 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
           </div>
         </div>
 
-        <!-- Save -->
+        <!-- Save (inside details panel) -->
         <div style="display:flex;gap:12px;justify-content:flex-end">
           <a href="<?= $listPage ?>" class="btn btn-secondary">Cancel</a>
           <button type="submit" class="btn btn-primary" id="saveBtn">
@@ -326,12 +333,123 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
           </button>
         </div>
 
+        </div><!-- /panel-details -->
+
+        <!-- ════ TAB: PAGE CONTENT ════ -->
+        <div class="form-panel" id="panel-pagecontent">
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header">
+              <h2><i class="fas fa-pen-nib" style="color:var(--acc)"></i> Full Page Content</h2>
+              <button type="button" id="togglePageHtmlBtn"
+                      style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
+                             border:1.5px solid var(--border);border-radius:7px;background:var(--white);
+                             font-size:12px;font-weight:600;cursor:pointer;color:var(--gray);transition:.15s">
+                <i class="fas fa-code"></i> HTML Source
+              </button>
+            </div>
+            <div class="card-body" style="padding:12px">
+              <p style="font-size:13px;color:var(--gray);margin-bottom:12px">
+                If filled in, this content will be displayed on the <strong><?= strtolower($typeLabel) ?> detail page</strong>
+                instead of the static HTML. Leave empty to keep the static page layout.
+              </p>
+              <div id="pageEditorWrap">
+                <div id="pageEditorContainer"><?= $d['page_content'] ?></div>
+              </div>
+              <textarea id="pageHtmlSourceArea"
+                        style="display:none;width:100%;min-height:400px;font-family:'Courier New',monospace;
+                               font-size:13px;line-height:1.6;padding:14px;border:1px solid var(--border);
+                               border-radius:8px;resize:vertical;background:#1e1e2e;color:#cdd6f4;
+                               box-sizing:border-box"
+                        placeholder="<!-- Write raw HTML here -->"
+                        spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;justify-content:flex-end">
+            <a href="<?= $listPage ?>" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" id="saveBtn2">
+              <i class="fas fa-floppy-disk"></i> <?= $isEdit ? "Update $typeLabel" : "Save $typeLabel" ?>
+            </button>
+          </div>
+        </div><!-- /panel-pagecontent -->
+
       </form>
     </div><!-- /.admin-content -->
   </main>
 </div>
 
 <script>
+/* ── Tabs ── */
+document.querySelectorAll('.form-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.form-tab').forEach(function(b){ b.classList.remove('active'); });
+        document.querySelectorAll('.form-panel').forEach(function(p){ p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+/* ── CKEditor 5 for Page Content ── */
+var pageEditor;
+var pageHtmlMode = false;
+
+ClassicEditor.create(document.getElementById('pageEditorContainer'), {
+    toolbar: {
+        items: [
+            'heading', '|',
+            'bold', 'italic', 'underline', 'strikethrough', '|',
+            'link', 'blockQuote', 'code', '|',
+            'bulletedList', 'numberedList', 'outdent', 'indent', '|',
+            'insertTable', 'horizontalLine', '|',
+            'undo', 'redo'
+        ]
+    },
+    heading: {
+        options: [
+            { model:'paragraph', title:'Paragraph', class:'ck-heading_paragraph' },
+            { model:'heading1', view:'h1', title:'Heading 1', class:'ck-heading_heading1' },
+            { model:'heading2', view:'h2', title:'Heading 2', class:'ck-heading_heading2' },
+            { model:'heading3', view:'h3', title:'Heading 3', class:'ck-heading_heading3' },
+            { model:'heading4', view:'h4', title:'Heading 4', class:'ck-heading_heading4' },
+        ]
+    },
+    table: { contentToolbar: ['tableColumn','tableRow','mergeTableCells'] }
+}).then(function(editor) {
+    pageEditor = editor;
+}).catch(function(err) { console.error('CKEditor error:', err); });
+
+/* HTML source toggle for page content */
+document.getElementById('togglePageHtmlBtn').addEventListener('click', function() {
+    if (!pageEditor) return;
+    var srcArea = document.getElementById('pageHtmlSourceArea');
+    var edWrap  = document.getElementById('pageEditorWrap');
+    var btn     = this;
+    if (!pageHtmlMode) {
+        srcArea.value = pageEditor.getData();
+        edWrap.style.display  = 'none';
+        srcArea.style.display = 'block';
+        btn.innerHTML = '<i class="fas fa-eye"></i> Visual Editor';
+        btn.classList.add('active');
+        pageHtmlMode = true;
+    } else {
+        pageEditor.setData(srcArea.value);
+        srcArea.style.display = 'none';
+        edWrap.style.display  = 'block';
+        btn.innerHTML = '<i class="fas fa-code"></i> HTML Source';
+        btn.classList.remove('active');
+        pageHtmlMode = false;
+    }
+});
+
+/* Sync page content on submit */
+document.getElementById('itemForm').addEventListener('submit', function() {
+    if (pageHtmlMode) {
+        document.getElementById('pageContentHidden').value = document.getElementById('pageHtmlSourceArea').value;
+    } else if (pageEditor) {
+        document.getElementById('pageContentHidden').value = pageEditor.getData();
+    }
+});
+
 /* ======================================================
    Auto-generate slug from title
    ====================================================== */

@@ -26,7 +26,7 @@ $knownPages = [
 ];
 /* Add blog post slugs */
 foreach (dgtec_blogs_all() as $bp) {
-    if ($bp['slug']) $knownPages['blog/' . $bp['slug']] = 'Blog: ' . mb_substr($bp['title'], 0, 50);
+    if ($bp['slug']) $knownPages['blog:' . $bp['slug']] = 'Blog: ' . mb_substr($bp['title'], 0, 50);
 }
 
 $activeTab  = $_GET['tab'] ?? 'global';

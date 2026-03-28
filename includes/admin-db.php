@@ -224,6 +224,20 @@ function dgtec_db_init(PDO $pdo): void {
         }
     }
 
+    /* ---- services / solutions: add page_content if missing ---- */
+    foreach (['services', 'solutions'] as $_tbl) {
+        $cols = array_column($pdo->query("SHOW COLUMNS FROM `$_tbl`")->fetchAll(), 'Field');
+        if (!in_array('page_content', $cols, true)) {
+            $pdo->exec("ALTER TABLE `$_tbl` ADD COLUMN `page_content` LONGTEXT NOT NULL");
+        }
+    }
+
+    /* ---- blog_posts: add tags if missing ---- */
+    $bpCols = array_column($pdo->query("SHOW COLUMNS FROM `blog_posts`")->fetchAll(), 'Field');
+    if (!in_array('tags', $bpCols, true)) {
+        $pdo->exec("ALTER TABLE `blog_posts` ADD COLUMN `tags` TEXT NOT NULL DEFAULT ''");
+    }
+
     /* ---- seo_pages ---- */
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS `seo_pages` (
@@ -467,13 +481,19 @@ function dgtec_item_save(string $type, array $data): int {
     $db  = dgtec_db();
     $tbl = _dgtec_tbl($type);
     if (!empty($data['id'])) {
-        $db->prepare("UPDATE `$tbl` SET position=:position,is_active=:is_active,title=:title,slug=:slug,icon=:icon,image=:image,description=:description,features=:features,page_url=:page_url,is_reversed=:is_reversed WHERE id=:id")->execute($data);
+        $db->prepare("UPDATE `$tbl` SET position=:position,is_active=:is_active,title=:title,slug=:slug,icon=:icon,image=:image,description=:description,features=:features,page_url=:page_url,is_reversed=:is_reversed,page_content=:page_content WHERE id=:id")->execute($data);
         return (int)$data['id'];
     } else {
         unset($data['id']);
-        $db->prepare("INSERT INTO `$tbl` (position,is_active,title,slug,icon,image,description,features,page_url,is_reversed) VALUES (:position,:is_active,:title,:slug,:icon,:image,:description,:features,:page_url,:is_reversed)")->execute($data);
+        $db->prepare("INSERT INTO `$tbl` (position,is_active,title,slug,icon,image,description,features,page_url,is_reversed,page_content) VALUES (:position,:is_active,:title,:slug,:icon,:image,:description,:features,:page_url,:is_reversed,:page_content)")->execute($data);
         return (int)$db->lastInsertId();
     }
+}
+
+function dgtec_item_get_by_page_url(string $type, string $pageUrl): array|false {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `"._dgtec_tbl($type)."` WHERE `page_url`=? AND `is_active`=1 LIMIT 1");
+    $stmt->execute([$pageUrl]);
+    return $stmt->fetch();
 }
 
 function dgtec_item_delete(string $type, int $id): void {
@@ -657,12 +677,23 @@ function dgtec_site_info(): array {
 }
 
 function dgtec_site_info_save(array $data): void {
-    $db  = dgtec_db();
+    $db          = dgtec_db();
+    $allowedCols = [
+        'phone', 'email', 'address', 'footer_description', 'site_description',
+        'header_logo', 'footer_logo', 'google_analytics', 'favicon',
+        'global_head_code', 'global_body_code', 'header_nav_json', 'footer_nav_json',
+    ];
+    $filtered = array_filter($data, fn($k) => in_array($k, $allowedCols, true), ARRAY_FILTER_USE_KEY);
+    if (empty($filtered)) return;
+
     $cnt = (int)$db->query("SELECT COUNT(*) FROM `site_info`")->fetchColumn();
     if ($cnt === 0) {
-        $db->prepare("INSERT INTO `site_info` (phone,email,address,footer_description,site_description,header_logo,footer_logo) VALUES (:phone,:email,:address,:footer_description,:site_description,:header_logo,:footer_logo)")->execute($data);
+        $cols = implode(',', array_keys($filtered));
+        $phs  = implode(',', array_map(fn($k) => ":$k", array_keys($filtered)));
+        $db->prepare("INSERT INTO `site_info` ($cols) VALUES ($phs)")->execute($filtered);
     } else {
-        $db->prepare("UPDATE `site_info` SET phone=:phone,email=:email,address=:address,footer_description=:footer_description,site_description=:site_description,header_logo=:header_logo,footer_logo=:footer_logo ORDER BY id ASC LIMIT 1")->execute($data);
+        $sets = implode(',', array_map(fn($k) => "$k=:$k", array_keys($filtered)));
+        $db->prepare("UPDATE `site_info` SET $sets ORDER BY id ASC LIMIT 1")->execute($filtered);
     }
 }
 
@@ -754,11 +785,11 @@ function dgtec_blog_get_by_slug(string $slug): array|false {
 function dgtec_blog_save(array $data): int {
     $db = dgtec_db();
     if (!empty($data['id'])) {
-        $db->prepare("UPDATE `blog_posts` SET position=:position,is_active=:is_active,title=:title,slug=:slug,category=:category,excerpt=:excerpt,content=:content,image=:image,published_at=:published_at WHERE id=:id")->execute($data);
+        $db->prepare("UPDATE `blog_posts` SET position=:position,is_active=:is_active,title=:title,slug=:slug,category=:category,tags=:tags,excerpt=:excerpt,content=:content,image=:image,published_at=:published_at WHERE id=:id")->execute($data);
         return (int)$data['id'];
     } else {
         unset($data['id']);
-        $db->prepare("INSERT INTO `blog_posts` (position,is_active,title,slug,category,excerpt,content,image,published_at) VALUES (:position,:is_active,:title,:slug,:category,:excerpt,:content,:image,:published_at)")->execute($data);
+        $db->prepare("INSERT INTO `blog_posts` (position,is_active,title,slug,category,tags,excerpt,content,image,published_at) VALUES (:position,:is_active,:title,:slug,:category,:tags,:excerpt,:content,:image,:published_at)")->execute($data);
         return (int)$db->lastInsertId();
     }
 }

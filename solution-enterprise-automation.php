@@ -1,8 +1,14 @@
 <?php
+require_once 'includes/admin-db.php';
+$_db_item = dgtec_item_get_by_page_url('solution', basename(__FILE__));
 $page_title = 'Enterprise Content & Process Automation – DGTEC';
 $page_desc  = 'Automate complex business processes and manage enterprise content with DGTEC\'s intelligent automation solutions powered by Newgen for Saudi organisations.';
 include 'includes/header.php';
-?>
+if (!empty($_db_item['page_content'])): ?>
+<div class="container" style="padding-top:60px;padding-bottom:60px">
+  <?= $_db_item['page_content'] ?>
+</div>
+<?php include 'includes/footer.php'; exit; endif; ?>
 
 <!-- ======= PAGE HERO ======= -->
 <section class="page-hero">
