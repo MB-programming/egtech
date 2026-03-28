@@ -197,6 +197,7 @@ function dgtec_slide_save(array $data): int {
                  :gradient_color2, :gradient_opacity2,
                  :btn1_text, :btn1_url, :btn2_text, :btn2_url)
         ");
+        unset($data['id']); /* id not in INSERT — extra named keys cause PDO error */
         $stmt->execute($data);
         return (int)$db->lastInsertId();
     }

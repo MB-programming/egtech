@@ -220,6 +220,9 @@ function fmt_date(string $dt): string {
           <h1>Contact Submissions</h1>
           <p>Messages sent via the contact form on the website.</p>
         </div>
+        <a href="submissions-export.php" class="btn btn-secondary" title="Download as Excel/CSV">
+          <i class="fas fa-file-excel"></i> Export Excel
+        </a>
       </div>
 
       <!-- Stats bar -->
