@@ -318,7 +318,7 @@ include 'includes/header.php';
 </section>
 
 
-<!-- ======= TESTIMONIALS — Our Clients Says ======= -->
+<!-- ======= TESTIMONIALS SLIDER — Our Clients Says ======= -->
 <section class="testimonials-section" id="testimonials">
   <div class="container">
     <div class="testimonials-header">
@@ -328,48 +328,70 @@ include 'includes/header.php';
         Real results, real relationships. Here's what our clients say about working with DGTEC.
       </p>
     </div>
-    <div class="testimonials-grid">
 
-      <div class="testimonial-card scroll-reveal r-up" style="transition-delay:0s">
-        <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
-        <p class="testimonial-text">"DGTEC transformed our HR and recruitment process entirely. Their team understood our needs from day one and delivered a talent pipeline that exceeded every expectation. We now operate with a level of efficiency we didn't think was possible."</p>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">A</div>
-          <div class="testimonial-info">
-            <h5>Ahmed Al-Rashidi</h5>
-            <span>HR Director, National Tech Co.</span>
+    <div class="testi-slider">
+      <!-- Slides -->
+      <div class="testi-track">
+
+        <div class="testi-slide active">
+          <div class="testimonial-card">
+            <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
+            <p class="testimonial-text">"DGTEC transformed our HR and recruitment process entirely. Their team understood our needs from day one and delivered a talent pipeline that exceeded every expectation. We now operate with a level of efficiency we didn't think was possible."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">A</div>
+              <div class="testimonial-info">
+                <h5>Ahmed Al-Rashidi</h5>
+                <span>HR Director, National Tech Co.</span>
+              </div>
+              <div class="testimonial-stars">★★★★★</div>
+            </div>
           </div>
-          <div class="testimonial-stars">★★★★★</div>
         </div>
+
+        <div class="testi-slide">
+          <div class="testimonial-card">
+            <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
+            <p class="testimonial-text">"The digital transformation roadmap DGTEC delivered was exactly what our organisation needed. Their expertise in process automation and AI integration helped us cut operational costs significantly and accelerate our Vision 2030 alignment."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">S</div>
+              <div class="testimonial-info">
+                <h5>Sara Al-Otaibi</h5>
+                <span>CEO, GreenPath Solutions KSA</span>
+              </div>
+              <div class="testimonial-stars">★★★★★</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testi-slide">
+          <div class="testimonial-card">
+            <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
+            <p class="testimonial-text">"We engaged DGTEC's Tech Squad-as-a-Service and the results were outstanding. A dedicated, highly skilled team deployed within days — no overhead, no delays. Their agile approach made scaling our product development seamless and cost-effective."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">K</div>
+              <div class="testimonial-info">
+                <h5>Khalid Mansour</h5>
+                <span>CTO, Horizons Digital Group</span>
+              </div>
+              <div class="testimonial-stars">★★★★★</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.testi-track -->
+
+      <!-- Controls -->
+      <div class="testi-controls">
+        <button class="testi-btn testi-prev" aria-label="Previous"><i class="fas fa-arrow-left"></i></button>
+        <div class="testi-dots">
+          <span class="testi-dot active"></span>
+          <span class="testi-dot"></span>
+          <span class="testi-dot"></span>
+        </div>
+        <button class="testi-btn testi-next" aria-label="Next"><i class="fas fa-arrow-right"></i></button>
       </div>
 
-      <div class="testimonial-card scroll-reveal r-up" style="transition-delay:.12s">
-        <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
-        <p class="testimonial-text">"The digital transformation roadmap DGTEC delivered was exactly what our organisation needed. Their expertise in process automation and AI integration helped us cut operational costs significantly and accelerate our Vision 2030 alignment."</p>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">S</div>
-          <div class="testimonial-info">
-            <h5>Sara Al-Otaibi</h5>
-            <span>CEO, GreenPath Solutions KSA</span>
-          </div>
-          <div class="testimonial-stars">★★★★★</div>
-        </div>
-      </div>
-
-      <div class="testimonial-card scroll-reveal r-up" style="transition-delay:.24s">
-        <div class="testimonial-quote"><i class="fas fa-quote-left"></i></div>
-        <p class="testimonial-text">"We engaged DGTEC's Tech Squad-as-a-Service and the results were outstanding. A dedicated, highly skilled team deployed within days — no overhead, no delays. Their agile approach made scaling our product development seamless and cost-effective."</p>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">K</div>
-          <div class="testimonial-info">
-            <h5>Khalid Mansour</h5>
-            <span>CTO, Horizons Digital Group</span>
-          </div>
-          <div class="testimonial-stars">★★★★★</div>
-        </div>
-      </div>
-
-    </div>
+    </div><!-- /.testi-slider -->
   </div>
 </section>
 
