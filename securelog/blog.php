@@ -7,6 +7,7 @@ $msg     = '';
 $msgType = 'success';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    admin_csrf_verify();
     $action = $_POST['action'] ?? '';
     $id     = (int)($_POST['id'] ?? 0);
 
@@ -131,6 +132,7 @@ if (isset($_GET['saved'])) $msg = 'Post saved successfully.';
 
               <td>
                 <form method="post" style="display:inline">
+                  <?= csrf_field() ?>
                   <input type="hidden" name="action" value="toggle" />
                   <input type="hidden" name="id" value="<?= $p['id'] ?>" />
                   <button type="submit" class="badge <?= $p['is_active'] ? 'badge-active' : 'badge-inactive' ?>" style="border:none;cursor:pointer">
@@ -143,6 +145,7 @@ if (isset($_GET['saved'])) $msg = 'Post saved successfully.';
                 <div class="order-btns">
                   <?php if ($i > 0): ?>
                   <form method="post" style="display:inline">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="action" value="move_up" />
                     <input type="hidden" name="id" value="<?= $p['id'] ?>" />
                     <button type="submit" class="btn btn-secondary btn-icon btn-sm" title="Move up"><i class="fas fa-chevron-up"></i></button>
@@ -150,6 +153,7 @@ if (isset($_GET['saved'])) $msg = 'Post saved successfully.';
                   <?php endif; ?>
                   <?php if ($i < count($posts) - 1): ?>
                   <form method="post" style="display:inline">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="action" value="move_down" />
                     <input type="hidden" name="id" value="<?= $p['id'] ?>" />
                     <button type="submit" class="btn btn-secondary btn-icon btn-sm" title="Move down"><i class="fas fa-chevron-down"></i></button>
@@ -186,6 +190,7 @@ if (isset($_GET['saved'])) $msg = 'Post saved successfully.';
     <div class="modal-btns">
       <button class="btn btn-secondary" onclick="document.getElementById('deleteModal').classList.remove('open')">Cancel</button>
       <form method="post" style="display:inline">
+        <?= csrf_field() ?>
         <input type="hidden" name="action" value="delete" />
         <input type="hidden" name="id" id="deleteId" value="" />
         <button type="submit" class="btn btn-danger">Delete</button>

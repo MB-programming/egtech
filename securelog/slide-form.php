@@ -33,6 +33,7 @@ $d = array_merge($defaults, $slide ?? []);
 
 /* ---- Handle save ---- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    admin_csrf_verify();
     /* Image: prefer AJAX-uploaded path, otherwise keep current */
     $bgImage = trim($_POST['current_bg_image'] ?? '');
     $uploadedPath = trim($_POST['bg_image_uploaded'] ?? '');
@@ -153,6 +154,7 @@ $pageTitle   = $isEdit ? 'Edit Slide' : 'Add New Slide';
       </div>
 
       <form method="post" id="slideForm">
+        <?= csrf_field() ?>
 
         <!-- Hidden fields for image handling -->
         <input type="hidden" name="current_bg_image" id="currentBgImage" value="<?= htmlspecialchars($d['bg_image']) ?>" />
@@ -415,6 +417,7 @@ function handleImageSelect(input) {
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'slide-upload.php', true);
+  xhr.setRequestHeader('X-CSRF-Token', '<?= admin_csrf_token() ?>');
 
   xhr.upload.addEventListener('progress', function(e) {
     if (e.lengthComputable) {

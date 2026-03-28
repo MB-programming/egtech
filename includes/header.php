@@ -1,26 +1,95 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
-/* Load site_info if not already loaded */
+
+/* Load site_info + SEO helpers if not already loaded */
 if (!function_exists('dgtec_site_info')) {
     require_once __DIR__ . '/admin-db.php';
 }
-$_site = dgtec_site_info();
+$_site        = dgtec_site_info();
 $_header_logo = $_site['header_logo'] ?: 'assets/images/logo.webp';
+
+/* ── Determine SEO page key ──
+ * Individual pages can set $seo_page_key before including header.php.
+ * If not set, fall back to current page basename.
+ * For blog-post.php, blog-post.php sets $seo_page_key = 'blog:' . $slug.
+ */
+$_seo_key  = $seo_page_key ?? $current_page;
+$_seo      = dgtec_seo_get($_seo_key);
+
+/* Effective values: per-page SEO → page-level vars → site defaults */
+$_eff_title    = $_seo['meta_title']  ?: ($page_title   ?? 'DGTEC – Technological Transformation in The Kingdom');
+$_eff_desc     = $_seo['meta_desc']   ?: ($page_desc    ?? ($_site['site_description'] ?: 'DGTEC – Leading integrated solutions company delivering advanced Technical recruitment, outsourcing, AI and digital transformation in Saudi Arabia.'));
+$_eff_robots   = $_seo['robots']      ?: 'index,follow';
+$_eff_canon    = $_seo['canonical']   ?: '';
+$_eff_og_title = $_seo['og_title']    ?: $_eff_title;
+$_eff_og_desc  = $_seo['og_desc']     ?: $_eff_desc;
+$_eff_og_img   = $_seo['og_image']    ?: '';
+
+/* Favicon: dedicated favicon entry in site_info, else fall back to header logo */
+$_favicon_raw  = $_site['favicon'] ?: '';
+$_favicon_ext  = $_favicon_raw ? strtolower(pathinfo($_favicon_raw, PATHINFO_EXTENSION)) : '';
+$_favicon_mime = match($_favicon_ext) {
+    'ico'  => 'image/x-icon',
+    'svg'  => 'image/svg+xml',
+    'png'  => 'image/png',
+    default => 'image/x-icon',
+};
+$_favicon_url  = $_favicon_raw ?: 'assets/images/favicon.ico';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="<?= htmlspecialchars($page_desc ?? $_site['site_description'] ?: 'DGTEC – Leading integrated solutions company delivering advanced Technical recruitment, outsourcing, AI and digital transformation in Saudi Arabia.') ?>" />
-  <title><?= $page_title ?? 'DGTEC – Technological Transformation in The Kingdom' ?></title>
 
-  <link rel="icon" type="image/webp" href="<?= htmlspecialchars($_header_logo) ?>" />
+  <!-- SEO: Primary meta -->
+  <title><?= htmlspecialchars($_eff_title) ?></title>
+  <meta name="description" content="<?= htmlspecialchars($_eff_desc) ?>" />
+  <meta name="robots" content="<?= htmlspecialchars($_eff_robots) ?>" />
+  <?php if ($_eff_canon): ?>
+  <link rel="canonical" href="<?= htmlspecialchars($_eff_canon) ?>" />
+  <?php endif; ?>
+
+  <!-- SEO: Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="<?= htmlspecialchars($_eff_og_title) ?>" />
+  <meta property="og:description" content="<?= htmlspecialchars($_eff_og_desc) ?>" />
+  <?php if ($_eff_og_img): ?>
+  <meta property="og:image"       content="<?= htmlspecialchars($_eff_og_img) ?>" />
+  <?php endif; ?>
+
+  <!-- SEO: Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="<?= htmlspecialchars($_eff_og_title) ?>" />
+  <meta name="twitter:description" content="<?= htmlspecialchars($_eff_og_desc) ?>" />
+  <?php if ($_eff_og_img): ?>
+  <meta name="twitter:image"       content="<?= htmlspecialchars($_eff_og_img) ?>" />
+  <?php endif; ?>
+
+  <!-- Favicon -->
+  <link rel="icon" type="<?= $_favicon_mime ?>" href="<?= htmlspecialchars($_favicon_url) ?>" />
+
+  <!-- Fonts & icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Asap:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="css/style.css" />
+
+  <!-- JSON-LD Schema (per-page) -->
+  <?php if (!empty($_seo['schema_json'])): ?>
+  <script type="application/ld+json"><?= $_seo['schema_json'] ?></script>
+  <?php endif; ?>
+
+  <!-- Global head injection (all pages) -->
+  <?php if (!empty($_site['global_head_code'])): ?>
+  <?= $_site['global_head_code'] . "\n" ?>
+  <?php endif; ?>
+
+  <!-- Per-page head injection -->
+  <?php if (!empty($_seo['head_code'])): ?>
+  <?= $_seo['head_code'] . "\n" ?>
+  <?php endif; ?>
 </head>
 <body>
 

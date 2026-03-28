@@ -7,6 +7,7 @@ $msg     = '';
 $msgType = 'success';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    admin_csrf_verify();
     $action = $_POST['action'] ?? '';
     $id     = (int)($_POST['id'] ?? 0);
 
@@ -135,6 +136,7 @@ $activePage  = 'reviews';
 
               <td>
                 <form method="post" style="display:inline">
+                  <?= csrf_field() ?>
                   <input type="hidden" name="action" value="toggle" />
                   <input type="hidden" name="id" value="<?= $r['id'] ?>" />
                   <button type="submit" class="badge <?= $r['is_active'] ? 'badge-active' : 'badge-inactive' ?>" style="border:none;cursor:pointer">
@@ -147,6 +149,7 @@ $activePage  = 'reviews';
                 <div class="order-btns">
                   <?php if ($i > 0): ?>
                   <form method="post" style="display:inline">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="action" value="move_up" />
                     <input type="hidden" name="id" value="<?= $r['id'] ?>" />
                     <button type="submit" class="btn btn-secondary btn-icon btn-sm" title="Move up"><i class="fas fa-chevron-up"></i></button>
@@ -154,6 +157,7 @@ $activePage  = 'reviews';
                   <?php endif; ?>
                   <?php if ($i < count($reviews) - 1): ?>
                   <form method="post" style="display:inline">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="action" value="move_down" />
                     <input type="hidden" name="id" value="<?= $r['id'] ?>" />
                     <button type="submit" class="btn btn-secondary btn-icon btn-sm" title="Move down"><i class="fas fa-chevron-down"></i></button>
@@ -189,6 +193,7 @@ $activePage  = 'reviews';
     <div class="modal-btns">
       <button class="btn btn-secondary" onclick="document.getElementById('deleteModal').classList.remove('open')">Cancel</button>
       <form method="post" style="display:inline">
+        <?= csrf_field() ?>
         <input type="hidden" name="action" value="delete" />
         <input type="hidden" name="id" id="deleteId" value="" />
         <button type="submit" class="btn btn-danger">Delete</button>

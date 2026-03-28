@@ -1,6 +1,9 @@
 Options -Indexes
 DirectoryIndex index.php index.html
 
+# Custom error pages
+ErrorDocument 404 /404.php
+
 # Remove .php extension from URLs
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-d

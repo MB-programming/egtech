@@ -9,6 +9,7 @@ $msgType = 'success';
 $info = dgtec_site_info();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    admin_csrf_verify();
     /* Handle logo uploads */
     $headerLogo = trim($_POST['current_header_logo'] ?? $info['header_logo']);
     $footerLogo = trim($_POST['current_footer_logo'] ?? $info['footer_logo']);
@@ -86,6 +87,7 @@ $activePage  = 'site-info';
       </div>
 
       <form method="post" id="siteInfoForm">
+        <?= csrf_field() ?>
 
         <!-- Hidden uploaded logo paths -->
         <input type="hidden" name="current_header_logo" id="currentHeaderLogo" value="<?= htmlspecialchars($info['header_logo']) ?>" />
@@ -253,6 +255,7 @@ function uploadLogo(input, slot) {
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'logo-upload.php', true);
+  xhr.setRequestHeader('X-CSRF-Token', '<?= admin_csrf_token() ?>');
 
   xhr.upload.addEventListener('progress', function(e) {
     if (e.lengthComputable) {

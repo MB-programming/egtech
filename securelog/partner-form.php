@@ -19,6 +19,7 @@ $defaults = [
 $d = array_merge($defaults, $partner ?? []);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    admin_csrf_verify();
     $logo = trim($_POST['current_logo'] ?? '');
     $uploaded = trim($_POST['logo_uploaded'] ?? '');
     if ($uploaded !== '') $logo = $uploaded;
@@ -97,6 +98,7 @@ $pageTitle   = $isEdit ? 'Edit Partner' : 'Add Partner';
       </div>
 
       <form method="post" id="partnerForm">
+        <?= csrf_field() ?>
         <input type="hidden" name="current_logo" id="currentLogo" value="<?= htmlspecialchars($d['logo']) ?>" />
         <input type="hidden" name="logo_uploaded" id="uploadedLogoPath" value="" />
 
@@ -206,6 +208,7 @@ function handleLogoSelect(input) {
   formData.append('image', file);
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'partner-upload.php', true);
+  xhr.setRequestHeader('X-CSRF-Token', '<?= admin_csrf_token() ?>');
   xhr.upload.addEventListener('progress', function(e) {
     if (e.lengthComputable) {
       var pct = Math.round((e.loaded / e.total) * 100);

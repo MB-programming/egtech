@@ -21,6 +21,7 @@ $defaults = [
 $d = array_merge($defaults, $review ?? []);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    admin_csrf_verify();
     $image    = trim($_POST['current_image'] ?? '');
     $uploaded = trim($_POST['image_uploaded'] ?? '');
     if ($uploaded !== '') $image = $uploaded;
@@ -106,6 +107,7 @@ $pageTitle   = $isEdit ? 'Edit Review' : 'Add Review';
       </div>
 
       <form method="post" id="reviewForm">
+        <?= csrf_field() ?>
         <input type="hidden" name="current_image" id="currentImage" value="<?= htmlspecialchars($d['image']) ?>" />
         <input type="hidden" name="image_uploaded" id="uploadedImagePath" value="" />
 
@@ -241,6 +243,7 @@ function handleImageSelect(input) {
   formData.append('image', file);
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'review-upload.php', true);
+  xhr.setRequestHeader('X-CSRF-Token', '<?= admin_csrf_token() ?>');
   xhr.upload.addEventListener('progress', function(e) {
     if (e.lengthComputable) {
       var pct = Math.round((e.loaded / e.total) * 100);

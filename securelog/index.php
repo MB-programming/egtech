@@ -8,6 +8,7 @@ if (admin_is_logged()) {
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    admin_csrf_verify();
     $user = trim($_POST['username'] ?? '');
     $pass = $_POST['password'] ?? '';
     if (admin_try_login($user, $pass)) {
@@ -38,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="post" class="login-form">
+      <?= csrf_field() ?>
       <div class="form-group">
         <label><i class="fas fa-user"></i> Username</label>
         <input type="text" name="username" placeholder="Enter your username" autocomplete="username" required autofocus />

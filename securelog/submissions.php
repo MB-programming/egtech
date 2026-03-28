@@ -8,6 +8,7 @@ $msgType = 'success';
 
 /* ---- Handle POST actions ---- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    admin_csrf_verify();
     $action = $_POST['action'] ?? '';
     $id     = (int)($_POST['id'] ?? 0);
 
@@ -302,6 +303,7 @@ function fmt_date(string $dt): string {
                   <!-- Mark Read / Unread -->
                   <?php if ($isUnread): ?>
                   <form method="post" style="display:inline">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="action" value="mark_read" />
                     <input type="hidden" name="id" value="<?= (int)$s['id'] ?>" />
                     <button type="submit" class="btn btn-secondary btn-sm" title="Mark as read">
@@ -310,6 +312,7 @@ function fmt_date(string $dt): string {
                   </form>
                   <?php else: ?>
                   <form method="post" style="display:inline">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="action" value="mark_unread" />
                     <input type="hidden" name="id" value="<?= (int)$s['id'] ?>" />
                     <button type="submit" class="btn btn-secondary btn-sm" title="Mark as unread">
@@ -345,6 +348,7 @@ function fmt_date(string $dt): string {
     <div id="viewModalContent"></div>
     <div class="view-modal-btns">
       <form method="post" id="viewMarkForm" style="display:inline">
+        <?= csrf_field() ?>
         <input type="hidden" name="id" id="viewMarkId" value="" />
         <input type="hidden" name="action" id="viewMarkAction" value="" />
         <button type="submit" class="btn btn-secondary" id="viewMarkBtn">Mark as Read</button>
@@ -362,6 +366,7 @@ function fmt_date(string $dt): string {
     <div class="modal-btns">
       <button class="btn btn-secondary" onclick="document.getElementById('deleteModal').classList.remove('open')">Cancel</button>
       <form method="post" id="deleteForm" style="display:inline">
+        <?= csrf_field() ?>
         <input type="hidden" name="action" value="delete" />
         <input type="hidden" name="id" id="deleteId" value="" />
         <button type="submit" class="btn btn-danger">Delete</button>

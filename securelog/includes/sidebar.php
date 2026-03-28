@@ -2,7 +2,7 @@
 /**
  * Shared admin sidebar — include in every admin panel page.
  * Requires $unreadCount and $activePage to be set before including.
- * $activePage: 'slides' | 'services' | 'solutions' | 'partners' | 'reviews' | 'site-info' | 'blog' | 'submissions'
+ * $activePage: 'slides' | 'services' | 'solutions' | 'partners' | 'reviews' | 'site-info' | 'blog' | 'submissions' | 'seo' | 'nav-menus'
  */
 $_nav_active = $activePage ?? '';
 ?>
@@ -28,6 +28,8 @@ $_nav_active = $activePage ?? '';
     </a>
     <p class="nav-section">Settings</p>
     <a href="site-info.php" <?= $_nav_active === 'site-info' ? 'class="active"' : '' ?>><i class="fas fa-gear"></i> Site Info</a>
+    <a href="seo.php" <?= $_nav_active === 'seo' ? 'class="active"' : '' ?>><i class="fas fa-magnifying-glass-chart"></i> SEO Settings</a>
+    <a href="nav-menus.php" <?= $_nav_active === 'nav-menus' ? 'class="active"' : '' ?>><i class="fas fa-bars"></i> Nav Menus</a>
     <p class="nav-section">Site</p>
     <a href="../index.php" target="_blank"><i class="fas fa-globe"></i> View Website</a>
   </nav>
