@@ -26,36 +26,39 @@ $(function () {
   $(window).on('scroll.header', updateHeader);
   updateHeader();
 
-  /* ---- Mobile popout menu ---- */
-  function openMobileMenu() {
-    $('.hamburger').addClass('open');
-    $('.nav-menu').addClass('open');
-    $('#mobile-overlay').addClass('open');
-    $('body').addClass('nav-open').css('overflow', 'hidden');
+  /* ---- Full-screen mobile menu ---- */
+  var $fsMenu  = $('#fs-menu');
+  var $hammer  = $('#hamburger, .hamburger');
+
+  function openFsMenu() {
+    $fsMenu.addClass('open').attr('aria-hidden', 'false');
+    $hammer.addClass('open').attr('aria-expanded', 'true');
+    $('body').css('overflow', 'hidden');
   }
-  function closeMobileMenu() {
-    $('.hamburger').removeClass('open');
-    $('.nav-menu').removeClass('open');
-    $('#mobile-overlay').removeClass('open');
-    $('body').removeClass('nav-open').css('overflow', '');
+  function closeFsMenu() {
+    $fsMenu.removeClass('open').attr('aria-hidden', 'true');
+    $hammer.removeClass('open').attr('aria-expanded', 'false');
+    $('body').css('overflow', '');
   }
 
-  $('.hamburger').on('click', openMobileMenu);
-  $('#mobile-close, #mobile-overlay').on('click', closeMobileMenu);
+  $hammer.on('click', function () {
+    $fsMenu.hasClass('open') ? closeFsMenu() : openFsMenu();
+  });
+  $('#fs-close').on('click', closeFsMenu);
 
-  // Close on regular link click (not dropdown toggles)
-  $('.nav-menu .nav-link').not('.has-dropdown > .nav-link').on('click', function () {
-    if ($('.nav-menu').hasClass('open')) closeMobileMenu();
+  // Close on nav link click (not expand toggles)
+  $fsMenu.find('.fs-link:not(.fs-toggle)').on('click', closeFsMenu);
+
+  // Expand/collapse sub-menus in fs-menu
+  $('.fs-toggle').on('click', function () {
+    var $item = $(this).closest('.fs-item');
+    $item.toggleClass('open');
+    $item.find('.fs-sub').slideToggle(260);
   });
 
-  // Mobile: toggle sub-dropdowns
-  $('.nav-item.has-dropdown > .nav-link').on('click', function (e) {
-    if (window.innerWidth <= 768) {
-      e.preventDefault();
-      var $dd = $(this).siblings('.dropdown');
-      $dd.slideToggle(280);
-      $(this).find('i.fa-chevron-down').toggleClass('rotated');
-    }
+  // Keyboard: Escape closes menu
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape' && $fsMenu.hasClass('open')) closeFsMenu();
   });
 
   /* ---- Smooth scroll for on-page anchor links ---- */
