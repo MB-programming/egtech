@@ -1,6 +1,6 @@
 /* ========================================
    DGTEC Website — main.js
-   jQuery + GSAP (hero only) + IntersectionObserver (scroll reveals)
+   jQuery + GSAP (hero entrance only) + IntersectionObserver
    ======================================== */
 $(function () {
 
@@ -18,7 +18,7 @@ $(function () {
     $('body').toggleClass('nav-open');
   });
 
-  // Close menu on link click (mobile)
+  // Close menu when a non-dropdown link is clicked
   $('.nav-menu .nav-link').not('.has-dropdown > .nav-link').on('click', function () {
     if ($('.nav-menu').hasClass('open')) {
       $('.hamburger').removeClass('open');
@@ -27,33 +27,17 @@ $(function () {
     }
   });
 
-  // Mobile dropdown toggle
+  // Mobile: toggle dropdowns on parent click
   $('.nav-item.has-dropdown > .nav-link').on('click', function (e) {
     if (window.innerWidth <= 768) {
       e.preventDefault();
-      $(this).siblings('.dropdown').slideToggle(300);
-      $(this).find('i').toggleClass('rotated');
+      var $dd = $(this).siblings('.dropdown');
+      $dd.slideToggle(280);
+      $(this).find('i.fa-chevron-down').toggleClass('rotated');
     }
   });
 
-  /* ---- Active nav link on scroll ---- */
-  var $sections = $('section[id]');
-  if ($sections.length) {
-    $(window).on('scroll.nav', function () {
-      var scrollY = $(this).scrollTop();
-      $sections.each(function () {
-        var top    = $(this).offset().top - 100;
-        var bottom = top + $(this).outerHeight();
-        var id     = $(this).attr('id');
-        if (scrollY >= top && scrollY < bottom) {
-          $('.nav-link').removeClass('active');
-          $('.nav-link[href="#' + id + '"]').addClass('active');
-        }
-      });
-    });
-  }
-
-  /* ---- Smooth scroll for anchor links ---- */
+  /* ---- Smooth scroll for on-page anchor links ---- */
   $('a[href^="#"]').on('click', function (e) {
     var $t = $(this.getAttribute('href'));
     if ($t.length) {
@@ -76,152 +60,102 @@ $(function () {
     function showSlide(n) {
       $slides.eq(current).removeClass('active');
       $dots.eq(current).removeClass('active');
-
       current = ((n % total) + total) % total;
-
       $slides.eq(current).addClass('active');
       $dots.eq(current).addClass('active');
     }
-
-    function startAuto() {
-      autoTimer = setInterval(function () { showSlide(current + 1); }, 5500);
-    }
+    function startAuto() { autoTimer = setInterval(function () { showSlide(current + 1); }, 5500); }
     function resetAuto() { clearInterval(autoTimer); startAuto(); }
 
     $('.hero-next').on('click', function () { showSlide(current + 1); resetAuto(); });
     $('.hero-prev').on('click', function () { showSlide(current - 1); resetAuto(); });
     $dots.on('click', function () { showSlide($(this).index()); resetAuto(); });
-
     startAuto();
   }
 
   /* ================================================================
-     GSAP — hero text entrance ONLY (no ScrollTrigger)
+     GSAP — hero text & page-hero entrance ONLY (no ScrollTrigger)
   ================================================================ */
   if (typeof gsap !== 'undefined') {
     try {
-      /* Hero slider text entrance */
-      if (document.querySelector('.hero-slide')) {
+      if (document.querySelector('.hero-slide.active .hero-text')) {
         gsap.fromTo(
           '.hero-slide.active .hero-text > *',
           { y: 28, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.65, stagger: 0.12,
-            ease: 'power3.out', delay: 0.4, clearProps: 'all' }
+            ease: 'power3.out', delay: 0.35, clearProps: 'all' }
         );
       }
-
-      /* Page hero (about / contact / inner pages) */
       if (document.querySelector('.page-hero-content')) {
         gsap.fromTo(
           '.page-hero-content',
-          { y: 40, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
-            delay: 0.3, clearProps: 'all' }
+          { y: 36, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out',
+            delay: 0.25, clearProps: 'all' }
         );
       }
-    } catch (err) {
-      console.warn('GSAP init error:', err);
-    }
+    } catch (e) { /* silent */ }
   }
 
   /* ================================================================
-     SCROLL REVEAL — IntersectionObserver driven
-     Each entry: [ selector, direction, staggerDelay ]
-       direction: 'up' | 'left' | 'right'
-       staggerDelay: seconds between sibling items (0 = no stagger)
+     SCROLL REVEAL — IntersectionObserver
+     Elements get scroll-reveal classes directly in HTML (index.php)
+     OR via JS below for inner / listing pages.
   ================================================================ */
 
-  var REVEAL_MAP = [
-    /* Homepage */
-    ['.service-card',           'up',    0.10],
-    ['.solutions-content',      'left',  0   ],
-    ['.solutions-image',        'right', 0   ],
-    ['.process-step',           'up',    0.12],
-    ['.process-footer-inner',   'up',    0   ],
-    ['.achievements-header',    'up',    0   ],
-    ['.testimonial-card',       'up',    0.12],
-    ['.home-contact-text',      'left',  0   ],
-    ['.home-contact-form-wrap', 'right', 0   ],
-    /* Listing pages */
-    ['.listing-card',           'up',    0   ],
-    /* Inner detail pages */
-    ['.inner-overview-text',    'left',  0   ],
-    ['.inner-overview-image',   'right', 0   ],
-    ['.inner-feature-card',     'up',    0.10],
-    ['.inner-highlight-item',   'up',    0.10],
-    /* Blog */
-    ['.blog-card',              'up',    0.10],
-    ['.post-content',           'up',    0   ],
-    ['.post-sidebar',           'right', 0   ],
-    /* About */
-    ['.why-card',               'up',    0.10],
-    ['.about-image-wrap',       'left',  0   ],
-    ['.about-text',             'right', 0   ],
-    /* Contact */
-    ['.contact-card',           'left',  0.10],
-    ['.contact-form-wrap',      'right', 0   ],
+  /* Auto-apply classes for inner pages (these pages don't have classes in HTML) */
+  var pageClasses = [
+    /* listing pages */
+    { sel: '.listing-card',         dir: 'r-up',    step: 0 },
+    /* inner detail pages */
+    { sel: '.inner-overview-text',  dir: 'r-left',  step: 0 },
+    { sel: '.inner-overview-image', dir: 'r-right', step: 0 },
+    { sel: '.inner-feature-card',   dir: 'r-up',    step: 0.10 },
+    { sel: '.inner-highlight-item', dir: 'r-up',    step: 0.10 },
+    /* blog */
+    { sel: '.blog-card',            dir: 'r-up',    step: 0.10 },
+    { sel: '.post-content',         dir: 'r-up',    step: 0 },
+    { sel: '.post-sidebar',         dir: 'r-right', step: 0 },
+    /* about */
+    { sel: '.why-card',             dir: 'r-up',    step: 0.10 },
+    { sel: '.about-image-wrap',     dir: 'r-left',  step: 0 },
+    { sel: '.about-text',           dir: 'r-right', step: 0 },
+    /* contact */
+    { sel: '.contact-card',         dir: 'r-left',  step: 0.10 },
+    { sel: '.contact-form-wrap',    dir: 'r-right', step: 0 },
   ];
 
-  /* Group siblings so stagger is calculated per-group */
-  function applyRevealClasses() {
-    REVEAL_MAP.forEach(function (entry) {
-      var selector    = entry[0];
-      var dir         = entry[1];
-      var staggerStep = entry[2];
-      var dirClass    = dir === 'left' ? 'r-left' : dir === 'right' ? 'r-right' : 'r-up';
-
-      /* Group by parent so stagger resets for each separate group */
-      var elements = document.querySelectorAll(selector);
-      if (!elements.length) return;
-
-      var groups = {};
-      elements.forEach(function (el) {
-        var parentKey = el.parentElement ? el.parentElement.dataset.revealGroup || (function () {
-          var id = 'rg-' + Math.random().toString(36).slice(2);
-          el.parentElement.dataset.revealGroup = id;
-          return id;
-        })() : '__root__';
-        if (!groups[parentKey]) groups[parentKey] = [];
-        groups[parentKey].push(el);
-      });
-
-      Object.values(groups).forEach(function (groupEls) {
-        groupEls.forEach(function (el, i) {
-          el.classList.add('scroll-reveal', dirClass);
-          if (staggerStep > 0) {
-            el.style.transitionDelay = (i * staggerStep) + 's';
-          }
-        });
-      });
+  pageClasses.forEach(function (cfg) {
+    var els = document.querySelectorAll(cfg.sel);
+    if (!els.length) return;
+    /* Skip if already has a reveal direction class (set in HTML) */
+    els.forEach(function (el, i) {
+      if (el.classList.contains('r-up') || el.classList.contains('r-left') || el.classList.contains('r-right')) return;
+      el.classList.add('scroll-reveal', cfg.dir);
+      if (cfg.step > 0) el.style.transitionDelay = (i * cfg.step) + 's';
     });
-  }
+  });
 
-  applyRevealClasses();
-
-  /* Create observer */
+  /* Set up observer for ALL .scroll-reveal elements (HTML-placed + JS-placed) */
   if ('IntersectionObserver' in window) {
-    var revealObserver = new IntersectionObserver(function (entries) {
+    var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
           entry.target.classList.add('scroll-visible');
-          revealObserver.unobserve(entry.target);
+          observer.unobserve(entry.target);
         }
       });
-    }, {
-      threshold: 0.12,
-      rootMargin: '0px 0px -40px 0px'
-    });
+    }, { threshold: 0.05 });
 
     document.querySelectorAll('.scroll-reveal').forEach(function (el) {
-      revealObserver.observe(el);
+      observer.observe(el);
     });
   } else {
-    /* Fallback: show everything immediately if IntersectionObserver unsupported */
+    /* No IntersectionObserver — show everything */
     document.querySelectorAll('.scroll-reveal').forEach(function (el) {
       el.classList.add('scroll-visible');
     });
   }
-
 
   /* ================================================================
      COUNTER ANIMATIONS (Achievements section)
@@ -251,7 +185,6 @@ $(function () {
     }
   });
 
-
   /* ================================================================
      CONTACT FORM — contact.php
   ================================================================ */
@@ -260,24 +193,19 @@ $(function () {
     var $form = $(this),
         $btn  = $form.find('.form-submit'),
         $msg  = $('#form-message');
-
     $btn.prop('disabled', true).html('<span class="spinner"></span> Sending…');
     $msg.hide().removeClass('success error');
-
     $.ajax({
-      url     : 'php/contact-process.php',
-      type    : 'POST',
-      data    : $form.serialize(),
-      dataType: 'json',
-      success : function (res) {
-        $msg.text(res.message).addClass(res.success ? 'success' : 'error').show();
-        if (res.success) $form[0].reset();
+      url: 'php/contact-process.php', type: 'POST',
+      data: $form.serialize(), dataType: 'json',
+      success: function (r) {
+        $msg.text(r.message).addClass(r.success ? 'success' : 'error').show();
+        if (r.success) $form[0].reset();
       },
-      error   : function () { $msg.text('Network error. Please try again.').addClass('error').show(); },
+      error: function () { $msg.text('Network error. Please try again.').addClass('error').show(); },
       complete: function () { $btn.prop('disabled', false).html('Send Message <i class="fas fa-paper-plane"></i>'); }
     });
   });
-
 
   /* ================================================================
      HOME CONTACT FORM — index.php
@@ -287,24 +215,19 @@ $(function () {
     var $form = $(this),
         $btn  = $form.find('.form-submit'),
         $msg  = $('#home-form-message');
-
     $btn.prop('disabled', true).html('<span class="spinner"></span> Sending…');
     $msg.hide().removeClass('success error');
-
     $.ajax({
-      url     : 'php/contact-process.php',
-      type    : 'POST',
-      data    : $form.serialize(),
-      dataType: 'json',
-      success : function (res) {
-        $msg.text(res.message).addClass(res.success ? 'success' : 'error').show();
-        if (res.success) $form[0].reset();
+      url: 'php/contact-process.php', type: 'POST',
+      data: $form.serialize(), dataType: 'json',
+      success: function (r) {
+        $msg.text(r.message).addClass(r.success ? 'success' : 'error').show();
+        if (r.success) $form[0].reset();
       },
-      error   : function () { $msg.text('Network error. Please try again.').addClass('error').show(); },
+      error: function () { $msg.text('Network error. Please try again.').addClass('error').show(); },
       complete: function () { $btn.prop('disabled', false).html('Send Message <i class="fas fa-paper-plane"></i>'); }
     });
   });
-
 
   /* ---- Solution item active toggle ---- */
   $('.solution-item').on('click', function () {

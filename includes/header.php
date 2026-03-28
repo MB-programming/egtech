@@ -46,23 +46,23 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li class="nav-item has-dropdown">
           <a href="solutions.php" class="nav-link <?= $current_page === 'solutions' ? 'active' : '' ?>">Our Solutions <i class="fas fa-chevron-down"></i></a>
           <ul class="dropdown">
-            <li><a href="solutions.php"><i class="fas fa-th-large" style="width:16px;color:var(--accent);margin-right:4px;font-size:12px;"></i> All Solutions</a></li>
-            <li style="border-top:1px solid #f0f4ff;margin:4px 0;"></li>
-            <li><a href="solution-digital-onboarding.php">Digital Onboarding &amp; Compliance</a></li>
-            <li><a href="solution-enterprise-automation.php">Enterprise Content &amp; Process Automation</a></li>
-            <li><a href="solution-tea-boy.php">Tea Boy – Smart Internal Operations</a></li>
+            <li><a href="solutions.php" class="dd-view-all"><i class="fas fa-grip"></i> View All Solutions <i class="fas fa-arrow-right dd-arrow"></i></a></li>
+            <li class="dd-sep"></li>
+            <li><a href="solution-digital-onboarding.php" class="dd-item"><span class="dd-icon"><i class="fas fa-id-card-clip"></i></span><span class="dd-label">Digital Onboarding &amp; Compliance</span></a></li>
+            <li><a href="solution-enterprise-automation.php" class="dd-item"><span class="dd-icon"><i class="fas fa-robot"></i></span><span class="dd-label">Enterprise Content &amp; Process Automation</span></a></li>
+            <li><a href="solution-tea-boy.php" class="dd-item"><span class="dd-icon"><i class="fas fa-mug-hot"></i></span><span class="dd-label">Tea Boy – Smart Internal Operations</span></a></li>
           </ul>
         </li>
         <li class="nav-item has-dropdown">
           <a href="services.php" class="nav-link <?= $current_page === 'services' ? 'active' : '' ?>">Our Services <i class="fas fa-chevron-down"></i></a>
           <ul class="dropdown">
-            <li><a href="services.php"><i class="fas fa-th-large" style="width:16px;color:var(--accent);margin-right:4px;font-size:12px;"></i> All Services</a></li>
-            <li style="border-top:1px solid #f0f4ff;margin:4px 0;"></li>
-            <li><a href="service-recruitment.php">Expert Technical Recruitment</a></li>
-            <li><a href="service-outsourcing.php">Scalable Outsourcing Solutions</a></li>
-            <li><a href="service-digital-transformation.php">Enterprise Digital Transformation</a></li>
-            <li><a href="service-tech-squad.php">Tech Squad-as-a-Service</a></li>
-            <li><a href="service-data-handling.php">Data Handling Solutions</a></li>
+            <li><a href="services.php" class="dd-view-all"><i class="fas fa-grip"></i> View All Services <i class="fas fa-arrow-right dd-arrow"></i></a></li>
+            <li class="dd-sep"></li>
+            <li><a href="service-recruitment.php" class="dd-item"><span class="dd-icon"><i class="fas fa-users"></i></span><span class="dd-label">Expert Technical Recruitment</span></a></li>
+            <li><a href="service-outsourcing.php" class="dd-item"><span class="dd-icon"><i class="fas fa-handshake"></i></span><span class="dd-label">Scalable Outsourcing Solutions</span></a></li>
+            <li><a href="service-digital-transformation.php" class="dd-item"><span class="dd-icon"><i class="fas fa-wand-magic-sparkles"></i></span><span class="dd-label">Enterprise Digital Transformation</span></a></li>
+            <li><a href="service-tech-squad.php" class="dd-item"><span class="dd-icon"><i class="fas fa-code"></i></span><span class="dd-label">Tech Squad-as-a-Service</span></a></li>
+            <li><a href="service-data-handling.php" class="dd-item"><span class="dd-icon"><i class="fas fa-database"></i></span><span class="dd-label">Data Handling Solutions</span></a></li>
           </ul>
         </li>
         <li class="nav-item">
