@@ -207,6 +207,41 @@ function dgtec_db_init(PDO $pdo): void {
     if ($blogCount === 0) {
         dgtec_seed_blogs($pdo);
     }
+
+    /* ---- site_info column migrations ---- */
+    $siCols = array_column($pdo->query("SHOW COLUMNS FROM `site_info`")->fetchAll(), 'Field');
+    $siAdd  = [
+        'google_analytics' => "VARCHAR(100) NOT NULL DEFAULT ''",
+        'favicon'          => "VARCHAR(500) NOT NULL DEFAULT ''",
+        'global_head_code' => "TEXT NOT NULL",
+        'global_body_code' => "TEXT NOT NULL",
+        'header_nav_json'  => "LONGTEXT NOT NULL",
+        'footer_nav_json'  => "LONGTEXT NOT NULL",
+    ];
+    foreach ($siAdd as $col => $def) {
+        if (!in_array($col, $siCols, true)) {
+            $pdo->exec("ALTER TABLE `site_info` ADD COLUMN `$col` $def");
+        }
+    }
+
+    /* ---- seo_pages ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `seo_pages` (
+            `id`           INT AUTO_INCREMENT PRIMARY KEY,
+            `page_key`     VARCHAR(150) NOT NULL UNIQUE,
+            `meta_title`   VARCHAR(255) NOT NULL DEFAULT '',
+            `meta_desc`    VARCHAR(500) NOT NULL DEFAULT '',
+            `og_title`     VARCHAR(255) NOT NULL DEFAULT '',
+            `og_desc`      VARCHAR(500) NOT NULL DEFAULT '',
+            `og_image`     VARCHAR(500) NOT NULL DEFAULT '',
+            `canonical`    VARCHAR(500) NOT NULL DEFAULT '',
+            `robots`       VARCHAR(100) NOT NULL DEFAULT 'index, follow',
+            `schema_json`  TEXT NOT NULL,
+            `head_code`    TEXT NOT NULL,
+            `body_code`    TEXT NOT NULL,
+            `updated_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
 }
 
 function dgtec_seed_slides(PDO $pdo): void {
@@ -742,4 +777,92 @@ function dgtec_blog_move(int $id, string $dir): void {
     $stmt = $db->prepare("UPDATE `blog_posts` SET `position`=? WHERE `id`=?");
     $stmt->execute([$all[$swapIdx]['position'], $id]);
     $stmt->execute([$all[$idx]['position'], $all[$swapIdx]['id']]);
+}
+
+/* ================================================================
+   SEO PAGES
+   ================================================================ */
+
+function dgtec_seo_get(string $pageKey): array {
+    $stmt = dgtec_db()->prepare("SELECT * FROM `seo_pages` WHERE `page_key`=? LIMIT 1");
+    $stmt->execute([$pageKey]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        return [
+            'id'=>0,'page_key'=>$pageKey,'meta_title'=>'','meta_desc'=>'',
+            'og_title'=>'','og_desc'=>'','og_image'=>'','canonical'=>'',
+            'robots'=>'index, follow','schema_json'=>'','head_code'=>'','body_code'=>'',
+        ];
+    }
+    return $row;
+}
+
+function dgtec_seo_save(string $pageKey, array $data): void {
+    $db  = dgtec_db();
+    $row = $db->prepare("SELECT `id` FROM `seo_pages` WHERE `page_key`=?")->execute([$pageKey]) ? null : null;
+    $stmt = $db->prepare("SELECT `id` FROM `seo_pages` WHERE `page_key`=?");
+    $stmt->execute([$pageKey]);
+    $existing = $stmt->fetchColumn();
+
+    if ($existing) {
+        $db->prepare("UPDATE `seo_pages` SET meta_title=:meta_title,meta_desc=:meta_desc,og_title=:og_title,og_desc=:og_desc,og_image=:og_image,canonical=:canonical,robots=:robots,schema_json=:schema_json,head_code=:head_code,body_code=:body_code WHERE page_key=:page_key")
+           ->execute(array_merge($data, ['page_key' => $pageKey]));
+    } else {
+        $db->prepare("INSERT INTO `seo_pages` (page_key,meta_title,meta_desc,og_title,og_desc,og_image,canonical,robots,schema_json,head_code,body_code) VALUES (:page_key,:meta_title,:meta_desc,:og_title,:og_desc,:og_image,:canonical,:robots,:schema_json,:head_code,:body_code)")
+           ->execute(array_merge($data, ['page_key' => $pageKey]));
+    }
+}
+
+function dgtec_seo_all(): array {
+    return dgtec_db()->query("SELECT * FROM `seo_pages` ORDER BY `page_key` ASC")->fetchAll();
+}
+
+/* ================================================================
+   NAVIGATION (stored as JSON in site_info)
+   ================================================================ */
+
+function dgtec_default_header_nav(): array {
+    return [
+        ['id'=>1,'label'=>'Home','url'=>'index.php','type'=>'link','children'=>[],'target'=>'_self'],
+        ['id'=>2,'label'=>'About','url'=>'about.php','type'=>'link','children'=>[],'target'=>'_self'],
+        ['id'=>3,'label'=>'Our Solutions','url'=>'solutions.php','type'=>'solutions_auto','children'=>[],'target'=>'_self'],
+        ['id'=>4,'label'=>'Our Services','url'=>'services.php','type'=>'services_auto','children'=>[],'target'=>'_self'],
+        ['id'=>5,'label'=>'Blogs','url'=>'blog.php','type'=>'link','children'=>[],'target'=>'_self'],
+        ['id'=>6,'label'=>'Contact','url'=>'contact.php','type'=>'link','children'=>[],'target'=>'_self'],
+    ];
+}
+
+function dgtec_default_footer_nav(): array {
+    return [
+        ['title'=>'Our Solutions','links'=>[
+            ['label'=>'Digital Onboarding','url'=>'solution-digital-onboarding.php'],
+            ['label'=>'Process Automation','url'=>'solution-enterprise-automation.php'],
+            ['label'=>'Internal Operations','url'=>'solution-tea-boy.php'],
+        ]],
+        ['title'=>'Our Services','links'=>[
+            ['label'=>'Expert Tech Recruitment','url'=>'service-recruitment.php'],
+            ['label'=>'Scalable Outsourcing','url'=>'service-outsourcing.php'],
+            ['label'=>'Digital Transformation','url'=>'service-digital-transformation.php'],
+            ['label'=>'Tech Squad-as-a-Service','url'=>'service-tech-squad.php'],
+            ['label'=>'Data Handling Solutions','url'=>'service-data-handling.php'],
+        ]],
+    ];
+}
+
+function dgtec_header_nav(): array {
+    $info = dgtec_site_info();
+    if (!empty($info['header_nav_json'])) {
+        $nav = json_decode($info['header_nav_json'], true);
+        if (is_array($nav) && count($nav) > 0) return $nav;
+    }
+    return dgtec_default_header_nav();
+}
+
+function dgtec_footer_nav(): array {
+    $info = dgtec_site_info();
+    if (!empty($info['footer_nav_json'])) {
+        $nav = json_decode($info['footer_nav_json'], true);
+        if (is_array($nav) && count($nav) > 0) return $nav;
+    }
+    return dgtec_default_footer_nav();
 }

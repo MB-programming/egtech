@@ -39,6 +39,7 @@ $featuresForDisplay = implode("\n", array_filter(explode('|', $d['features'])));
 
 /* ---- Handle save ---- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    admin_csrf_verify();
     /* Image: prefer AJAX-uploaded path, otherwise keep current */
     $image = trim($_POST['current_image'] ?? '');
     $uploadedPath = trim($_POST['image_uploaded'] ?? '');
@@ -176,6 +177,7 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
       </div>
 
       <form method="post" id="itemForm">
+        <?= csrf_field() ?>
         <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>" />
 
         <!-- Hidden fields for image handling -->
@@ -388,6 +390,7 @@ function handleImageSelect(input) {
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'item-upload.php', true);
+  xhr.setRequestHeader('X-CSRF-Token', '<?= admin_csrf_token() ?>');
 
   xhr.upload.addEventListener('progress', function(e) {
     if (e.lengthComputable) {

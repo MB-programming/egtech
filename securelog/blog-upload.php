@@ -10,6 +10,14 @@ require_once dirname(__DIR__) . '/includes/admin-db.php';
 
 admin_require_login();
 
+/* CSRF check (AJAX uploads send token via header) */
+$_csrf_token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf'] ?? '';
+if (!hash_equals(admin_csrf_token(), $_csrf_token)) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'error' => 'CSRF token mismatch.']);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'error' => 'Invalid request method.']);
     exit;

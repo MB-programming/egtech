@@ -5,6 +5,12 @@ if (!function_exists('dgtec_site_info')) {
 }
 $_fsite = dgtec_site_info();
 $_footer_logo = $_fsite['footer_logo'] ?: 'assets/images/logo.webp';
+
+/* Per-page SEO data (already loaded in header.php via $_seo; reuse or reload) */
+if (!isset($_seo)) {
+    $_seo_key_f = $seo_page_key ?? basename($_SERVER['PHP_SELF'], '.php');
+    $_seo       = dgtec_seo_get($_seo_key_f);
+}
 ?>
 <!-- ======= FOOTER ======= -->
 <footer class="site-footer">
@@ -78,7 +84,7 @@ $_footer_logo = $_fsite['footer_logo'] ?: 'assets/images/logo.webp';
       <div class="footer-bottom-links">
         <a href="about.php">About</a>
         <a href="contact.php">Contact</a>
-        <a href="#">Blogs</a>
+        <a href="blog.php">Blogs</a>
       </div>
     </div>
   </div>
@@ -91,5 +97,28 @@ $_footer_logo = $_fsite['footer_logo'] ?: 'assets/images/logo.webp';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
 <!-- Main JS -->
 <script src="js/main.js"></script>
+
+<!-- Google Analytics (GA4) -->
+<?php if (!empty($_fsite['google_analytics'])): ?>
+<?php $ga_id = htmlspecialchars($_fsite['google_analytics']); ?>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?= $ga_id ?>"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '<?= $ga_id ?>');
+</script>
+<?php endif; ?>
+
+<!-- Global body injection (all pages) -->
+<?php if (!empty($_fsite['global_body_code'])): ?>
+<?= $_fsite['global_body_code'] . "\n" ?>
+<?php endif; ?>
+
+<!-- Per-page body injection -->
+<?php if (!empty($_seo['body_code'])): ?>
+<?= $_seo['body_code'] . "\n" ?>
+<?php endif; ?>
+
 </body>
 </html>
