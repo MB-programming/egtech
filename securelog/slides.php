@@ -35,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$slides = dgtec_slides_all();
+$slides      = dgtec_slides_all();
+$unreadCount = dgtec_submissions_unread_count();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -58,6 +59,13 @@ $slides = dgtec_slides_all();
     <nav class="sidebar-nav">
       <p class="nav-section">Content</p>
       <a href="slides.php" class="active"><i class="fas fa-images"></i> Hero Slides</a>
+      <p class="nav-section">Inbox</p>
+      <a href="submissions.php">
+        <i class="fas fa-envelope"></i> Submissions
+        <?php if ($unreadCount > 0): ?>
+        <span style="margin-left:auto;background:#dc2626;color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700"><?= $unreadCount ?></span>
+        <?php endif; ?>
+      </a>
       <p class="nav-section">Site</p>
       <a href="../index.php" target="_blank"><i class="fas fa-globe"></i> View Website</a>
     </nav>
@@ -71,8 +79,8 @@ $slides = dgtec_slides_all();
     <div class="admin-topbar">
       <div class="topbar-title">Hero <span>Slides</span></div>
       <div class="topbar-user">
-        <div class="topbar-avatar">M</div>
-        minaboules
+        <div class="topbar-avatar"><?= strtoupper(substr(admin_current_user(), 0, 1)) ?></div>
+        <?= htmlspecialchars(admin_current_user()) ?>
       </div>
     </div>
 

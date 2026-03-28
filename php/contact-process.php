@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 header('X-Content-Type-Options: nosniff');
 
-require_once '../db/config.php';
+require_once dirname(__DIR__) . '/includes/admin-db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
@@ -36,7 +36,7 @@ if (empty($service)) {
 }
 
 try {
-    $pdo = getDB();
+    $pdo  = dgtec_db();
     $stmt = $pdo->prepare(
         "INSERT INTO contacts (name, email, mobile, service, message, ip_address) VALUES (?, ?, ?, ?, ?, ?)"
     );

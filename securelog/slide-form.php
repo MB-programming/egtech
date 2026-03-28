@@ -54,37 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'btn2_url'          => trim($_POST['btn2_url'] ?? ''),
     ];
 
-    /* Handle image upload */
-    if (!empty($_FILES['bg_image']['name'])) {
-        $file     = $_FILES['bg_image'];
-        $allowed  = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        $maxBytes = 10 * 1024 * 1024; /* 10 MB */
-
-        if ($file['error'] !== UPLOAD_ERR_OK) {
-            $errors[] = 'Upload error. Please try again.';
-        } elseif (!in_array(mime_content_type($file['tmp_name']), $allowed)) {
-            $errors[] = 'Only JPG, PNG, WebP and GIF images are accepted.';
-        } elseif ($file['size'] > $maxBytes) {
-            $errors[] = 'File too large (max 10 MB).';
-        } else {
-            $ext     = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            $fname   = 'slide_' . uniqid() . '.' . $ext;
-            $dest    = dirname(__DIR__) . '/assets/images/slides/' . $fname;
-            $destDir = dirname($dest);
-            if (!is_dir($destDir)) mkdir($destDir, 0755, true);
-
-            if (move_uploaded_file($file['tmp_name'], $dest)) {
-                /* Delete old image if it was an uploaded slide image */
-                if ($d['bg_image'] && strpos($d['bg_image'], 'assets/images/slides/') !== false) {
-                    $old = dirname(__DIR__) . '/' . $d['bg_image'];
-                    if (file_exists($old)) unlink($old);
-                }
-                $d['bg_image'] = 'assets/images/slides/' . $fname;
-            } else {
-                $errors[] = 'Failed to save uploaded file.';
-            }
-        }
-    }
+    /* bg_image comes from the XHR-uploaded path stored in current_bg_image hidden field */
 
     if (empty($d['label'])) $errors[] = 'Label / specialty is required.';
     if (empty($d['title'])) $errors[] = 'Main title is required.';
@@ -96,7 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = $isEdit ? 'Edit Slide' : 'Add New Slide';
+$pageTitle   = $isEdit ? 'Edit Slide' : 'Add New Slide';
+$unreadCount = dgtec_submissions_unread_count();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -119,6 +90,13 @@ $pageTitle = $isEdit ? 'Edit Slide' : 'Add New Slide';
     <nav class="sidebar-nav">
       <p class="nav-section">Content</p>
       <a href="slides.php" class="active"><i class="fas fa-images"></i> Hero Slides</a>
+      <p class="nav-section">Inbox</p>
+      <a href="submissions.php">
+        <i class="fas fa-envelope"></i> Submissions
+        <?php if ($unreadCount > 0): ?>
+        <span style="margin-left:auto;background:#dc2626;color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700"><?= $unreadCount ?></span>
+        <?php endif; ?>
+      </a>
       <p class="nav-section">Site</p>
       <a href="../index.php" target="_blank"><i class="fas fa-globe"></i> View Website</a>
     </nav>
@@ -132,8 +110,8 @@ $pageTitle = $isEdit ? 'Edit Slide' : 'Add New Slide';
     <div class="admin-topbar">
       <div class="topbar-title"><?= $isEdit ? 'Edit' : 'Add' ?> <span>Slide</span></div>
       <div class="topbar-user">
-        <div class="topbar-avatar">M</div>
-        minaboules
+        <div class="topbar-avatar"><?= strtoupper(substr(admin_current_user(), 0, 1)) ?></div>
+        <?= htmlspecialchars(admin_current_user()) ?>
       </div>
     </div>
 
@@ -156,10 +134,7 @@ $pageTitle = $isEdit ? 'Edit Slide' : 'Add New Slide';
         <a href="slides.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Slides</a>
       </div>
 
-      <form method="post" enctype="multipart/form-data">
-        <?php if ($isEdit): ?>
-        <input type="hidden" name="current_bg_image" value="<?= htmlspecialchars($d['bg_image']) ?>" />
-        <?php endif; ?>
+      <form method="post">
 
         <!-- ===== SECTION 1: Background Image ===== -->
         <div class="card" style="margin-bottom:24px">
@@ -179,13 +154,25 @@ $pageTitle = $isEdit ? 'Edit Slide' : 'Add New Slide';
             <?php endif; ?>
 
             <div class="img-upload-wrap" id="uploadArea">
-              <input type="file" name="bg_image" id="bgImageInput" accept="image/*" onchange="previewImage(this)" />
+              <input type="file" id="bgImagePicker" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" />
               <div class="img-upload-icon"><i class="fas fa-cloud-arrow-up"></i></div>
               <p><strong>Click to upload</strong> or drag and drop</p>
               <p style="font-size:11px;margin-top:4px">JPG, PNG, WebP — max 10 MB</p>
             </div>
 
-            <!-- Hidden field to track if image was removed -->
+            <!-- Upload progress bar (hidden by default) -->
+            <div id="uploadProgressWrap" style="display:none;margin-top:14px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <span style="font-size:12px;color:var(--gray)" id="uploadFileName"></span>
+                <span style="font-size:12px;font-weight:700;color:var(--p)" id="uploadPct">0%</span>
+              </div>
+              <div style="height:8px;border-radius:4px;background:var(--border);overflow:hidden">
+                <div id="uploadBar" style="height:100%;border-radius:4px;background:linear-gradient(90deg,var(--btn),var(--acc));width:0;transition:width .15s ease"></div>
+              </div>
+              <p id="uploadStatus" style="margin-top:8px;font-size:12px;color:var(--gray)">Uploading…</p>
+            </div>
+
+            <!-- Hidden field: path saved after XHR upload -->
             <input type="hidden" name="current_bg_image" id="currentBgImage" value="<?= htmlspecialchars($d['bg_image']) ?>" />
           </div>
         </div>
@@ -368,26 +355,85 @@ document.getElementById('hlColorText').addEventListener('input', function() {
   if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
     document.getElementById('hlColor').value = this.value;
   }
-  /* Override the hidden field: if text is empty, clear highlight_color */
-  document.getElementById('hlColor').name = this.value.trim() ? 'highlight_color_sync' : '';
 });
 
-/* ---- Image preview ---- */
-function previewImage(input) {
-  if (!input.files || !input.files[0]) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    document.getElementById('imgPreview').src = e.target.result;
-    document.getElementById('imgPreviewBox').style.display = 'block';
-    document.getElementById('uploadArea').style.display = 'none';
-  };
-  reader.readAsDataURL(input.files[0]);
-}
+/* ---- XHR Image Upload with Progress ---- */
+document.getElementById('bgImagePicker').addEventListener('change', function() {
+  var file = this.files && this.files[0];
+  if (!file) return;
+
+  var progressWrap = document.getElementById('uploadProgressWrap');
+  var bar          = document.getElementById('uploadBar');
+  var pct          = document.getElementById('uploadPct');
+  var status       = document.getElementById('uploadStatus');
+  var fileName     = document.getElementById('uploadFileName');
+
+  /* Show progress UI */
+  document.getElementById('uploadArea').style.display = 'none';
+  progressWrap.style.display = 'block';
+  fileName.textContent = file.name;
+  bar.style.width = '0%';
+  pct.textContent = '0%';
+  status.textContent = 'Uploading…';
+  status.style.color = 'var(--gray)';
+
+  var fd = new FormData();
+  fd.append('image', file);
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'slide-upload.php', true);
+
+  xhr.upload.addEventListener('progress', function(e) {
+    if (e.lengthComputable) {
+      var p = Math.round((e.loaded / e.total) * 100);
+      bar.style.width = p + '%';
+      pct.textContent = p + '%';
+    }
+  });
+
+  xhr.addEventListener('load', function() {
+    var resp;
+    try { resp = JSON.parse(xhr.responseText); } catch(e) { resp = null; }
+
+    if (resp && resp.success) {
+      /* Update hidden path field */
+      document.getElementById('currentBgImage').value = resp.path;
+
+      /* Show image preview */
+      document.getElementById('imgPreview').src = resp.preview;
+      document.getElementById('imgPreviewBox').style.display = 'block';
+      progressWrap.style.display = 'none';
+
+      bar.style.width = '100%';
+      pct.textContent = '100%';
+      status.textContent = 'Upload complete!';
+      status.style.color = '#065f46';
+    } else {
+      bar.style.background = '#dc2626';
+      status.textContent = (resp && resp.error) ? resp.error : 'Upload failed. Please try again.';
+      status.style.color = '#dc2626';
+      pct.textContent = '';
+      /* Re-show upload area */
+      document.getElementById('uploadArea').style.display = 'block';
+      progressWrap.style.display = 'none';
+    }
+  });
+
+  xhr.addEventListener('error', function() {
+    status.textContent = 'Network error. Please try again.';
+    status.style.color = '#dc2626';
+    document.getElementById('uploadArea').style.display = 'block';
+    progressWrap.style.display = 'none';
+  });
+
+  xhr.send(fd);
+});
 
 function clearImage() {
-  document.getElementById('bgImageInput').value = '';
+  document.getElementById('bgImagePicker').value = '';
   document.getElementById('imgPreviewBox').style.display = 'none';
   document.getElementById('uploadArea').style.display = 'block';
+  document.getElementById('uploadProgressWrap').style.display = 'none';
   document.getElementById('currentBgImage').value = '';
 }
 
@@ -399,7 +445,6 @@ document.getElementById('uploadArea').style.display = 'block';
 /* Fix highlight_color field: use the text value on submit */
 document.querySelector('form').addEventListener('submit', function() {
   var textVal = document.getElementById('hlColorText').value.trim();
-  /* The field "highlight_color" sent to server should be the text value */
   document.querySelectorAll('input[name="highlight_color"]').forEach(function(el) { el.name = '_hc_old'; });
   var hc = document.createElement('input');
   hc.type = 'hidden';
