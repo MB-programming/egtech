@@ -1,6 +1,7 @@
 <?php
-define('ADMIN_USERNAME', 'minaboules');
-define('ADMIN_PASSWORD', 'Mina&egy2030#');
+/**
+ * DGTEC Admin — Authentication helpers (DB-backed)
+ */
 
 function admin_session(): void {
     if (session_status() === PHP_SESSION_NONE) {
@@ -22,10 +23,21 @@ function admin_require_login(): void {
 }
 
 function admin_try_login(string $user, string $pass): bool {
-    if ($user === ADMIN_USERNAME && $pass === ADMIN_PASSWORD) {
+    require_once dirname(__DIR__) . '/includes/admin-db.php';
+    $db   = dgtec_db();
+    $stmt = $db->prepare("SELECT * FROM `admin_users` WHERE `username` = ? LIMIT 1");
+    $stmt->execute([$user]);
+    $row = $stmt->fetch();
+
+    if ($row && password_verify($pass, $row['password_hash'])) {
         admin_session();
         session_regenerate_id(true);
         $_SESSION['dgtec_admin_auth'] = true;
+        $_SESSION['dgtec_admin_user'] = $user;
+
+        $db->prepare("UPDATE `admin_users` SET `last_login` = NOW() WHERE `id` = ?")
+           ->execute([$row['id']]);
+
         return true;
     }
     return false;
@@ -35,4 +47,8 @@ function admin_logout(): void {
     admin_session();
     $_SESSION = [];
     session_destroy();
+}
+
+function admin_current_user(): string {
+    return $_SESSION['dgtec_admin_user'] ?? '';
 }
