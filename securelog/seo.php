@@ -110,6 +110,14 @@ $pageData = dgtec_seo_get($selectedPage);
     .upload-status.success { color:#16a34a; }
     .favicon-preview { display:inline-flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:10px; }
     .favicon-preview img { width:32px;height:32px;object-fit:contain; }
+    /* OG image upload */
+    .og-upload-wrap { display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px; }
+    .og-preview { max-width:220px;max-height:120px;border-radius:6px;border:1px solid var(--border);display:none;object-fit:cover; }
+    .og-preview.show { display:block; }
+    .og-upload-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--white);
+                     border:1.5px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px;
+                     color:var(--dark);transition:.15s; }
+    .og-upload-btn:hover { border-color:var(--p);color:var(--p); }
     .page-select-bar { display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap; }
     .page-select-bar select { flex:1;min-width:260px; }
     .seo-score { display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px; }
@@ -321,11 +329,22 @@ $pageData = dgtec_seo_get($selectedPage);
                             maxlength="500"><?= htmlspecialchars($pageData['og_desc']) ?></textarea>
                 </div>
                 <div class="form-group full">
-                  <label class="form-label">OG Image URL</label>
-                  <input type="text" name="og_image" id="f_og_image" class="form-input"
-                         value="<?= htmlspecialchars($pageData['og_image']) ?>"
-                         placeholder="https://dgtec.com.sa/assets/images/og-image.jpg" />
-                  <p class="form-hint">Recommended: 1200×630 px</p>
+                  <label class="form-label">OG Image <small style="font-weight:400;text-transform:none">(shown when shared on social media)</small></label>
+                  <div class="og-upload-wrap">
+                    <?php $ogImgVal = $pageData['og_image'] ?? ''; ?>
+                    <img id="ogPreview" src="<?= $ogImgVal ? '../' . htmlspecialchars($ogImgVal) : '' ?>"
+                         class="og-preview <?= $ogImgVal ? 'show' : '' ?>" alt="OG preview" />
+                    <div>
+                      <input type="hidden" name="og_image" id="f_og_image" value="<?= htmlspecialchars($ogImgVal) ?>" />
+                      <label class="og-upload-btn">
+                        <i class="fas fa-upload"></i> Upload Image
+                        <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none"
+                               onchange="uploadOgImage(this, 'f_og_image', 'ogPreview', 'ogStatus')" />
+                      </label>
+                      <div id="ogStatus" class="upload-status" style="margin-top:4px"></div>
+                      <p class="form-hint" style="margin-top:4px">Recommended: 1200×630 px (JPG/PNG/WebP, max 5 MB)</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -403,6 +422,53 @@ function loadPage(key) {
   document.getElementById('f_schema_json').value = d.schema_json || '';
   document.getElementById('f_head_code').value   = d.head_code   || '';
   document.getElementById('f_body_code').value   = d.body_code   || '';
+
+  /* OG image */
+  var ogVal     = d.og_image || '';
+  var ogHidden  = document.getElementById('f_og_image');
+  var ogPreview = document.getElementById('ogPreview');
+  ogHidden.value = ogVal;
+  if (ogVal) {
+    ogPreview.src = '../' + ogVal;
+    ogPreview.classList.add('show');
+  } else {
+    ogPreview.src = '';
+    ogPreview.classList.remove('show');
+  }
+}
+
+/* ===== OG image upload ===== */
+function uploadOgImage(input, hiddenId, previewId, statusId) {
+  if (!input.files || !input.files[0]) return;
+  var statusEl = document.getElementById(statusId);
+  statusEl.className = 'upload-status';
+  statusEl.textContent = 'Uploading…';
+  var fd = new FormData();
+  fd.append('image', input.files[0]);
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'og-upload.php', true);
+  xhr.setRequestHeader('X-CSRF-Token', '<?= admin_csrf_token() ?>');
+  xhr.addEventListener('load', function() {
+    input.value = '';
+    try {
+      var resp = JSON.parse(xhr.responseText);
+      if (resp.success) {
+        document.getElementById(hiddenId).value = resp.path;
+        var prev = document.getElementById(previewId);
+        prev.src = resp.preview;
+        prev.classList.add('show');
+        statusEl.className = 'upload-status success';
+        statusEl.textContent = 'Uploaded.';
+      } else {
+        statusEl.className = 'upload-status error';
+        statusEl.textContent = resp.error || 'Upload failed.';
+      }
+    } catch(e) {
+      statusEl.className = 'upload-status error';
+      statusEl.textContent = 'Server error.';
+    }
+  });
+  xhr.send(fd);
 }
 
 /* ===== Favicon upload ===== */
@@ -422,6 +488,7 @@ function uploadFavicon(input) {
   fd.append('image', file);
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'seo-upload.php', true);
+  xhr.setRequestHeader('X-CSRF-Token', '<?= admin_csrf_token() ?>');
   xhr.upload.addEventListener('progress', function(e) {
     if (e.lengthComputable) {
       var pct = Math.round((e.loaded / e.total) * 100);
