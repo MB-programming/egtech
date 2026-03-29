@@ -179,8 +179,18 @@ $activePage  = 'about-content';
                 <input type="text" name="badge_text" class="form-input" value="<?= htmlspecialchars($d['badge_text']) ?>" placeholder="Years of Experience" />
               </div>
               <div class="form-group full">
-                <label class="form-label">Image URL</label>
-                <input type="text" name="intro_image" class="form-input" value="<?= htmlspecialchars($d['intro_image']) ?>" placeholder="assets/images/our-soul.webp" />
+                <label class="form-label">Intro Image</label>
+                <input type="hidden" name="intro_image" id="intro_image_val" value="<?= htmlspecialchars($d['intro_image']) ?>" />
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <button type="button" class="btn btn-secondary" onclick="uploadAboutIntroImage()">
+                    <i class="fas fa-upload"></i> Upload Image
+                  </button>
+                  <span id="intro_image_name" style="font-size:13px;color:var(--gray)"><?= htmlspecialchars($d['intro_image'] ?: 'No image selected') ?></span>
+                </div>
+                <div id="intro_image_preview" style="margin-top:10px;<?= $d['intro_image'] ? '' : 'display:none' ?>">
+                  <img src="../<?= htmlspecialchars($d['intro_image']) ?>" alt="Intro Image" style="max-height:140px;border-radius:8px;border:1px solid var(--border)" />
+                </div>
+                <input type="file" id="intro_image_file" accept="image/*" style="display:none" onchange="handleAboutIntroFile(this)" />
               </div>
             </div>
           </div>
@@ -323,6 +333,31 @@ function serializeWhyCards() {
 document.getElementById('aboutContentForm').addEventListener('submit', function() {
   serializeWhyCards();
 });
+
+function uploadAboutIntroImage() {
+  document.getElementById('intro_image_file').click();
+}
+
+function handleAboutIntroFile(input) {
+  if (!input.files || !input.files[0]) return;
+  var fd = new FormData();
+  fd.append('file', input.files[0]);
+  fd.append('csrf_token', document.querySelector('[name=csrf_token]').value);
+  fetch('item-upload.php', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.success) {
+        document.getElementById('intro_image_val').value = res.path;
+        document.getElementById('intro_image_name').textContent = res.path;
+        var preview = document.getElementById('intro_image_preview');
+        preview.style.display = '';
+        preview.innerHTML = '<img src="../' + res.path + '" alt="Intro Image" style="max-height:140px;border-radius:8px;border:1px solid var(--border)" />';
+      } else {
+        alert(res.error || 'Upload failed');
+      }
+    })
+    .catch(function() { alert('Upload error'); });
+}
 
 (function init() {
   var wc = document.getElementById('whyItems');

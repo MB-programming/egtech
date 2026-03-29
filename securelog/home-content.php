@@ -61,8 +61,11 @@ if ($saved_text) {
     if (is_array($parsed)) $d = array_merge($defaults, $parsed);
 }
 
-$processJson     = $info['home_process_json'] ?? $defaultProcess;
-$achievementsJson= $info['home_achievements_json'] ?? $defaultAchievements;
+$_pd = json_decode(!empty($info['home_process_json']) ? $info['home_process_json'] : $defaultProcess, true);
+$processJson = json_encode(is_array($_pd) && count($_pd) ? $_pd : json_decode($defaultProcess, true), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
+
+$_ad = json_decode(!empty($info['home_achievements_json']) ? $info['home_achievements_json'] : $defaultAchievements, true);
+$achievementsJson = json_encode(is_array($_ad) && count($_ad) ? $_ad : json_decode($defaultAchievements, true), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
 
 $unreadCount = dgtec_submissions_unread_count();
 $activePage  = 'home-content';
