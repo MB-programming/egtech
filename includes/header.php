@@ -139,6 +139,9 @@ $_favicon_url  = $_favicon_raw ?: 'assets/images/favicon.ico';
           <a href="blog.php" class="nav-link <?= $current_page === 'blog' ? 'active' : '' ?>">Blogs</a>
         </li>
         <li class="nav-item">
+          <a href="careers.php" class="nav-link <?= $current_page === 'careers' ? 'active' : '' ?>">Careers</a>
+        </li>
+        <li class="nav-item">
           <a href="contact.php" class="nav-link <?= $current_page === 'contact' ? 'active' : '' ?>">Contact</a>
         </li>
       </ul>
@@ -231,8 +234,15 @@ $_favicon_url  = $_favicon_raw ?: 'assets/images/favicon.ico';
         </li>
 
         <li class="fs-item" style="--d:.52s">
-          <a href="contact.php" class="fs-link">
+          <a href="careers.php" class="fs-link">
             <span class="fs-num">06</span>
+            <span class="fs-text">Careers</span>
+          </a>
+        </li>
+
+        <li class="fs-item" style="--d:.60s">
+          <a href="contact.php" class="fs-link">
+            <span class="fs-num">07</span>
             <span class="fs-text">Contact Us</span>
           </a>
         </li>

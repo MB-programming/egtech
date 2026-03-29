@@ -20,12 +20,21 @@ $_nav_active = $activePage ?? '';
     <a href="reviews.php" <?= $_nav_active === 'reviews' ? 'class="active"' : '' ?>><i class="fas fa-star"></i> Client Reviews</a>
     <a href="blog.php" <?= $_nav_active === 'blog' ? 'class="active"' : '' ?>><i class="fas fa-newspaper"></i> Blog Posts</a>
     <a href="pages.php" <?= $_nav_active === 'pages' ? 'class="active"' : '' ?>><i class="fas fa-file-lines"></i> Pages</a>
+    <a href="careers.php" <?= $_nav_active === 'careers' ? 'class="active"' : '' ?>><i class="fas fa-briefcase"></i> Careers</a>
     <a href="social-media.php" <?= $_nav_active === 'social-media' ? 'class="active"' : '' ?>><i class="fas fa-share-nodes"></i> Social Media</a>
     <p class="nav-section">Inbox</p>
     <a href="submissions.php" <?= $_nav_active === 'submissions' ? 'class="active"' : '' ?>>
       <i class="fas fa-envelope"></i> Submissions
       <?php if (!empty($unreadCount) && $unreadCount > 0): ?>
       <span style="margin-left:auto;background:#dc2626;color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700"><?= $unreadCount ?></span>
+      <?php endif; ?>
+    </a>
+    <a href="career-applications.php" <?= $_nav_active === 'career-applications' ? 'class="active"' : '' ?>>
+      <i class="fas fa-inbox"></i> Applications
+      <?php
+        $__appNew = dgtec_career_applications_count();
+        if ($__appNew > 0): ?>
+      <span style="margin-left:auto;background:#dc2626;color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700"><?= $__appNew ?></span>
       <?php endif; ?>
     </a>
     <p class="nav-section">Settings</p>
