@@ -78,6 +78,7 @@ $activePage  = 'about-content';
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About Content – DGTEC Admin</title>
   <link rel="stylesheet" href="assets/admin.css" />
+  <link rel="stylesheet" href="assets/icon-picker.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
   <style>
     .form-tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:24px; flex-wrap:wrap; }
@@ -98,6 +99,7 @@ $activePage  = 'about-content';
 
     .icon-preview-wrap { display:flex; align-items:center; gap:10px; }
     .icon-preview { font-size:22px; color:var(--btn); min-width:28px; text-align:center; }
+    /* icon-picker.css loaded separately */
   </style>
 </head>
 <body>
@@ -278,9 +280,9 @@ function escHtml(str) {
 }
 
 function renderIconPreview(input) {
-  var wrap = input.closest('.icon-preview-wrap');
-  var preview = wrap ? wrap.querySelector('.icon-preview') : null;
-  if (preview) preview.className = 'icon-preview ' + input.value.trim();
+  var wrap = input.closest('.icon-field-wrap');
+  var preview = wrap ? wrap.querySelector('.icon-field-preview') : null;
+  if (preview) preview.className = 'icon-field-preview ' + input.value.trim();
 }
 
 function buildWhyItem(data, idx) {
@@ -295,9 +297,10 @@ function buildWhyItem(data, idx) {
     '<div class="form-grid">' +
       '<div class="form-group">' +
         '<label class="form-label">FA Icon Class</label>' +
-        '<div class="icon-preview-wrap">' +
-          '<i class="icon-preview ' + escHtml(data.icon) + '"></i>' +
+        '<div class="icon-field-wrap">' +
+          '<i class="icon-field-preview ' + escHtml(data.icon) + '"></i>' +
           '<input type="text" class="form-input why-icon" value="' + escHtml(data.icon) + '" oninput="renderIconPreview(this)" placeholder="fas fa-check" />' +
+          '<button type="button" class="btn-icon-pick" onclick="showIconPicker(this)"><i class="fas fa-icons"></i> اختر</button>' +
         '</div>' +
       '</div>' +
       '<div class="form-group full">' +
@@ -364,5 +367,6 @@ function handleAboutIntroFile(input) {
   whyData.forEach(function(item, i) { wc.appendChild(buildWhyItem(item, i)); });
 })();
 </script>
+<script src="assets/icon-picker.js"></script>
 </body>
 </html>
