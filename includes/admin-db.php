@@ -296,6 +296,160 @@ function dgtec_db_init(PDO $pdo): void {
             `updated_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
+
+    /* ---- careers ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `careers` (
+            `id`           INT AUTO_INCREMENT PRIMARY KEY,
+            `position`     INT NOT NULL DEFAULT 0,
+            `is_active`    TINYINT(1) NOT NULL DEFAULT 1,
+            `title`        VARCHAR(255) NOT NULL DEFAULT '',
+            `slug`         VARCHAR(255) NOT NULL UNIQUE DEFAULT '',
+            `department`   VARCHAR(100) NOT NULL DEFAULT '',
+            `location`     VARCHAR(100) NOT NULL DEFAULT '',
+            `job_type`     VARCHAR(50)  NOT NULL DEFAULT 'Full-time',
+            `description`  LONGTEXT NOT NULL,
+            `requirements` LONGTEXT NOT NULL,
+            `created_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- career_form_fields ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `career_form_fields` (
+            `id`           INT AUTO_INCREMENT PRIMARY KEY,
+            `career_id`    INT NOT NULL,
+            `field_key`    VARCHAR(100) NOT NULL DEFAULT '',
+            `field_type`   VARCHAR(50)  NOT NULL DEFAULT 'text',
+            `label`        VARCHAR(255) NOT NULL DEFAULT '',
+            `placeholder`  VARCHAR(255) NOT NULL DEFAULT '',
+            `required`     TINYINT(1)   NOT NULL DEFAULT 0,
+            `options_json` TEXT NOT NULL,
+            `sort_order`   INT NOT NULL DEFAULT 0
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- career_applications ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `career_applications` (
+            `id`         INT AUTO_INCREMENT PRIMARY KEY,
+            `career_id`  INT NOT NULL,
+            `data_json`  LONGTEXT NOT NULL,
+            `files_json` LONGTEXT NOT NULL,
+            `status`     VARCHAR(50) NOT NULL DEFAULT 'new',
+            `ip`         VARCHAR(45) NOT NULL DEFAULT '',
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+}
+
+/* ============================================================
+   CAREERS
+   ============================================================ */
+function dgtec_careers_all(): array {
+    return dgtec_db()->query("SELECT * FROM `careers` ORDER BY `position` ASC, `id` DESC")->fetchAll();
+}
+
+function dgtec_careers_active(): array {
+    return dgtec_db()->query("SELECT * FROM `careers` WHERE `is_active`=1 ORDER BY `position` ASC, `id` DESC")->fetchAll();
+}
+
+function dgtec_career_get(int $id): ?array {
+    $r = dgtec_db()->prepare("SELECT * FROM `careers` WHERE `id`=?");
+    $r->execute([$id]);
+    return $r->fetch() ?: null;
+}
+
+function dgtec_career_get_by_slug(string $slug): ?array {
+    $r = dgtec_db()->prepare("SELECT * FROM `careers` WHERE `slug`=? AND `is_active`=1");
+    $r->execute([$slug]);
+    return $r->fetch() ?: null;
+}
+
+function dgtec_career_save(array $d): int {
+    $db = dgtec_db();
+    if (!empty($d['id'])) {
+        $db->prepare("UPDATE `careers` SET `title`=?,`slug`=?,`department`=?,`location`=?,`job_type`=?,
+            `description`=?,`requirements`=?,`is_active`=?,`position`=? WHERE `id`=?")
+           ->execute([$d['title'],$d['slug'],$d['department'],$d['location'],$d['job_type'],
+                      $d['description'],$d['requirements'],$d['is_active'],$d['position'],$d['id']]);
+        return (int)$d['id'];
+    }
+    $db->prepare("INSERT INTO `careers` (`title`,`slug`,`department`,`location`,`job_type`,`description`,`requirements`,`is_active`,`position`)
+        VALUES (?,?,?,?,?,?,?,?,?)")
+       ->execute([$d['title'],$d['slug'],$d['department'],$d['location'],$d['job_type'],
+                  $d['description'],$d['requirements'],$d['is_active'],$d['position']]);
+    return (int)$db->lastInsertId();
+}
+
+function dgtec_career_delete(int $id): void {
+    $db = dgtec_db();
+    $db->prepare("DELETE FROM `career_form_fields` WHERE `career_id`=?")->execute([$id]);
+    $db->prepare("DELETE FROM `career_applications`  WHERE `career_id`=?")->execute([$id]);
+    $db->prepare("DELETE FROM `careers` WHERE `id`=?")->execute([$id]);
+}
+
+/* ---- Form fields ---- */
+function dgtec_career_fields(int $career_id): array {
+    $r = dgtec_db()->prepare("SELECT * FROM `career_form_fields` WHERE `career_id`=? ORDER BY `sort_order` ASC, `id` ASC");
+    $r->execute([$career_id]);
+    return $r->fetchAll();
+}
+
+function dgtec_career_fields_save(int $career_id, array $fields): void {
+    $db = dgtec_db();
+    $db->prepare("DELETE FROM `career_form_fields` WHERE `career_id`=?")->execute([$career_id]);
+    $stmt = $db->prepare("INSERT INTO `career_form_fields`
+        (`career_id`,`field_key`,`field_type`,`label`,`placeholder`,`required`,`options_json`,`sort_order`)
+        VALUES (?,?,?,?,?,?,?,?)");
+    foreach ($fields as $i => $f) {
+        $key = preg_replace('/[^a-z0-9_]/', '_', strtolower($f['label'] ?? 'field'));
+        $stmt->execute([
+            $career_id,
+            $f['field_key'] ?: $key . '_' . ($i + 1),
+            $f['field_type'] ?? 'text',
+            $f['label']      ?? '',
+            $f['placeholder'] ?? '',
+            !empty($f['required']) ? 1 : 0,
+            is_array($f['options'] ?? null) ? json_encode($f['options']) : ($f['options_json'] ?? '[]'),
+            $i,
+        ]);
+    }
+}
+
+/* ---- Applications ---- */
+function dgtec_career_apply(int $career_id, array $data, array $files, string $ip): int {
+    $db = dgtec_db();
+    $db->prepare("INSERT INTO `career_applications` (`career_id`,`data_json`,`files_json`,`ip`) VALUES (?,?,?,?)")
+       ->execute([$career_id, json_encode($data, JSON_UNESCAPED_UNICODE), json_encode($files, JSON_UNESCAPED_UNICODE), $ip]);
+    return (int)$db->lastInsertId();
+}
+
+function dgtec_career_applications(int $career_id): array {
+    $r = dgtec_db()->prepare("SELECT a.*, c.title as career_title FROM `career_applications` a
+        LEFT JOIN `careers` c ON c.id=a.career_id WHERE a.`career_id`=? ORDER BY a.`created_at` DESC");
+    $r->execute([$career_id]);
+    return $r->fetchAll();
+}
+
+function dgtec_career_applications_all(): array {
+    return dgtec_db()->query("SELECT a.*, c.title as career_title FROM `career_applications` a
+        LEFT JOIN `careers` c ON c.id=a.career_id ORDER BY a.`created_at` DESC")->fetchAll();
+}
+
+function dgtec_career_application_get(int $id): ?array {
+    $r = dgtec_db()->prepare("SELECT a.*, c.title as career_title FROM `career_applications` a
+        LEFT JOIN `careers` c ON c.id=a.career_id WHERE a.`id`=?");
+    $r->execute([$id]);
+    return $r->fetch() ?: null;
+}
+
+function dgtec_career_application_status(int $id, string $status): void {
+    dgtec_db()->prepare("UPDATE `career_applications` SET `status`=? WHERE `id`=?")->execute([$status, $id]);
+}
+
+function dgtec_career_applications_count(): int {
+    return (int)dgtec_db()->query("SELECT COUNT(*) FROM `career_applications` WHERE `status`='new'")->fetchColumn();
 }
 
 function dgtec_seed_slides(PDO $pdo): void {
