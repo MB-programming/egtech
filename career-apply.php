@@ -114,6 +114,14 @@ $ip = trim(explode(',', $ip)[0]);
 
 dgtec_career_apply($careerId, $data, $files, $ip);
 
+/* ---- Email notification ---- */
+require_once 'includes/email.php';
+dgtec_notify_form('career',
+    array_merge(['career_title' => $job['title']], $data),
+    $data['email'] ?? '',
+    $job['title']
+);
+
 echo json_encode([
     'success' => true,
     'message' => 'Your application has been submitted successfully! We\'ll be in touch soon.',
