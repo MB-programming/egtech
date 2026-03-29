@@ -41,6 +41,17 @@ try {
         "INSERT INTO contacts (name, email, mobile, service, message, ip_address) VALUES (?, ?, ?, ?, ?, ?)"
     );
     $stmt->execute([$name, $email, $mobile, $service, $message, $ip]);
+
+    /* ---- Email notification ---- */
+    require_once dirname(__DIR__) . '/includes/email.php';
+    dgtec_notify_form('contact', [
+        'name'    => $name,
+        'email'   => $email,
+        'mobile'  => $mobile,
+        'service' => $service,
+        'message' => $message,
+    ], $email, 'Contact Form');
+
     echo json_encode(['success' => true, 'message' => 'Thank you! Your message has been sent successfully.']);
 } catch (PDOException $e) {
     echo json_encode(['success' => false, 'message' => 'Failed to save message. Please try again.']);

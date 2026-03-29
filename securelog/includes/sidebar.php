@@ -78,6 +78,10 @@ $_nav_active = $activePage ?? '';
     <?php if (admin_can('nav_menus')): ?>
     <a href="nav-menus.php" <?= $_nav_active === 'nav-menus' ? 'class="active"' : '' ?>><i class="fas fa-bars"></i> Nav Menus</a>
     <?php endif; ?>
+    <?php if (admin_can('site_info')): ?>
+    <a href="smtp-settings.php" <?= $_nav_active === 'smtp' ? 'class="active"' : '' ?>><i class="fas fa-server"></i> SMTP / Email</a>
+    <a href="form-notifications.php" <?= $_nav_active === 'form-notifications' ? 'class="active"' : '' ?>><i class="fas fa-bell"></i> Form Notifications</a>
+    <?php endif; ?>
     <?php endif; ?>
 
     <?php if (admin_can('users')): ?>

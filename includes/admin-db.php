@@ -221,12 +221,34 @@ function dgtec_db_init(PDO $pdo): void {
         'home_process_json'      => "LONGTEXT NOT NULL",
         'home_achievements_json' => "LONGTEXT NOT NULL",
         'about_content_json'     => "LONGTEXT NOT NULL",
+        /* ---- SMTP ---- */
+        'smtp_host'       => "VARCHAR(255) NOT NULL DEFAULT ''",
+        'smtp_port'       => "SMALLINT NOT NULL DEFAULT 587",
+        'smtp_encryption' => "VARCHAR(10) NOT NULL DEFAULT 'tls'",
+        'smtp_username'   => "VARCHAR(255) NOT NULL DEFAULT ''",
+        'smtp_password'   => "TEXT NOT NULL",
+        'smtp_from_name'  => "VARCHAR(100) NOT NULL DEFAULT ''",
+        'smtp_from_email' => "VARCHAR(150) NOT NULL DEFAULT ''",
     ];
     foreach ($siAdd as $col => $def) {
         if (!in_array($col, $siCols, true)) {
             $pdo->exec("ALTER TABLE `site_info` ADD COLUMN `$col` $def");
         }
     }
+
+    /* ---- form_notifications ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `form_notifications` (
+            `id`              INT AUTO_INCREMENT PRIMARY KEY,
+            `form_key`        VARCHAR(50) NOT NULL UNIQUE,
+            `is_enabled`      TINYINT(1) NOT NULL DEFAULT 0,
+            `to_emails`       TEXT NOT NULL,
+            `subject`         VARCHAR(255) NOT NULL DEFAULT '',
+            `fields_json`     TEXT NOT NULL,
+            `reply_to_field`  VARCHAR(100) NOT NULL DEFAULT 'email',
+            `updated_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
 
     /* ---- services / solutions: add page_content if missing ---- */
     foreach (['services', 'solutions'] as $_tbl) {
@@ -599,6 +621,44 @@ function dgtec_user_get_by_username(string $username): ?array {
         FROM `admin_users` u LEFT JOIN `admin_roles` r ON r.id=u.role_id WHERE u.username=? LIMIT 1");
     $r->execute([$username]);
     return $r->fetch() ?: null;
+}
+
+/* ============================================================
+   FORM NOTIFICATIONS
+   ============================================================ */
+function dgtec_form_notification_get(string $formKey): array {
+    $r = dgtec_db()->prepare("SELECT * FROM `form_notifications` WHERE `form_key`=?");
+    $r->execute([$formKey]);
+    $row = $r->fetch();
+    return $row ?: ['form_key'=>$formKey,'is_enabled'=>0,'to_emails'=>'[]','subject'=>'','fields_json'=>'[]','reply_to_field'=>'email'];
+}
+
+function dgtec_form_notification_save(string $formKey, array $d): void {
+    $db = dgtec_db();
+    $toEmails   = json_encode(array_values(array_filter(array_map('trim', $d['to_emails'] ?? []))));
+    $fieldsJson = json_encode(array_values(array_filter($d['fields'] ?? [])));
+    $existing = $db->prepare("SELECT id FROM form_notifications WHERE form_key=?");
+    $existing->execute([$formKey]);
+    if ($existing->fetchColumn()) {
+        $db->prepare("UPDATE `form_notifications` SET `is_enabled`=?,`to_emails`=?,`subject`=?,`fields_json`=?,`reply_to_field`=? WHERE `form_key`=?")
+           ->execute([$d['is_enabled']?1:0, $toEmails, $d['subject']??'', $fieldsJson, $d['reply_to_field']??'email', $formKey]);
+    } else {
+        $db->prepare("INSERT INTO `form_notifications` (`form_key`,`is_enabled`,`to_emails`,`subject`,`fields_json`,`reply_to_field`) VALUES (?,?,?,?,?,?)")
+           ->execute([$formKey, $d['is_enabled']?1:0, $toEmails, $d['subject']??'', $fieldsJson, $d['reply_to_field']??'email']);
+    }
+}
+
+function dgtec_smtp_config(): array {
+    $info = dgtec_site_info();
+    return [
+        'host'       => $info['smtp_host']       ?? '',
+        'port'       => (int)($info['smtp_port'] ?? 587),
+        'encryption' => $info['smtp_encryption'] ?? 'tls',
+        'username'   => $info['smtp_username']   ?? '',
+        'password'   => $info['smtp_password']   ?? '',
+        'from_email' => $info['smtp_from_email'] ?? ($info['email'] ?? ''),
+        'from_name'  => $info['smtp_from_name']  ?? ($info['site_name'] ?? 'DGTEC'),
+    ];
 }
 
 function dgtec_seed_slides(PDO $pdo): void {
@@ -1032,6 +1092,8 @@ function dgtec_site_info_save(array $data): void {
         'header_logo', 'footer_logo', 'google_analytics', 'favicon',
         'global_head_code', 'global_body_code', 'header_nav_json', 'footer_nav_json',
         'home_content_json', 'home_process_json', 'home_achievements_json', 'about_content_json',
+        'smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_username', 'smtp_password',
+        'smtp_from_name', 'smtp_from_email',
     ];
     $filtered = array_filter($data, fn($k) => in_array($k, $allowedCols, true), ARRAY_FILTER_USE_KEY);
     if (empty($filtered)) return;
