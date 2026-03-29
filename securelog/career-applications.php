@@ -82,9 +82,12 @@ $activePage  = 'careers';
           <h1><?= $career ? htmlspecialchars($career['title']) . ' — Applications' : 'All Applications' ?></h1>
           <p><?= count($apps) ?> application<?= count($apps) !== 1 ? 's' : '' ?></p>
         </div>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
           <?php if ($careerId): ?>
           <a href="career-applications.php" class="btn btn-secondary"><i class="fas fa-list"></i> All Jobs</a>
+          <a href="career-export.php?career_id=<?= $careerId ?>" class="btn btn-secondary"><i class="fas fa-file-csv"></i> Export This Job</a>
+          <?php else: ?>
+          <a href="career-export.php?career_id=all" class="btn btn-secondary"><i class="fas fa-file-csv"></i> Export All</a>
           <?php endif; ?>
           <a href="careers.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Jobs</a>
         </div>
@@ -199,8 +202,10 @@ function viewApp(app) {
   var html = '<div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:16px">' +
     '<div><h2>' + escH(app.career_title||'Application') + '</h2>' +
     '<div class="meta">Submitted: ' + app.created_at + ' &nbsp;|&nbsp; IP: ' + escH(app.ip) + '</div></div>' +
+    '<div style="display:flex;gap:8px;align-items:center">' +
+    '<a href="career-export.php?app_id='+app.id+'" class="btn btn-secondary btn-sm" style="white-space:nowrap"><i class="fas fa-download"></i> CSV</a>' +
     '<button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280"><i class="fas fa-xmark"></i></button>' +
-    '</div>';
+    '</div></div>';
 
   /* status badge */
   var c = statusColors[app.status] || '#6b7280';

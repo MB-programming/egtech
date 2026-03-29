@@ -462,8 +462,21 @@ $pageTitle   = $isEdit ? 'Edit Post' : 'Add New Post';
         </div><!-- /panel-seo -->
 
         <!-- Submit -->
-        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap">
           <a href="blog.php" class="btn btn-secondary">Cancel</a>
+          <?php if ($isEdit && !$d['is_active']): ?>
+          <?php
+            /* Generate/reuse preview token */
+            if (empty($_SESSION['blog_preview_tokens'][$id])) {
+                $_SESSION['blog_preview_tokens'][$id] = bin2hex(random_bytes(20));
+            }
+            $previewToken = $_SESSION['blog_preview_tokens'][$id];
+          ?>
+          <a href="../blog-preview.php?id=<?= $id ?>&token=<?= $previewToken ?>" target="_blank"
+             class="btn btn-secondary" style="border-color:var(--btn);color:var(--btn)">
+            <i class="fas fa-eye"></i> Preview Draft
+          </a>
+          <?php endif; ?>
           <button type="submit" class="btn btn-primary" id="saveBtn">
             <i class="fas fa-floppy-disk"></i> <?= $isEdit ? 'Update Post' : 'Publish Post' ?>
           </button>
