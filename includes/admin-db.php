@@ -278,6 +278,45 @@ function dgtec_db_init(PDO $pdo): void {
         $stmt->execute([4,'Instagram', 'fab fa-instagram',  '#']);
     }
 
+    /* ---- admin_roles ---- */
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `admin_roles` (
+            `id`               INT AUTO_INCREMENT PRIMARY KEY,
+            `name`             VARCHAR(50)  NOT NULL UNIQUE DEFAULT '',
+            `display_name`     VARCHAR(100) NOT NULL DEFAULT '',
+            `permissions_json` TEXT NOT NULL,
+            `is_system`        TINYINT(1) NOT NULL DEFAULT 0,
+            `created_at`       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ---- admin_users: add role_id + is_active if missing ---- */
+    $auCols = array_column($pdo->query("SHOW COLUMNS FROM `admin_users`")->fetchAll(), 'Field');
+    if (!in_array('role_id', $auCols))   $pdo->exec("ALTER TABLE `admin_users` ADD COLUMN `role_id` INT NULL DEFAULT NULL");
+    if (!in_array('is_active', $auCols)) $pdo->exec("ALTER TABLE `admin_users` ADD COLUMN `is_active` TINYINT(1) NOT NULL DEFAULT 1");
+
+    /* ---- Seed system roles ---- */
+    $roleCount = (int)$pdo->query("SELECT COUNT(*) FROM `admin_roles`")->fetchColumn();
+    if ($roleCount === 0) {
+        $allPerms = json_encode(array_keys([
+            'slides'=>1,'services'=>1,'solutions'=>1,'partners'=>1,'blog'=>1,'pages'=>1,
+            'careers'=>1,'career_applications'=>1,'social_media'=>1,'submissions'=>1,
+            'site_info'=>1,'home_content'=>1,'about_content'=>1,'seo'=>1,'nav_menus'=>1,'users'=>1,
+        ]));
+        $rs = $pdo->prepare("INSERT INTO `admin_roles` (`name`,`display_name`,`permissions_json`,`is_system`) VALUES (?,?,?,1)");
+        $rs->execute(['admin',      'Administrator', $allPerms]);
+        $rs->execute(['seo',        'SEO Manager',   json_encode(['seo'])]);
+        $rs->execute(['data_entry', 'Data Entry',    json_encode(['slides','services','solutions','partners','blog','pages','social_media'])]);
+        $rs->execute(['hr',         'HR Manager',    json_encode(['careers','career_applications'])]);
+
+        /* Assign existing users to admin role */
+        $adminRoleId = (int)$pdo->query("SELECT id FROM admin_roles WHERE name='admin' LIMIT 1")->fetchColumn();
+        if ($adminRoleId) {
+            $pdo->prepare("UPDATE `admin_users` SET `role_id`=? WHERE `role_id` IS NULL")
+                ->execute([$adminRoleId]);
+        }
+    }
+
     /* ---- seo_pages ---- */
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS `seo_pages` (
@@ -450,6 +489,116 @@ function dgtec_career_application_status(int $id, string $status): void {
 
 function dgtec_career_applications_count(): int {
     return (int)dgtec_db()->query("SELECT COUNT(*) FROM `career_applications` WHERE `status`='new'")->fetchColumn();
+}
+
+/* ============================================================
+   USER ROLES & PERMISSIONS
+   ============================================================ */
+function dgtec_all_permissions(): array {
+    return [
+        'slides'               => 'Hero Slides',
+        'services'             => 'Services',
+        'solutions'            => 'Solutions',
+        'partners'             => 'Partners & Reviews',
+        'blog'                 => 'Blog Posts',
+        'pages'                => 'Pages',
+        'careers'              => 'Careers',
+        'career_applications'  => 'Career Applications',
+        'social_media'         => 'Social Media',
+        'submissions'          => 'Submissions',
+        'site_info'            => 'Site Info',
+        'home_content'         => 'Home Content',
+        'about_content'        => 'About Content',
+        'seo'                  => 'SEO Settings',
+        'nav_menus'            => 'Nav Menus',
+        'users'                => 'User Management',
+    ];
+}
+
+function dgtec_roles_all(): array {
+    return dgtec_db()->query("SELECT * FROM `admin_roles` ORDER BY `id` ASC")->fetchAll();
+}
+
+function dgtec_role_get(int $id): ?array {
+    $r = dgtec_db()->prepare("SELECT * FROM `admin_roles` WHERE `id`=?");
+    $r->execute([$id]);
+    return $r->fetch() ?: null;
+}
+
+function dgtec_role_save(array $d): int {
+    $db   = dgtec_db();
+    $perms = json_encode(array_values(array_filter($d['permissions'] ?? [])));
+    if (!empty($d['id'])) {
+        $db->prepare("UPDATE `admin_roles` SET `display_name`=?,`permissions_json`=? WHERE `id`=? AND `is_system`=0")
+           ->execute([$d['display_name'], $perms, $d['id']]);
+        return (int)$d['id'];
+    }
+    $name = preg_replace('/[^a-z0-9_]/', '_', strtolower($d['display_name'] ?? 'role'));
+    $db->prepare("INSERT INTO `admin_roles` (`name`,`display_name`,`permissions_json`) VALUES (?,?,?)")
+       ->execute([$name . '_' . time(), $d['display_name'], $perms]);
+    return (int)$db->lastInsertId();
+}
+
+function dgtec_role_delete(int $id): void {
+    /* Unset role from all users that use it */
+    dgtec_db()->prepare("UPDATE `admin_users` SET `role_id`=NULL WHERE `role_id`=?")->execute([$id]);
+    dgtec_db()->prepare("DELETE FROM `admin_roles` WHERE `id`=? AND `is_system`=0")->execute([$id]);
+}
+
+/* ---- Users ---- */
+function dgtec_users_all(): array {
+    return dgtec_db()->query("SELECT u.*, r.display_name as role_name, r.name as role_slug
+        FROM `admin_users` u LEFT JOIN `admin_roles` r ON r.id=u.role_id ORDER BY u.id ASC")->fetchAll();
+}
+
+function dgtec_user_get(int $id): ?array {
+    $r = dgtec_db()->prepare("SELECT u.*, r.display_name as role_name, r.permissions_json
+        FROM `admin_users` u LEFT JOIN `admin_roles` r ON r.id=u.role_id WHERE u.id=?");
+    $r->execute([$id]);
+    return $r->fetch() ?: null;
+}
+
+function dgtec_user_save(array $d): int {
+    $db = dgtec_db();
+    if (!empty($d['id'])) {
+        $sets = ['display_name=?', 'role_id=?', 'is_active=?'];
+        $vals = [$d['display_name'], $d['role_id'] ?: null, $d['is_active'] ? 1 : 0];
+        if (!empty($d['password'])) {
+            $sets[] = 'password_hash=?';
+            $vals[] = password_hash($d['password'], PASSWORD_BCRYPT);
+        }
+        $vals[] = $d['id'];
+        $db->prepare("UPDATE `admin_users` SET " . implode(',', $sets) . " WHERE `id`=?")->execute($vals);
+        return (int)$d['id'];
+    }
+    $hash = password_hash($d['password'], PASSWORD_BCRYPT);
+    $db->prepare("INSERT INTO `admin_users` (`username`,`password_hash`,`display_name`,`role_id`,`is_active`) VALUES (?,?,?,?,?)")
+       ->execute([$d['username'], $hash, $d['display_name'], $d['role_id'] ?: null, $d['is_active'] ? 1 : 0]);
+    return (int)$db->lastInsertId();
+}
+
+function dgtec_user_delete(int $id, bool $withContent = false): void {
+    /* Never delete the last admin */
+    $adminRoleId = (int)dgtec_db()->query("SELECT id FROM admin_roles WHERE name='admin' LIMIT 1")->fetchColumn();
+    $adminCount  = (int)dgtec_db()->prepare("SELECT COUNT(*) FROM admin_users WHERE role_id=? AND id!=? AND is_active=1")->execute([$adminRoleId,$id]) ? 0 : 0;
+    $stmt = dgtec_db()->prepare("SELECT COUNT(*) FROM admin_users WHERE role_id=? AND id!=? AND is_active=1");
+    $stmt->execute([$adminRoleId, $id]);
+    if ((int)$stmt->fetchColumn() === 0 && $adminRoleId) {
+        /* check if user being deleted is an admin */
+        $uRole = (int)(dgtec_db()->prepare("SELECT role_id FROM admin_users WHERE id=?")->execute([$id]) ? 0 : 0);
+        $s = dgtec_db()->prepare("SELECT role_id FROM admin_users WHERE id=?");
+        $s->execute([$id]);
+        $uRole = (int)($s->fetchColumn() ?: 0);
+        if ($uRole === $adminRoleId) return; /* protect last admin */
+    }
+    dgtec_db()->prepare("DELETE FROM `admin_users` WHERE `id`=?")->execute([$id]);
+}
+
+function dgtec_user_get_by_username(string $username): ?array {
+    $r = dgtec_db()->prepare("SELECT u.*, r.name as role_slug, r.permissions_json
+        FROM `admin_users` u LEFT JOIN `admin_roles` r ON r.id=u.role_id WHERE u.username=? LIMIT 1");
+    $r->execute([$username]);
+    return $r->fetch() ?: null;
 }
 
 function dgtec_seed_slides(PDO $pdo): void {

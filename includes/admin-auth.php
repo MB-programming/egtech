@@ -27,30 +27,57 @@ function admin_require_login(): void {
 function admin_try_login(string $user, string $pass): bool {
     require_once dirname(__DIR__) . '/includes/admin-db.php';
 
-    /* Basic length guards — no DB query if obviously invalid */
     $user = substr(trim($user), 0, 50);
     $pass = substr($pass, 0, 200);
     if ($user === '' || $pass === '') return false;
 
-    $db   = dgtec_db();
-    $stmt = $db->prepare("SELECT `id`, `password_hash`, `username` FROM `admin_users` WHERE `username` = ? LIMIT 1");
-    $stmt->execute([$user]);
-    $row = $stmt->fetch();
+    $row = dgtec_user_get_by_username($user);
 
     if ($row && password_verify($pass, $row['password_hash'])) {
+        if (isset($row['is_active']) && !(int)$row['is_active']) return false;
+
         admin_session();
         session_regenerate_id(true);
-        $_SESSION['dgtec_admin_auth'] = true;
-        $_SESSION['dgtec_admin_user'] = $row['username'];
-        /* Reset CSRF token on login */
+        $_SESSION['dgtec_admin_auth']  = true;
+        $_SESSION['dgtec_admin_user']  = $row['username'];
+        $_SESSION['dgtec_admin_uid']   = (int)$row['id'];
+        $_SESSION['dgtec_admin_role']  = $row['role_slug'] ?? null;
+        $_SESSION['dgtec_admin_perms'] = _admin_load_perms($row);
         unset($_SESSION['dgtec_csrf_token']);
 
-        $db->prepare("UPDATE `admin_users` SET `last_login` = NOW() WHERE `id` = ?")
+        dgtec_db()->prepare("UPDATE `admin_users` SET `last_login` = NOW() WHERE `id` = ?")
            ->execute([$row['id']]);
 
         return true;
     }
     return false;
+}
+
+function _admin_load_perms(?array $row): array {
+    if (!$row) return [];
+    if (($row['role_slug'] ?? '') === 'admin') return ['*'];
+    $perms = json_decode($row['permissions_json'] ?? '[]', true);
+    return is_array($perms) ? $perms : [];
+}
+
+function admin_can(string $permission): bool {
+    admin_session();
+    $perms = $_SESSION['dgtec_admin_perms'] ?? null;
+    if ($perms === null) return true; /* legacy session = full access */
+    if (in_array('*', $perms, true)) return true;
+    return in_array($permission, $perms, true);
+}
+
+function admin_require_permission(string $permission): void {
+    if (!admin_can($permission)) {
+        http_response_code(403);
+        include dirname(__DIR__) . '/securelog/403.php';
+        exit;
+    }
+}
+
+function admin_current_role(): ?string {
+    return $_SESSION['dgtec_admin_role'] ?? null;
 }
 
 function admin_logout(): void {
