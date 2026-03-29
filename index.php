@@ -73,7 +73,7 @@ include 'includes/header.php';
     <div class="services-grid">
       <?php foreach ($_home_svcs as $_svc): ?>
       <div class="service-card">
-        <div class="service-icon" style="display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--p),var(--btn));color:#fff;font-size:26px;flex-shrink:0">
+        <div class="service-icon">
           <i class="<?= htmlspecialchars($_svc['icon'] ?: 'fas fa-briefcase') ?>"></i>
         </div>
         <h3><?= htmlspecialchars($_svc['title']) ?></h3>
@@ -96,8 +96,8 @@ include 'includes/header.php';
         <p class="section-desc"><?= htmlspecialchars($_hc['solutions_desc']) ?></p>
         <div class="solutions-cards">
           <?php foreach ($_home_sols as $_i => $_sol): ?>
-          <a href="solution-detail.php?slug=<?= urlencode($_sol['slug']) ?>" class="solution-item <?= $_i === 0 ? 'active' : '' ?>" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:16px">
-            <div class="solution-item-icon" style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--p),var(--btn));color:#fff;font-size:22px;flex-shrink:0">
+          <a href="solution-detail.php?slug=<?= urlencode($_sol['slug']) ?>" class="solution-item <?= $_i === 0 ? 'active' : '' ?>" style="text-decoration:none;color:inherit">
+            <div class="solution-item-icon">
               <i class="<?= htmlspecialchars($_sol['icon'] ?: 'fas fa-lightbulb') ?>"></i>
             </div>
             <div class="solution-item-text">

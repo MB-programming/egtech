@@ -575,8 +575,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: var(--trans);
 }
 .service-icon img { width: 40px; height: 40px; object-fit: contain; }
+.service-icon i { font-size: 32px; color: var(--primary); transition: var(--trans); }
 .service-card:hover .service-icon { background: var(--primary); }
 .service-card:hover .service-icon img { filter: brightness(0) invert(1); }
+.service-card:hover .service-icon i { color: #fff; }
 
 .service-card h3 {
   font-size: 20px;
@@ -642,6 +644,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-shrink: 0;
 }
 .solution-item-icon img { width: 30px; height: 30px; object-fit: contain; }
+.solution-item-icon i { font-size: 24px; color: var(--primary); transition: var(--trans); }
 .solution-item-text h4 { font-size: 17px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
 .solution-item-text p { font-size: 14px; color: var(--gray); line-height: 1.6; }
 

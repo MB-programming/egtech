@@ -35,6 +35,12 @@ $defaults = [
 ];
 $d = array_merge($defaults, $item ?? []);
 
+/* SEO data for this item (keyed by slug) */
+$seoKey  = $d['slug'] ?: '';
+$seoData = $seoKey ? dgtec_seo_get($seoKey) : [];
+$sd = array_merge(['meta_title'=>'','meta_desc'=>'','og_title'=>'','og_desc'=>'','og_image'=>'',
+    'canonical'=>'','robots'=>'index,follow','schema_json'=>'','head_code'=>'','body_code'=>''], $seoData);
+
 /* Convert pipe-separated features to newline for textarea display */
 $featuresForDisplay = implode("\n", array_filter(explode('|', $d['features'])));
 
@@ -80,6 +86,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         $newId = dgtec_item_save($type, $d);
+
+        /* Save SEO data */
+        dgtec_seo_save($d['slug'], [
+            'meta_title'  => sanitize_str($_POST['seo_meta_title']  ?? '', 160),
+            'meta_desc'   => sanitize_str($_POST['seo_meta_desc']   ?? '', 320),
+            'og_title'    => sanitize_str($_POST['seo_og_title']    ?? '', 160),
+            'og_desc'     => sanitize_str($_POST['seo_og_desc']     ?? '', 320),
+            'og_image'    => sanitize_url($_POST['seo_og_image']    ?? ''),
+            'canonical'   => sanitize_url($_POST['seo_canonical']   ?? ''),
+            'robots'      => sanitize_str($_POST['seo_robots']      ?? 'index,follow', 50),
+            'schema_json' => sanitize_html($_POST['seo_schema_json']?? ''),
+            'head_code'   => sanitize_html($_POST['seo_head_code']  ?? ''),
+            'body_code'   => sanitize_html($_POST['seo_body_code']  ?? ''),
+        ]);
 
         /* Add to nav menu if requested (new items only) */
         if (!$isEdit && isset($_POST['add_to_menu'])) {
@@ -207,6 +227,9 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
         </button>
         <button type="button" class="form-tab" data-tab="pagecontent">
           <i class="fas fa-file-lines"></i> Page Content
+        </button>
+        <button type="button" class="form-tab" data-tab="seo">
+          <i class="fas fa-magnifying-glass-chart"></i> SEO
         </button>
       </div>
 
@@ -483,6 +506,83 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
           </div>
 
         </div><!-- /panel-pagecontent -->
+
+        <!-- ════ TAB: SEO ════ -->
+        <div class="form-panel" id="panel-seo">
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header"><h2><i class="fas fa-magnifying-glass-chart" style="color:var(--acc)"></i> SEO Settings</h2></div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-group full">
+                  <label class="form-label">Meta Title <small>(≤ 60 chars recommended)</small></label>
+                  <input type="text" name="seo_meta_title" class="form-input" value="<?= htmlspecialchars($sd['meta_title']) ?>" placeholder="Leave blank to use item title" maxlength="160" />
+                </div>
+                <div class="form-group full">
+                  <label class="form-label">Meta Description <small>(≤ 160 chars recommended)</small></label>
+                  <textarea name="seo_meta_desc" class="form-textarea" rows="2" placeholder="Leave blank to use description" maxlength="320"><?= htmlspecialchars($sd['meta_desc']) ?></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Robots</label>
+                  <select name="seo_robots" class="form-input">
+                    <?php foreach (['index,follow','noindex,follow','index,nofollow','noindex,nofollow'] as $r): ?>
+                    <option value="<?= $r ?>" <?= $sd['robots'] === $r ? 'selected' : '' ?>><?= $r ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Canonical URL</label>
+                  <input type="text" name="seo_canonical" class="form-input" value="<?= htmlspecialchars($sd['canonical']) ?>" placeholder="https://…" />
+                </div>
+              </div>
+              <hr style="margin:18px 0;border-color:var(--border)" />
+              <p class="form-label" style="margin-bottom:14px">Open Graph (Social Sharing)</p>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">OG Title</label>
+                  <input type="text" name="seo_og_title" class="form-input" value="<?= htmlspecialchars($sd['og_title']) ?>" placeholder="Defaults to meta title" maxlength="160" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">OG Image <small style="font-weight:400;text-transform:none">(1200×630 px)</small></label>
+                  <input type="hidden" name="seo_og_image" id="itemOgImgHidden" value="<?= htmlspecialchars($sd['og_image']) ?>" />
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px">
+                    <img id="itemOgPreview" src="<?= $sd['og_image'] ? '../'.htmlspecialchars($sd['og_image']) : '' ?>"
+                         style="max-width:180px;max-height:100px;border-radius:6px;border:1px solid var(--border);object-fit:cover;<?= $sd['og_image'] ? '' : 'display:none' ?>" />
+                    <div>
+                      <label style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px">
+                        <i class="fas fa-upload"></i> Upload OG Image
+                        <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadItemOgImage(this)" />
+                      </label>
+                      <div id="itemOgStatus" style="font-size:12px;margin-top:4px;color:var(--gray)"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group full">
+                  <label class="form-label">OG Description</label>
+                  <textarea name="seo_og_desc" class="form-textarea" rows="2" placeholder="Defaults to meta description"><?= htmlspecialchars($sd['og_desc']) ?></textarea>
+                </div>
+              </div>
+              <hr style="margin:18px 0;border-color:var(--border)" />
+              <div class="form-group" style="margin-bottom:18px">
+                <label class="form-label">JSON-LD Schema</label>
+                <textarea name="seo_schema_json" class="form-textarea" rows="4" style="font-family:monospace;font-size:12px" placeholder='{"@context":"https://schema.org",…}'><?= htmlspecialchars($sd['schema_json']) ?></textarea>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Extra &lt;head&gt; Code</label>
+                  <textarea name="seo_head_code" class="form-textarea" rows="3" style="font-family:monospace;font-size:12px" placeholder="<!-- custom meta… -->"><?= htmlspecialchars($sd['head_code']) ?></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Extra &lt;/body&gt; Code</label>
+                  <textarea name="seo_body_code" class="form-textarea" rows="3" style="font-family:monospace;font-size:12px" placeholder="<!-- custom scripts… -->"><?= htmlspecialchars($sd['body_code']) ?></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:flex-end">
+            <a href="<?= $listPage ?>" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk"></i> <?= $isEdit ? "Update $typeLabel" : "Save $typeLabel" ?></button>
+          </div>
+        </div><!-- /panel-seo -->
 
       </form>
     </div><!-- /.admin-content -->
@@ -792,6 +892,28 @@ function clearImage() {
   document.getElementById('uploadArea').style.display   = 'block';
   document.getElementById('uploadProgress').classList.remove('active');
   document.getElementById('uploadStatus').textContent   = '';
+}
+
+/* ── OG image upload for SEO tab ── */
+function uploadItemOgImage(input) {
+  if (!input.files || !input.files[0]) return;
+  var statusEl = document.getElementById('itemOgStatus');
+  statusEl.textContent = 'Uploading…';
+  var fd = new FormData();
+  fd.append('image', input.files[0]);
+  fd.append('_csrf', '<?= admin_csrf_token() ?>');
+  fetch('og-upload.php', { method:'POST', body:fd,
+    headers:{'X-CSRF-TOKEN':'<?= admin_csrf_token() ?>'}
+  }).then(function(r){ return r.json(); }).then(function(data) {
+    if (data.success) {
+      document.getElementById('itemOgImgHidden').value = data.path;
+      var img = document.getElementById('itemOgPreview');
+      img.src = data.preview; img.style.display = '';
+      statusEl.textContent = 'Uploaded.'; statusEl.style.color = '#16a34a';
+    } else {
+      statusEl.textContent = data.error || 'Upload failed.'; statusEl.style.color = '#dc2626';
+    }
+  }).catch(function(){ statusEl.textContent = 'Upload error.'; statusEl.style.color = '#dc2626'; });
 }
 </script>
 </body>
