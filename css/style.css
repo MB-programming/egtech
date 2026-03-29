@@ -575,8 +575,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: var(--trans);
 }
 .service-icon img { width: 40px; height: 40px; object-fit: contain; }
-.service-icon i { font-size: 32px; color: var(--primary); transition: var(--trans); }
-.service-card:hover .service-icon { background: var(--primary); }
+.service-icon i { font-size: 32px; color: var(--btn); transition: var(--trans); }
+.service-card:hover .service-icon { background: var(--btn); }
 .service-card:hover .service-icon img { filter: brightness(0) invert(1); }
 .service-card:hover .service-icon i { color: #fff; }
 
@@ -645,9 +645,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: var(--trans);
 }
 .solution-item-icon img { width: 30px; height: 30px; object-fit: contain; }
-.solution-item-icon i { font-size: 24px; color: var(--primary); transition: var(--trans); }
+.solution-item-icon i { font-size: 24px; color: var(--btn); transition: var(--trans); }
 .solution-item:hover .solution-item-icon,
-.solution-item.active .solution-item-icon { background: var(--primary); }
+.solution-item.active .solution-item-icon { background: var(--btn); }
 .solution-item:hover .solution-item-icon img,
 .solution-item.active .solution-item-icon img { filter: brightness(0) invert(1); }
 .solution-item:hover .solution-item-icon i,

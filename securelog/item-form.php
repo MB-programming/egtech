@@ -141,6 +141,7 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><?= $pageTitle ?> – DGTEC Admin</title>
   <link rel="stylesheet" href="assets/admin.css" />
+  <link rel="stylesheet" href="assets/icon-picker.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
   <style>
     .upload-progress {
@@ -304,17 +305,15 @@ $pageTitle   = $isEdit ? "Edit $typeLabel" : "Add New $typeLabel";
 
               <div class="form-group">
                 <label class="form-label">Font Awesome Icon</label>
-                <input type="text" name="icon" id="iconInput" class="form-input"
-                       value="<?= htmlspecialchars($d['icon']) ?>"
-                       placeholder="e.g. fas fa-users"
-                       oninput="updateIconPreview()" />
-                <div class="icon-preview" id="iconPreview">
-                  <?php if ($d['icon']): ?>
-                  <i class="<?= htmlspecialchars($d['icon']) ?>"></i>
-                  <span>Icon Preview</span>
-                  <?php else: ?>
-                  <span>Enter a Font Awesome class to preview</span>
-                  <?php endif; ?>
+                <div class="icon-field-wrap">
+                  <i class="icon-field-preview <?= htmlspecialchars($d['icon'] ?: 'fas fa-briefcase') ?>"></i>
+                  <input type="text" name="icon" id="iconInput" class="form-input"
+                         value="<?= htmlspecialchars($d['icon']) ?>"
+                         placeholder="fas fa-briefcase"
+                         oninput="updateIconPreview()" />
+                  <button type="button" class="btn-icon-pick" onclick="showIconPicker(this)">
+                    <i class="fas fa-icons"></i> اختر
+                  </button>
                 </div>
               </div>
 
@@ -801,12 +800,8 @@ function autoSlug() {
    ====================================================== */
 function updateIconPreview() {
   var cls     = document.getElementById('iconInput').value.trim();
-  var preview = document.getElementById('iconPreview');
-  if (cls) {
-    preview.innerHTML = '<i class="' + cls + '"></i><span>Icon Preview</span>';
-  } else {
-    preview.innerHTML = '<span>Enter a Font Awesome class to preview</span>';
-  }
+  var prev    = document.querySelector('#iconInput').closest('.icon-field-wrap').querySelector('.icon-field-preview');
+  if (prev) prev.className = 'icon-field-preview ' + (cls || 'fas fa-briefcase');
 }
 
 /* ======================================================
@@ -916,5 +911,6 @@ function uploadItemOgImage(input) {
   }).catch(function(){ statusEl.textContent = 'Upload error.'; statusEl.style.color = '#dc2626'; });
 }
 </script>
+<script src="assets/icon-picker.js"></script>
 </body>
 </html>

@@ -77,6 +77,7 @@ $activePage  = 'home-content';
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home Content – DGTEC Admin</title>
   <link rel="stylesheet" href="assets/admin.css" />
+  <link rel="stylesheet" href="assets/icon-picker.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
   <style>
     .form-tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:24px; flex-wrap:wrap; }
@@ -326,10 +327,10 @@ var processData     = <?= $processJson ?>;
 var achievementsData= <?= $achievementsJson ?>;
 
 function renderIconPreview(input) {
-  var wrap = input.closest('.icon-preview-wrap');
-  var preview = wrap ? wrap.querySelector('.icon-preview') : null;
+  var wrap = input.closest('.icon-field-wrap');
+  var preview = wrap ? wrap.querySelector('.icon-field-preview') : null;
   if (preview) {
-    preview.className = 'icon-preview ' + input.value.trim();
+    preview.className = 'icon-field-preview ' + input.value.trim();
   }
 }
 
@@ -345,9 +346,10 @@ function buildProcessItem(data, idx) {
     '<div class="form-grid">' +
       '<div class="form-group">' +
         '<label class="form-label">FA Icon Class</label>' +
-        '<div class="icon-preview-wrap">' +
-          '<i class="icon-preview ' + escHtml(data.icon) + '"></i>' +
+        '<div class="icon-field-wrap">' +
+          '<i class="icon-field-preview ' + escHtml(data.icon) + '"></i>' +
           '<input type="text" class="form-input proc-icon" value="' + escHtml(data.icon) + '" oninput="renderIconPreview(this)" placeholder="fas fa-star" />' +
+          '<button type="button" class="btn-icon-pick" onclick="showIconPicker(this)"><i class="fas fa-icons"></i> اختر</button>' +
         '</div>' +
       '</div>' +
       '<div class="form-group">' +
@@ -374,9 +376,10 @@ function buildAchievementItem(data, idx) {
     '<div class="form-grid">' +
       '<div class="form-group">' +
         '<label class="form-label">FA Icon Class</label>' +
-        '<div class="icon-preview-wrap">' +
-          '<i class="icon-preview ' + escHtml(data.icon) + '"></i>' +
+        '<div class="icon-field-wrap">' +
+          '<i class="icon-field-preview ' + escHtml(data.icon) + '"></i>' +
           '<input type="text" class="form-input ach-icon" value="' + escHtml(data.icon) + '" oninput="renderIconPreview(this)" placeholder="fas fa-star" />' +
+          '<button type="button" class="btn-icon-pick" onclick="showIconPicker(this)"><i class="fas fa-icons"></i> اختر</button>' +
         '</div>' +
       '</div>' +
       '<div class="form-group">' +
@@ -459,5 +462,6 @@ document.getElementById('homeContentForm').addEventListener('submit', function()
   achievementsData.forEach(function(item, i) { ac.appendChild(buildAchievementItem(item, i)); });
 })();
 </script>
+<script src="assets/icon-picker.js"></script>
 </body>
 </html>
