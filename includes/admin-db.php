@@ -7,8 +7,8 @@ function dgtec_db(): PDO {
     static $pdo;
     if ($pdo) return $pdo;
 
-    $dsn = 'mysql:host=localhost;dbname=u186120816_egtech;charset=utf8mb4';
-    $pdo = new PDO($dsn, 'u186120816_egtech', 'Mina&Egtech2030', [
+    $dsn = 'mysql:host=localhost;dbname=u849019743_dgtec;charset=utf8mb4';
+    $pdo = new PDO($dsn, 'u849019743_dgtec', 'fBL&Db>yW8^e', [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => false,
