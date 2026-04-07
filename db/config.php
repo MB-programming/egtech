@@ -1,8 +1,8 @@
 <?php
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'u186120816_egtech');
-define('DB_USER', 'u186120816_egtech');
-define('DB_PASS', 'Mina&Egtech2030');
+define('DB_NAME', 'u849019743_dgtec');
+define('DB_USER', 'u849019743_dgtec');
+define('DB_PASS', 'fBL&Db>yW8^e');
 define('DB_CHARSET', 'utf8mb4');
 
 function getDB() {
