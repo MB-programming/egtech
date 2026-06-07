@@ -27,13 +27,15 @@ if (empty($fields)) {
 }
 
 /* ---- Validate & collect data ---- */
-$data   = [];
-$errors = [];
+$data      = [];   // key => value  (stored in DB)
+$emailData = [];   // label => value (used in email)
+$errors    = [];
 
 foreach ($fields as $f) {
-    $key  = $f['field_key'];
-    $type = $f['field_type'];
-    $req  = (bool)$f['required'];
+    $key   = $f['field_key'];
+    $label = $f['label'] ?: $key;
+    $type  = $f['field_type'];
+    $req   = (bool)$f['required'];
 
     if ($type === 'file') {
         /* handled separately below */
@@ -43,16 +45,17 @@ foreach ($fields as $f) {
     $val = trim($_POST[$key] ?? '');
 
     if ($req && $val === '') {
-        $errors[] = $f['label'] . ' is required.';
+        $errors[] = $label . ' is required.';
         continue;
     }
 
     if ($type === 'email' && $val && !filter_var($val, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = $f['label'] . ' must be a valid email address.';
+        $errors[] = $label . ' must be a valid email address.';
         continue;
     }
 
-    $data[$key] = $val;
+    $data[$key]      = $val;
+    $emailData[$label] = $val;
 }
 
 if (!empty($errors)) {
@@ -65,43 +68,56 @@ if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0755, true);
 }
 
-$files = [];
-$allowedExt = ['pdf','doc','docx','png','jpg','jpeg'];
+$files       = [];        // key => relative path (stored in DB)
+$attachments = [];        // list of files to attach to email
+
+$mimeMap    = ['pdf' => 'application/pdf', 'doc' => 'application/msword',
+               'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+               'png'  => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg'];
+$allowedExt = array_keys($mimeMap);
 $maxBytes   = 5 * 1024 * 1024; // 5 MB
 
 foreach ($fields as $f) {
     if ($f['field_type'] !== 'file') continue;
-    $key = $f['field_key'];
+    $key   = $f['field_key'];
+    $label = $f['label'] ?: $key;
 
     if (!isset($_FILES[$key]) || $_FILES[$key]['error'] === UPLOAD_ERR_NO_FILE) {
         if ($f['required']) {
-            $errors[] = $f['label'] . ' is required.';
+            $errors[] = $label . ' is required.';
         }
         continue;
     }
 
     $file = $_FILES[$key];
     if ($file['error'] !== UPLOAD_ERR_OK) {
-        $errors[] = $f['label'] . ': upload error.';
+        $errors[] = $label . ': upload error.';
         continue;
     }
     if ($file['size'] > $maxBytes) {
-        $errors[] = $f['label'] . ': file too large (max 5 MB).';
+        $errors[] = $label . ': file too large (max 5 MB).';
         continue;
     }
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     if (!in_array($ext, $allowedExt, true)) {
-        $errors[] = $f['label'] . ': unsupported file type.';
+        $errors[] = $label . ': unsupported file type.';
         continue;
     }
 
-    $newName   = $careerId . '_' . $key . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
-    $destPath  = $uploadDir . $newName;
+    $newName  = $careerId . '_' . $key . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
+    $destPath = $uploadDir . $newName;
     if (!move_uploaded_file($file['tmp_name'], $destPath)) {
-        $errors[] = $f['label'] . ': could not save file.';
+        $errors[] = $label . ': could not save file.';
         continue;
     }
-    $files[$key] = 'assets/uploads/cv/' . $newName;
+
+    $files[$key]       = 'assets/uploads/cv/' . $newName;
+    $emailData[$label] = $file['name'];   // show original filename in email body
+    $attachments[]     = [
+        'path' => $destPath,
+        'name' => $file['name'],
+        'mime' => $mimeMap[$ext] ?? 'application/octet-stream',
+    ];
 }
 
 if (!empty($errors)) {
@@ -116,10 +132,13 @@ dgtec_career_apply($careerId, $data, $files, $ip);
 
 /* ---- Email notification ---- */
 require_once 'includes/email.php';
-dgtec_notify_form('career',
-    array_merge(['career_title' => $job['title']], $data),
+dgtec_notify_form(
+    'career',
+    array_merge(['Job Title' => $job['title']], $emailData),
     $data['email'] ?? '',
-    $job['title']
+    $job['title'],
+    $attachments,
+    array_merge(['career_title' => $job['title']], $data)   // raw keys for {{subject}} templates
 );
 
 echo json_encode([

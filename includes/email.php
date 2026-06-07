@@ -7,14 +7,15 @@
 /**
  * Send an HTML email via SMTP.
  *
- * @param array  $cfg      ['host','port','encryption','username','password','from_email','from_name']
- * @param array  $to       ['email@x.com', ...] or ['Name <email@x.com>', ...]
+ * @param array  $cfg         ['host','port','encryption','username','password','from_email','from_name']
+ * @param array  $to          ['email@x.com', ...] or ['Name <email@x.com>', ...]
  * @param string $subject
  * @param string $html
- * @param string $replyTo  Optional reply-to address
+ * @param string $replyTo     Optional reply-to address
+ * @param array  $attachments Optional list of files: [['path'=>'/abs/path','name'=>'cv.pdf','mime'=>'application/pdf'], ...]
  * @return bool
  */
-function dgtec_smtp_send(array $cfg, array $to, string $subject, string $html, string $replyTo = ''): bool {
+function dgtec_smtp_send(array $cfg, array $to, string $subject, string $html, string $replyTo = '', array $attachments = []): bool {
     $host = trim($cfg['host'] ?? '');
     $port = (int)($cfg['port'] ?? 587);
     $enc  = strtolower($cfg['encryption'] ?? 'tls');
@@ -93,12 +94,11 @@ function dgtec_smtp_send(array $cfg, array $to, string $subject, string $html, s
     if (!$r || substr($r, 0, 3) !== '354') { fclose($sock); return false; }
 
     /* ---- Build message ---- */
-    $toHdr    = implode(', ', $to);
-    $subjHdr  = '=?UTF-8?B?' . base64_encode($subject) . '?=';
-    $fromHdr  = '=?UTF-8?B?' . base64_encode($name) . '?= <' . $from . '>';
-    $msgId    = '<' . md5(uniqid()) . '@' . ($ehlo ?: 'dgtec') . '>';
-    $date     = date('r');
-    $htmlB64  = chunk_split(base64_encode($html));
+    $toHdr   = implode(', ', $to);
+    $subjHdr = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    $fromHdr = '=?UTF-8?B?' . base64_encode($name) . '?= <' . $from . '>';
+    $msgId   = '<' . md5(uniqid()) . '@' . ($ehlo ?: 'dgtec') . '>';
+    $date    = date('r');
 
     $headers  = "Date: {$date}\r\n";
     $headers .= "From: {$fromHdr}\r\n";
@@ -107,12 +107,47 @@ function dgtec_smtp_send(array $cfg, array $to, string $subject, string $html, s
     $headers .= "Subject: {$subjHdr}\r\n";
     $headers .= "Message-ID: {$msgId}\r\n";
     $headers .= "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-    $headers .= "Content-Transfer-Encoding: base64\r\n";
-    $headers .= "\r\n";
+
+    /* Filter attachments to files that actually exist */
+    $validAttachments = array_filter($attachments, fn($a) => !empty($a['path']) && is_readable($a['path']));
+
+    if (empty($validAttachments)) {
+        /* Simple HTML-only message */
+        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+        $headers .= "Content-Transfer-Encoding: base64\r\n";
+        $headers .= "\r\n";
+        $body = $headers . chunk_split(base64_encode($html));
+    } else {
+        /* Multipart/mixed with HTML + attachments */
+        $boundary = '==DGTEC_' . md5(uniqid());
+        $headers .= "Content-Type: multipart/mixed; boundary=\"{$boundary}\"\r\n";
+        $headers .= "\r\n";
+
+        $body  = $headers;
+        $body .= "--{$boundary}\r\n";
+        $body .= "Content-Type: text/html; charset=UTF-8\r\n";
+        $body .= "Content-Transfer-Encoding: base64\r\n\r\n";
+        $body .= chunk_split(base64_encode($html)) . "\r\n";
+
+        foreach ($validAttachments as $att) {
+            $fileData = file_get_contents($att['path']);
+            if ($fileData === false) continue;
+            $fname    = $att['name'] ?? basename($att['path']);
+            $mime     = $att['mime'] ?? 'application/octet-stream';
+            $encoded  = chunk_split(base64_encode($fileData));
+            $fnameHdr = '=?UTF-8?B?' . base64_encode($fname) . '?=';
+
+            $body .= "--{$boundary}\r\n";
+            $body .= "Content-Type: {$mime}; name=\"{$fnameHdr}\"\r\n";
+            $body .= "Content-Transfer-Encoding: base64\r\n";
+            $body .= "Content-Disposition: attachment; filename=\"{$fnameHdr}\"\r\n\r\n";
+            $body .= $encoded . "\r\n";
+        }
+
+        $body .= "--{$boundary}--\r\n";
+    }
 
     /* Dot-stuffing: lines starting with '.' need an extra '.' */
-    $body = $headers . $htmlB64;
     $body = preg_replace('/^\./', '..', $body);
 
     fputs($sock, $body . "\r\n.\r\n");
@@ -172,12 +207,14 @@ function dgtec_email_fill_subject(string $subject, array $data): string {
 /**
  * Trigger a form notification if enabled.
  *
- * @param string $formKey   'contact' | 'career'
- * @param array  $data      All submitted form fields (key => value)
- * @param string $replyToValue  The email address to use as reply-to
- * @param string $contextTitle  e.g. "Contact Form Submission" or job title
+ * @param string $formKey      'contact' | 'career'
+ * @param array  $data         Display fields for email body (label => value)
+ * @param string $replyToValue The email address to use as reply-to
+ * @param string $contextTitle e.g. "Contact Form Submission" or job title
+ * @param array  $attachments  Optional file attachments: [['path'=>'...','name'=>'...','mime'=>'...'], ...]
+ * @param array  $subjectVars  Variables for {{subject}} interpolation (key => value); falls back to $data
  */
-function dgtec_notify_form(string $formKey, array $data, string $replyToValue = '', string $contextTitle = ''): void {
+function dgtec_notify_form(string $formKey, array $data, string $replyToValue = '', string $contextTitle = '', array $attachments = [], array $subjectVars = []): void {
     if (!function_exists('dgtec_form_notification_get')) {
         require_once __DIR__ . '/admin-db.php';
     }
@@ -198,7 +235,7 @@ function dgtec_notify_form(string $formKey, array $data, string $replyToValue = 
     /* Build subject */
     $subject = dgtec_email_fill_subject(
         $cfg['subject'] ?: ($contextTitle ? "New submission: {$contextTitle}" : "New {$formKey} submission"),
-        $data
+        $subjectVars ?: $data
     );
 
     /* Build HTML */
@@ -212,5 +249,5 @@ function dgtec_notify_form(string $formKey, array $data, string $replyToValue = 
     $replyTo      = $replyToValue ?: ($data[$replyToField] ?? '');
 
     /* Send */
-    dgtec_smtp_send($smtp, $to, $subject, $html, $replyTo);
+    dgtec_smtp_send($smtp, $to, $subject, $html, $replyTo, $attachments);
 }

@@ -45,11 +45,11 @@ try {
     /* ---- Email notification ---- */
     require_once dirname(__DIR__) . '/includes/email.php';
     dgtec_notify_form('contact', [
-        'name'    => $name,
-        'email'   => $email,
-        'mobile'  => $mobile,
-        'service' => $service,
-        'message' => $message,
+        'Name'    => $name,
+        'Email'   => $email,
+        'Mobile'  => $mobile,
+        'Service' => $service,
+        'Message' => $message,
     ], $email, 'Contact Form');
 
     echo json_encode(['success' => true, 'message' => 'Thank you! Your message has been sent successfully.']);
